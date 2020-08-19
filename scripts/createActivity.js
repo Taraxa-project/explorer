@@ -33,6 +33,8 @@ for(let i = 1; i <= 5; i++){
     }
 }
 
+let transactions = 0;
+
 async function sendRandomTransaction() {
     const senderIndex = Math.floor(Math.random() * Object.keys(node).length)
     const sender = Object.keys(node)[senderIndex];
@@ -52,7 +54,9 @@ async function sendRandomTransaction() {
             // nonce: 0
         }
     
-        console.log('Sending Transaction:', tx);
+        console.log('Sending Transaction ', transactions, tx);
+
+        transactions++;
     
         return web3.eth.sendTransaction(tx);
     }
@@ -61,7 +65,10 @@ async function sendRandomTransaction() {
 (async () => {
     while (true) {
         try {
+            const started = new Date();
             await sendRandomTransaction();
+            const complete = new Date();
+            console.log('Completed in', complete - started, 'ms')
         } catch (e) {
             console.log(e);
         }
