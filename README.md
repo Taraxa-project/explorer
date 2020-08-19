@@ -1,4 +1,4 @@
-# Taraxa Testnet
+# Taraxa Dev Testnet
 
 ## Starting a Private Taraxa Testnet
 

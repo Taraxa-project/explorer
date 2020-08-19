@@ -1,7 +1,7 @@
 {
-  "name": "taraxa-testnet",
+  "name": "taraxa-dev-testnet",
   "version": "1.0.0",
-  "description": "Taraxa Testnet",
+  "description": "Taraxa Dev Testnet",
   "main": "index.js",
   "scripts": {
     "test": "mocha"
