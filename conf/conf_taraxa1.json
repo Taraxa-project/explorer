@@ -63,11 +63,15 @@
           },
           {
             "name": "PBFT_MGR",
-            "verbosity": "INFO"
+            "verbosity": "ERROR"
           },
           {
             "name": "PBFTSYNC",
-            "verbosity": "INFO"
+            "verbosity": "ERROR"
+          },
+          {
+            "name": "RPC",
+            "verbosity": "TRACE"
           }
         ],
         "outputs": [

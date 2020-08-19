@@ -44,4 +44,11 @@ npm i
   jsonrpc: '2.0',
   result: { found: true, value: '9007199254740991' }
 }
+
+# send coins to node 2
+> ./scripts/runCommand.js sendCoins -a 973ecb1c08c8eb5a7eaa0d3fd3aab7924f2838b0
+
+# check node 2 balance
+> ./scripts/runCommand.js getBalance -a 973ecb1c08c8eb5a7eaa0d3fd3aab7924f2838b0
+
 ```
