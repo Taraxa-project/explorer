@@ -51,4 +51,6 @@ npm i
 # check node 2 balance
 > ./scripts/runCommand.js getBalance -a 973ecb1c08c8eb5a7eaa0d3fd3aab7924f2838b0
 
+# generate network activity
+> ./scripts/createActivity.js
 ```
