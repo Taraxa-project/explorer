@@ -48,7 +48,7 @@ async function sendCoins(from, to, sk) {
     const tx = {
         // from: from,
         to: to,
-        value: 50000,
+        value: 500000000000000,
         "gas": 300000,
         "gasPrice": 1000000000,
         chainId: 1,
@@ -101,7 +101,7 @@ program
     .option('-a, --address <type>', 'address to receive coins')
     .description('get taraxa account balance')
     .action(async function (cmdObj) {
-        const response = await web3.eth.getBalance(cmdObj.address);
+        const response = await web3.eth.getBalance(cmdObj.address, 0x473);
         console.log(response);
     })
 
