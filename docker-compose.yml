@@ -3,12 +3,16 @@ services:
     taraxa-node-testnet-1:
         container_name: taraxa-node-testnet-1
         image: taraxa/taraxa-node:latest
+        restart: always
         ports:
             - "10002:10002"
+            - "10002:10002/udp"
             - "7777:7777"
             - "8777:8777"
         expose:
             - "10002"
+            - "7777"
+            - "8777"
         command: ["--conf_taraxa", "/config/conf_taraxa.json", "--boot_node"]
         volumes:
             - ~/.taraxa-node/db/testnet1:/taraxadb
@@ -19,8 +23,10 @@ services:
     taraxa-node-testnet-2:
         container_name: taraxa-node-testnet-2
         image: taraxa/taraxa-node:latest
+        restart: always
         ports:
             - "10003:10003"
+            - "10003:10003/udp"
             - "7778:7778"
             - "8778:8778"
         expose:
@@ -37,8 +43,10 @@ services:
     taraxa-node-testnet-3:
         container_name: taraxa-node-testnet-3
         image: taraxa/taraxa-node:latest
+        restart: always
         ports:
             - "10004:10004"
+            - "10004:10004/udp"
             - "7779:7779"
             - "8779:8779"
         expose:
@@ -55,8 +63,10 @@ services:
     taraxa-node-testnet-4:
         container_name: taraxa-node-testnet-4
         image: taraxa/taraxa-node:latest
+        restart: always
         ports:
             - "10005:10005"
+            - "10005:10005/udp"
             - "7780:7780"
             - "8780:8780"
         expose:
@@ -73,8 +83,10 @@ services:
     taraxa-node-testnet-5:
         container_name: taraxa-node-testnet-5
         image: taraxa/taraxa-node:latest
+        restart: always
         ports:
             - "10006:10006"
+            - "10006:10006/udp"
             - "7781:7781"
             - "8781:8781"
         expose:
@@ -88,6 +100,85 @@ services:
         networks:
             testnet_network:
                 ipv4_address: 172.28.1.5
+
+    mongodb:
+        container_name: mongodb
+        image: mongo:latest
+        ports:
+            - "27017:27017"
+        expose:
+            - "27017"
+        command: ["mongod"]
+        volumes: 
+            - ~/.mongodb:/data/db
+        networks:
+            - testnet_network
+
+    taraxa-explorer-backend:
+        container_name: taraxa-explorer-backend
+        image: taraxa/taraxa-explorer-backend:latest
+        ports:
+            - "8089:8089"
+        volumes:
+            - ./conf/explorer-backend.env:/app/.env
+        depends_on:
+            - taraxa-node-testnet-1
+            - mongodb
+        networks:
+            - testnet_network
+        command: ["python", "server/run.py"]
+    taraxa-explorer-backend-ws:
+        container_name: taraxa-explorer-backend-ws
+        image: taraxa/taraxa-explorer-backend:latest
+        ports:
+            - "9777:9777"
+        volumes:
+            - ./conf/explorer-backend.env:/app/.env
+        depends_on:
+            - taraxa-node-testnet-1
+            - mongodb
+        networks:
+            - testnet_network
+        command: ["python", "worker/run.py"]
+    taraxa-explorer-block-monitor:
+        container_name: taraxa-explorer-block-monitor
+        image: taraxa/taraxa-explorer-backend:latest
+        volumes:
+            - ./conf/explorer-backend.env:/app/.env
+        depends_on:
+            - taraxa-node-testnet-1
+            - mongodb
+        networks:
+            - testnet_network
+        command: ["python", "broker/run.py"]
+    taraxa-explorer-sync:
+        container_name: taraxa-explorer-sync
+        image: taraxa/taraxa-explorer-backend:latest
+        volumes:
+            - ./conf/explorer-backend.env:/app/.env
+        depends_on:
+            - taraxa-node-testnet-1
+            - mongodb
+        networks:
+            - testnet_network
+        command: ["python", "broker/manager.py"]
+    taraxa-explorer-frontend:
+        container_name: taraxa-explorer-frontend
+        image: taraxa/taraxa-explorer-frontend:latest
+        environment:
+            - HTTP_ADDRESS=127.0.0.1
+            - WS_ADDRESS=127.0.0.1
+            - HTTP_PORT=8089
+            - WS_PORT=9777
+        ports:
+            - "8080:80"
+        volumes:
+            - ./conf/explorer-backend.env:/app/.env
+        depends_on:
+            - taraxa-node-testnet-1
+            - mongodb
+        networks:
+            - testnet_network
             
 networks:
     testnet_network:
