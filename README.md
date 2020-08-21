@@ -77,3 +77,14 @@ npm i
 > ./scripts/createActivity.js
 ```
 
+### Configure MetaMask
+
+- Add custom network `Taraxa Testnet`, at `http://127.0.0.1:7777`
+- Send coins using the command above
+
+### Configure Remix IDE
+
+- Open [Remix IDE](https://remix.ethereum.org)
+- Compile sample contract
+- Configure environment `Injected Web3`
+- Use funded MetaMask wallet to deploy contracts

@@ -63,6 +63,12 @@ async function sendCoins(from, to, sk) {
     // return web3.eth.sendSignedTransaction(signed.rawTransaction);
 }
 
+function getDagBlockByLevel(level) {
+    const request = rpcRequest("taraxa_getDagBlockByLevel", [level.toString(16), false])
+    return axios.post('http://'+rpcHost+':7777/', request);
+
+}
+
 program.version(pkg.version);
 
 program
@@ -138,6 +144,23 @@ program
             console.error(e);
         }
         
+    })
+
+    program
+    .command('getDagBlockByLevel')
+    .description('get taraxa dag blocks by level')
+    .option('-l, --level <number>', 'level')
+    .action(async function (cmdObj) {
+        const level = Number(cmdObj.level) || 1;
+        try {
+        // const response = await getDagBlockByLevel(level);
+        // console.log(response.data);
+        const response = await taraxa.getDagBlockByLevel(level, false);
+        console.log(response);
+
+        } catch (e) {
+            console.error(e);
+        }
     })
 
 program.parse(process.argv)
