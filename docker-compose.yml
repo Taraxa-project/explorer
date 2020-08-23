@@ -16,7 +16,7 @@ services:
         command: ["--conf_taraxa", "/config/conf_taraxa.json", "--boot_node"]
         volumes:
             - ~/.taraxa-node/db/testnet1:/taraxadb
-            - ./conf/conf_taraxa1.json:/config/conf_taraxa.json
+            - ./dockerfiles/conf_taraxa1.json:/config/conf_taraxa.json
         networks:
             testnet_network:
                 ipv4_address: 172.28.1.1
@@ -31,10 +31,10 @@ services:
             - "8778:8778"
         expose:
             - "10003"
-        command: ["--conf_taraxa", "/config/conf_taraxa.json", "--boot_node"]
+        command: ["--conf_taraxa", "/config/conf_taraxa.json"]
         volumes:
             - ~/.taraxa-node/db/testnet2:/taraxadb
-            - ./conf/conf_taraxa2.json:/config/conf_taraxa.json
+            - ./dockerfiles/conf_taraxa2.json:/config/conf_taraxa.json
         depends_on:
             - taraxa-node-testnet-1
         networks:
@@ -51,10 +51,10 @@ services:
             - "8779:8779"
         expose:
             - "10004"
-        command: ["--conf_taraxa", "/config/conf_taraxa.json", "--boot_node"]
+        command: ["--conf_taraxa", "/config/conf_taraxa.json"]
         volumes:
             - ~/.taraxa-node/db/testnet3:/taraxadb
-            - ./conf/conf_taraxa3.json:/config/conf_taraxa.json
+            - ./dockerfiles/conf_taraxa3.json:/config/conf_taraxa.json
         depends_on:
             - taraxa-node-testnet-1
         networks:
@@ -71,10 +71,10 @@ services:
             - "8780:8780"
         expose:
             - "10005"
-        command: ["--conf_taraxa", "/config/conf_taraxa.json", "--boot_node"]
+        command: ["--conf_taraxa", "/config/conf_taraxa.json"]
         volumes:
             - ~/.taraxa-node/db/testnet4:/taraxadb
-            - ./conf/conf_taraxa4.json:/config/conf_taraxa.json
+            - ./dockerfiles/conf_taraxa4.json:/config/conf_taraxa.json
         depends_on:
             - taraxa-node-testnet-1
         networks:
@@ -91,10 +91,10 @@ services:
             - "8781:8781"
         expose:
             - "10006"
-        command: ["--conf_taraxa", "/config/conf_taraxa.json", "--boot_node"]
+        command: ["--conf_taraxa", "/config/conf_taraxa.json"]
         volumes:
             - ~/.taraxa-node/db/testnet5:/taraxadb
-            - ./conf/conf_taraxa5.json:/config/conf_taraxa.json
+            - ./dockerfiles/conf_taraxa5.json:/config/conf_taraxa.json
         depends_on:
             - taraxa-node-testnet-1
         networks:
@@ -114,54 +114,80 @@ services:
         networks:
             - testnet_network
 
-    taraxa-explorer-backend:
-        container_name: taraxa-explorer-backend
-        image: taraxa/taraxa-explorer-backend:latest
-        ports:
-            - "8089:8089"
-        volumes:
-            - ./conf/explorer-backend.env:/app/.env
-        depends_on:
-            - taraxa-node-testnet-1
-            - mongodb
-        networks:
-            - testnet_network
-        command: ["python", "server/run.py"]
-    taraxa-explorer-backend-ws:
-        container_name: taraxa-explorer-backend-ws
-        image: taraxa/taraxa-explorer-backend:latest
-        ports:
-            - "9777:9777"
-        volumes:
-            - ./conf/explorer-backend.env:/app/.env
-        depends_on:
-            - taraxa-node-testnet-1
-            - mongodb
-        networks:
-            - testnet_network
-        command: ["python", "worker/run.py"]
-    taraxa-explorer-block-monitor:
-        container_name: taraxa-explorer-block-monitor
-        image: taraxa/taraxa-explorer-backend:latest
-        volumes:
-            - ./conf/explorer-backend.env:/app/.env
-        depends_on:
-            - taraxa-node-testnet-1
-            - mongodb
-        networks:
-            - testnet_network
-        command: ["python", "broker/run.py"]
+    # taraxa-explorer-backend:
+    #     container_name: taraxa-explorer-backend
+    #     image: taraxa/taraxa-explorer-backend:latest
+    #     ports:
+    #         - "8089:8089"
+    #     volumes:
+    #         - ./dockerfiles/explorer-backend.env:/app/.env
+    #     depends_on:
+    #         - taraxa-node-testnet-1
+    #         - mongodb
+    #     networks:
+    #         - testnet_network
+    #     command: ["python", "server/run.py"]
+    # taraxa-explorer-backend-ws:
+    #     container_name: taraxa-explorer-backend-ws
+    #     image: taraxa/taraxa-explorer-backend:latest
+    #     ports:
+    #         - "9777:9777"
+    #     volumes:
+    #         - ./dockerfiles/explorer-backend.env:/app/.env
+    #     depends_on:
+    #         - taraxa-node-testnet-1
+    #         - mongodb
+    #     networks:
+    #         - testnet_network
+    #     command: ["python", "worker/run.py"]
+    # taraxa-explorer-block-monitor:
+    #     container_name: taraxa-explorer-block-monitor
+    #     image: taraxa/taraxa-explorer-backend:latest
+    #     volumes:
+    #         - ./dockerfiles/explorer-backend.env:/app/.env
+    #     depends_on:
+    #         - taraxa-node-testnet-1
+    #         - mongodb
+    #     networks:
+    #         - testnet_network
+    #     command: ["python", "broker/run.py"]
+    # taraxa-explorer-sync:
+    #     container_name: taraxa-explorer-sync
+    #     image: taraxa/taraxa-explorer-backend:latest
+    #     volumes:
+    #         - ./dockerfiles/explorer-backend.env:/app/.env
+    #     depends_on:
+    #         - taraxa-node-testnet-1
+    #         - mongodb
+    #     networks:
+    #         - testnet_network
+    #     command: ["python", "broker/manager.py"]
     taraxa-explorer-sync:
         container_name: taraxa-explorer-sync
-        image: taraxa/taraxa-explorer-backend:latest
-        volumes:
-            - ./conf/explorer-backend.env:/app/.env
+        build: 
+            context: .
+        environment:
+            - RPC_HTTP_PROVIDER=http://taraxa-node-testnet-1:7777
+            - RPC_WS_PROVIDER=ws://taraxa-node-testnet-1:8777
+            - MONGO_URI=mongodb://mongodb:27017/explorer-api-testnet
         depends_on:
             - taraxa-node-testnet-1
             - mongodb
         networks:
             - testnet_network
-        command: ["python", "broker/manager.py"]
+        command: ["node", "./worker/blockchain-sync"]
+    taraxa-explorer-api:
+        container_name: taraxa-explorer-api
+        build: 
+            context: .
+        environment:
+            - MONGO_URI=mongodb://mongodb:27017/explorer-api-testnet
+        depends_on:
+            - taraxa-node-testnet-1
+            - mongodb
+        networks:
+            - testnet_network
+        command: ["npm", "start"]
     taraxa-explorer-frontend:
         container_name: taraxa-explorer-frontend
         image: taraxa/taraxa-explorer-frontend:latest
@@ -173,7 +199,7 @@ services:
         ports:
             - "8080:80"
         volumes:
-            - ./conf/explorer-backend.env:/app/.env
+            - ./dockerfiles/explorer-backend.env:/app/.env
         depends_on:
             - taraxa-node-testnet-1
             - mongodb

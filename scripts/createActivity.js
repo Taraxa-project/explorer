@@ -13,11 +13,11 @@ web3.eth.defaultCommon = {
 };
 
 const nodeConfs = {
-    1: require('../conf/conf_taraxa1.json'),
-    2: require('../conf/conf_taraxa2.json'),
-    3: require('../conf/conf_taraxa3.json'),
-    4: require('../conf/conf_taraxa4.json'),
-    5: require('../conf/conf_taraxa5.json'),
+    1: require('../dockerfiles/conf_taraxa1.json'),
+    2: require('../dockerfiles/conf_taraxa2.json'),
+    3: require('../dockerfiles/conf_taraxa3.json'),
+    4: require('../dockerfiles/conf_taraxa4.json'),
+    5: require('../dockerfiles/conf_taraxa5.json'),
 }
 
 const node = {};

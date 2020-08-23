@@ -1,10 +1,10 @@
 {
-  "node_secret": "3800b2875669d9b2053c1aff9224ecfdc411423aac5b5a73d7a45ced1c3b9dcd",
-  "vrf_secret": "0b6627a6680e01cea3d9f36fa797f7f34e8869c3a526d9ed63ed8170e35542aad05dc12c1df1edc9f3367fba550b7971fc2de6c5998d8784051c5be69abc9644",
+  "node_secret": "f1261c9f09b0b483486c3b298f7c1ee001ff37e10023596528af93e34ba13f5f",
+  "vrf_secret": "dfa4e556e1107f1333c4aa4a71eb7faf745b227d30cad99640971ea6680e348e97485c51e033260894132aa326bb1c984a70ac7f4202315b90e669fb701a8f64",
   "db_path": "/taraxadb",
   "dag_processing_threads": 1,
-  "network_address": "0.0.0.0",
-  "network_listen_port": 10002,
+  "network_address": "172.28.1.3",
+  "network_listen_port": 10004,
   "network_simulated_delay": 0,
   "network_transaction_interval": 100,
   "network_bandwidth": 40,
@@ -16,32 +16,35 @@
   "network_boot_nodes": [
     {
       "id": "7b1fcf0ec1078320117b96e9e9ad9032c06d030cf4024a598347a4623a14a421d4f030cf25ef368ab394a45e920e14b57a259a09c41767dd50d1da27b627412a",
-      "ip": "127.0.0.1",
+      "ip": "172.28.1.1",
       "port": 10002
     }
   ],
   "network_id": "testnet",
-  "rpc_port": 7777,
-  "ws_port": 8777,
+  "rpc_port": 7779,
+  "ws_port": 8779,
   "pbft_manager": {
     "lambda_ms": 1000
   },
   "test_params": {
+    "max_transaction_queue_warn": 0,
+    "max_transaction_queue_drop": 0,
     "block_proposer": {
       "mode": "sortition",
       "shard": 1,
       "transaction_limit" : 0,
+      "min_proposal_delay": 100,
       "sortition_params": {
         "difficulty_bound":10,
         "lambda_bits":12
       }
     },
     "pbft": {
-      "lambda_ms_min" : 1000,
-      "committee_size" : 3,
-      "valid_sortition_coins" : 10000,
+      "lambda_ms_min" : 2000,
+      "committee_size" : 5,
+      "valid_sortition_coins" : 1000000000,
       "dag_blocks_size" : 100,
-      "ghost_path_move_back" : 2,
+      "ghost_path_move_back" : 1,
       "skip_periods" : 1,
       "run_count_votes" : 0
     }
@@ -51,7 +54,7 @@
       {
         "name": "standard",
         "on": true,
-        "verbosity": "ERROR",
+        "verbosity": "INFO",
         "channels": [
           {
             "name": "FULLND",
@@ -63,11 +66,11 @@
           },
           {
             "name": "PBFT_MGR",
-            "verbosity": "ERROR"
+            "verbosity": "INFO"
           },
           {
             "name": "PBFTSYNC",
-            "verbosity": "ERROR"
+            "verbosity": "INFO"
           },
           {
             "name": "RPC",
@@ -77,7 +80,7 @@
         "outputs": [
           {
             "type": "console",
-            "format": "%NodeId% %Channel% [%TimeStamp%] %SeverityStr%: %Message%"
+            "format": "%TimeStamp% %Channel% %SeverityStr% %Message%"
           }
         ]
       }
