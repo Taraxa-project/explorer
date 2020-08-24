@@ -10,63 +10,95 @@ const LogNetworkEvent = require('../models/log_network_event');
 const rpc = require('../lib/rpc');
 
 async function getChainState() {
-    const number =  await rpc.send(rpc.request('eth_blockNumber'));
-    const firstBlock = await rpc.send(rpc.request('eth_getBlockByNumber', [Number(0).toString(16), false]));
-    const lastBlock = await rpc.send(rpc.request('eth_getBlockByNumber', [number, false]));
+    const numberHex =  await rpc.send(rpc.request('eth_blockNumber'));
+    const number = parseInt(numberHex, 16);
+    const blocks = await Promise.all([
+        getBlockByNumber(0),
+        getBlockByNumber(number),
+        getDagBlocksByLevel(number)
+    ]);
+    const genesis = blocks[0];
+    const block = blocks[1];
+    const dagBlocks = blocks[2];
+
+    // console.log('Block height onchain', number);
+    // console.log('Genesis', genesis.hash);
+    // console.log(`Block ${number}`, block.hash);
 
     return {
-        number: parseInt(number, 16),
-        hash: lastBlock.hash,
-        genesis: firstBlock.hash
+        number: number,
+        hash: block.hash,
+        genesis: genesis.hash,
+        dagBlocks: dagBlocks.map((dagBlock => dagBlock.hash))
     };
 }
 
 async function getSyncState() {
-    const totalBlocks = await Block.countDocuments();
-    const genesisBlocks = await Block.find({number: 0});
-    const lastBlocks = await Block.find().sort({number: -1}).limit(1);
+    const blocks = await Promise.all([
+        Block.find({number: 0}),
+        Block.find().sort({number: -1}).limit(1)
+    ]);
+    const genesisBlocks = blocks[0];
+    const lastBlocks = blocks[1];
 
     const syncState = {
         hash: '',
         genesis: '',
-        number: totalBlocks - 1
+        number: -1,
+        dagBlocks: []
     };
 
+    let dagBlocks = [];
+
+    if (lastBlocks[0]) {
+        syncState.number = lastBlocks[0].number;
+        dagBlocks = await DagBlock.find({number: lastBlocks[0].number});
+    }
+
     if (genesisBlocks.length) {
-        if (genesisBlocks.length === 1) {
-            syncState.genesis = genesisBlocks[0]._id;
-        } else {
-            console.error(new Error('More than one genesis block in database'));
-        }
+        syncState.genesis = genesisBlocks[0]._id;
     }
 
     if (lastBlocks.length) {
-        syncState.genesis = genesisBlocks[0]._id;
         syncState.hash = lastBlocks[0]._id;
+        syncState.dagBlocks = dagBlocks.map((dagBlock => dagBlock._id));
     }
 
     return syncState;
 }
 
 async function dropChainData() {
-    await DagBlock.deleteMany();
-    await Block.deleteMany();
-    await Tx.deleteMany();
+    await Promise.all([
+        DagBlock.deleteMany(),
+        Block.deleteMany(),
+        Tx.deleteMany()
+    ]);
 }
 
-async function getBlockByNumber(number) {
-    const rpcBlock = await rpc.send(rpc.request('eth_getBlockByNumber', [number.toString(16), true]));
-    return rpcBlock;
+async function getBlockByNumber(number, fullTransactions = false) {
+    return rpc.send(rpc.request('eth_getBlockByNumber', [number.toString(16), fullTransactions]));
+}
+async function getDagBlocksByLevel(number, fullTransactions = false) {
+    return rpc.send(rpc.request('taraxa_getDagBlockByLevel', [number.toString(16), fullTransactions]));
 }
 
 async function sync() {
-    const chainState = await getChainState();
-    let syncState = await getSyncState();
+    const state = await Promise.all([
+        getChainState(),
+        getSyncState()
+    ]);
+    const chainState = state[0];
+    let syncState = state[1];
     let verifiedTip = false;
+
+    // console.log('chainState', chainState);
+    // console.log('syncState', syncState);
 
     // if genesis block changes, resync
     if (!chainState.genesis || chainState.genesis !== syncState.genesis) {
         console.log('New genesis block hash. Restarting chain sync.');
+        console.log('chainState', chainState);
+        console.log('syncState', syncState);
         await dropChainData();
         syncState = {
             number: -1,
@@ -79,9 +111,13 @@ async function sync() {
     while (!verifiedTip) {
         const chainBlockAtSyncNumber = await getBlockByNumber(syncState.number);
         if (chainBlockAtSyncNumber.hash !== syncState.hash) {
+            console.log('chainBlockAtSyncNumber', chainBlockAtSyncNumber);
+            console.log('syncState', syncState);
             console.log('Block hash at height', syncState.number, 'has changed. Re-org detected, walking back.');
-            await Block.deleteOne({_id: syncState.hash});
-            await Tx.deleteMany({blockHash: syncState.hash});
+            await Promise.all([
+                Block.deleteOne({_id: syncState.hash}),
+                Tx.deleteMany({blockHash: syncState.hash})
+            ]);
             syncState = await getSyncState();
         } else {
             verifiedTip = true;
@@ -90,11 +126,32 @@ async function sync() {
 
     // sync to tip
     while (syncState.number < chainState.number) {
-        const block = await getBlockByNumber(syncState.number + 1);
+        const allBlocks = await Promise.all([
+            getBlockByNumber(syncState.number + 1, true),
+            getDagBlocksByLevel(syncState.number + 1, false)
+        ]);
+        const block = allBlocks[0];
+        const dagBlocks = allBlocks[1];
+
         if (block.hash) {
             const started = new Date();
-            // save tx first
             const bulkTx = [];
+            const txHashes = [];
+
+            const notifications = [];
+
+            const minBlock = Object.assign({}, block);
+            minBlock.transactions = txHashes;
+
+            notifications.push({
+                insertOne: {
+                    document: {
+                        log: 'block',
+                        data: minBlock
+                    }
+                }
+            });
+
             for (const tx of block.transactions) {
                 tx.timestamp = block.timestamp;
                 bulkTx.push({
@@ -104,31 +161,7 @@ async function sync() {
                         upsert: true
                     }
                 });
-            }
-            if (bulkTx.length) {
-                await Tx.bulkWrite(bulkTx, {ordered: true});
-            }
-            await Block.findOneAndUpdate(
-                {_id: block.hash},
-                Block.fromRPC(block).toJSON(),
-                {
-                    upsert: true,
-                }
-            );
-
-            const minBlock = Object.assign({}, block);
-            minBlock.transactions = block.transactions.map(tx => tx.hash);
-
-            // event notifications
-            const notifications = [{
-                insertOne: {
-                    document: {
-                        log: 'block',
-                        data: minBlock
-                    }
-                }
-            }];
-            for (const tx of block.transactions) {
+                txHashes.push(tx.hash);
                 notifications.push({
                     insertOne: {
                         document: {
@@ -138,6 +171,35 @@ async function sync() {
                     }
                 });
             }
+
+            await Tx.bulkWrite(bulkTx, {ordered: true});
+            await Block.findOneAndUpdate(
+                {_id: block.hash},
+                Block.fromRPC(block).toJSON(),
+                {
+                    upsert: true,
+                }
+            );
+
+            for (const dagBlockRPC of dagBlocks) {
+                const dagBlock =  DagBlock.fromRPC(dagBlockRPC);
+                const existingDagBlock = await DagBlock.findOneAndUpdate(
+                    {_id: dagBlock._id},
+                    dagBlock.toJSON(),
+                    {upsert: true}
+                );
+                if (!existingDagBlock) {
+                    notifications.push({
+                        insertOne: {
+                            document: {
+                                log: 'dagBlock',
+                                data: dagBlockRPC
+                            }
+                        }
+                    });
+                }
+            }
+
             await LogNetworkEvent.bulkWrite(notifications, {ordered: true});
 
             // update sync state
@@ -148,6 +210,32 @@ async function sync() {
             const completed = new Date();
             console.log('Sync\'d block', syncState.number, syncState.hash, 'with', block.transactions.length, 'transactions, in', completed - started, 'ms');
         }
+    }
+
+    // check for new dag blocks at next level
+    const newDagBlocks = await getDagBlocksByLevel(syncState.number + 1, false);
+    const notifications = [];
+    for (const dagBlockRPC of newDagBlocks) {
+        const dagBlock =  DagBlock.fromRPC(dagBlockRPC);
+        const existingDagBlock = await DagBlock.findOneAndUpdate(
+            {_id: dagBlock._id},
+            dagBlock.toJSON(),
+            {upsert: true}
+        );
+        if (!existingDagBlock) {
+            notifications.push({
+                insertOne: {
+                    document: {
+                        log: 'dagBlock',
+                        data: dagBlockRPC
+                    }
+                }
+            });
+        }
+    }
+    if (notifications.length) {
+        console.log(` + ${notifications.length} new dag blocks at level`, syncState.number + 1);
+        await LogNetworkEvent.bulkWrite(notifications, {ordered: true});
     }
 
     //TODO: switch to websocket to get realtime events instead of polling

@@ -16,7 +16,6 @@ web3.eth.defaultCommon = {
 };
 
 const {taraxa, eth} = require('taraxa-js');
-const {once} = require('../models/tx');
 taraxa.set({ip: rpcHost, port: 7777});
 eth.set({ip: rpcHost, port: 7777});
 
@@ -75,16 +74,16 @@ async function sendCoins(from, to, sk) {
 
     await web3.eth.sendTransaction(tx)
         .once('sending', (payload) => {
-            console.log('Sending tx');
+            console.log('Sending tx', payload);
         })
         .once('sent', payload => {
-            console.log('Sent tx');
+            console.log('Sent tx', payload);
         })
         .once('transactionHash', hash => {
             console.log('transactionHash', hash);
         })
         .once('receipt', receipt => {
-            console.log('receipt');
+            console.log('receipt', receipt);
         })
         .on('error', error => {
             console.error(error);
@@ -162,10 +161,6 @@ program
         try {
             const blockNumberS = await web3.eth.getBlockNumber();
             console.log(blockNumberS);
-            // taraxa-node-testnet-1            | 2020-08-22 14:21:33.312431 RPC TRACE Read: {"jsonrpc": "2.0", "method": "eth_blockNumber", "params": [], "id": 1}
-            // taraxa-node-testnet-1            | 2020-08-22 14:21:33.312515 RPC TRACE Write: {"id":1,"jsonrpc":"2.0","result":"0x1e"}
-            // taraxa-node-testnet-1            | 2020-08-22 14:21:33.319463 RPC TRACE Read: {"jsonrpc": "2.0", "method": "taraxa_dagBlockLevel", "params": [], "id": 1}
-            // taraxa-node-testnet-1            | 2020-08-22 14:21:33.319541 RPC TRACE Write: {"id":1,"jsonrpc":"2.0","result":"0x1e"}
             const response = await blockNumber();
             console.log(response.data);
         } catch (e) {
@@ -184,7 +179,6 @@ program
         } catch (e) {
             console.error(e);
         }
-
     });
 
 program
@@ -223,7 +217,7 @@ program
     .description('get taraxa blocks by number')
     .option('-n, --number <number>', 'number')
     .action(async function (cmdObj) {
-        const number = cmdObj.number;
+        const number = Number(cmdObj.number).toString(16);
         try {
             const response = await getBlockByNumber(number, true);
             console.log(JSON.stringify(response.data, null, 2));
