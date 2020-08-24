@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 
 const Web3 = require('web3');
-const rpcHost = "127.0.0.1";
+const rpcHost = '127.0.0.1';
 
-const web3 = new Web3(new Web3.providers.HttpProvider('http://'+rpcHost+':7777'));
+const web3 = new Web3(new Web3.providers.HttpProvider(`http://${rpcHost}:7777`));
 web3.eth.defaultCommon = {
     customChain: {
-        name: 'taraxa-testnet', 
-        chainId: 1, 
+        name: 'taraxa-testnet',
+        chainId: 1,
         networkId: 1
     },
 };
@@ -18,11 +18,11 @@ const nodeConfs = {
     3: require('../dockerfiles/conf_taraxa3.json'),
     4: require('../dockerfiles/conf_taraxa4.json'),
     5: require('../dockerfiles/conf_taraxa5.json'),
-}
+};
 
 const node = {};
 
-for(let i = 1; i <= 5; i++){
+for (let i = 1; i <= 5; i++) {
     const privateKey = nodeConfs[i].node_secret;
 
     const account = web3.eth.accounts.privateKeyToAccount(privateKey);
@@ -30,15 +30,15 @@ for(let i = 1; i <= 5; i++){
 
     node[account.address] = {
         privateKey
-    }
+    };
 }
 
 let transactions = 0;
 
 async function sendRandomTransaction() {
-    const senderIndex = Math.floor(Math.random() * Object.keys(node).length)
+    const senderIndex = Math.floor(Math.random() * Object.keys(node).length);
     const sender = Object.keys(node)[senderIndex];
-    const receiverIndex = Math.floor(Math.random() * Object.keys(node).length)
+    const receiverIndex = Math.floor(Math.random() * Object.keys(node).length);
     const receiver = Object.keys(node)[receiverIndex];
 
     const balance = await web3.eth.getBalance(sender);
@@ -52,12 +52,12 @@ async function sendRandomTransaction() {
             // "gasPrice": 1000000000,
             chainId: 1,
             // nonce: 0
-        }
-    
+        };
+
         console.log('Sending Transaction ', transactions, tx);
 
         transactions++;
-    
+
         return web3.eth.sendTransaction(tx);
     }
 }
@@ -68,10 +68,10 @@ async function sendRandomTransaction() {
             const started = new Date();
             await sendRandomTransaction();
             const complete = new Date();
-            console.log('Completed in', complete - started, 'ms')
+            console.log('Completed in', complete - started, 'ms');
         } catch (e) {
             console.log(e);
         }
-        
+
     }
-})()
+})();

@@ -25,11 +25,11 @@ Tx.statics.fromRPC = function fromRPC(data) {
 
     const hexKeys = ['blockNumber', 'gas', 'gasPrice', 'nonce', 'value', 'timestamp'];
     hexKeys.forEach(key => {
-        if (key === 'timestamp') {
-            json[key] = json[key] * 1000;
-        }
         if (json[key]) {
             json[key] = parseInt(json[key], 16);
+        }
+        if (key === 'timestamp') {
+            json[key] = json[key] * 1000;
         }
     });
 
@@ -56,4 +56,4 @@ Tx.methods.toRPC = function toRPC() {
     return json;
 };
 
-module.exports = mongoose.model('Tx', Tx);
+module.exports = mongoose.models.Tx || mongoose.model('Tx', Tx);

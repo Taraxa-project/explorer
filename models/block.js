@@ -68,4 +68,4 @@ Block.methods.toRPC = function toRPC() {
     return json;
 };
 
-module.exports = mongoose.model('Block', Block);
+module.exports = mongoose.models.Block || mongoose.model('Block', Block);
