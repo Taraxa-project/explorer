@@ -1,27 +1,46 @@
-import { useRouter } from 'next/router'
-import useSwr from 'swr'
 import Link from 'next/link'
 
-const fetcher = (url) => fetch(url).then((res) => res.json())
+import config from 'config';
+import mongoose from 'mongoose'
+import Block from '../../models/block'
+import Tx from '../../models/tx'
 
-export default function User() {
-  const router = useRouter()
-  const { data, error } = useSwr(`/api/block/${router.query.id}?fullTransactions=true`, fetcher)
+export async function getServerSideProps(context) {
+    let props = {
+        data: {}
+    };
+    try {
+        mongoose.connection._readyState || await mongoose.connect(config.mongo.uri, config.mongo.options);
+        const block = await Block.findOne({_id: context.query.id}).populate({
+            path: 'transactions',
+            perDocumentLimit: 100
+        }).lean();
+        if (block) {
+            props.data = JSON.parse(JSON.stringify(block));
+        }
+    } catch (e) {
+        console.error('Error in Server Props: ' + e.message);
+    }
 
-  if (error) return <div>Failed to load block</div>
-  if (!data) return <div>Loading...</div>
+    return {
+      props, // will be passed to the page component as props
+    }
+}  
 
-  return <div>
-      <h1>Block {data._id}</h1>
-      {new Date(data.timestamp).toGMTString()}
-      <ul>
-      {data.transactions.map((tx) => (
-        <li key={tx._id}>
-          <Link href="/tx/[id]" as={`/tx/${tx._id}`}>
-            <a>{`Tx ${tx._id}`}</a>
-          </Link>
-        </li>
-      ))}
-    </ul>
-    </div>
+export default function BlockPage({data}) {
+    return <>
+       
+            <h1>Block {data._id}</h1>
+            {new Date(data.timestamp).toString()}
+            <ul>
+            {data.transactions.map((tx) => (
+                <li key={tx._id}>
+                    <Link href="/tx/[id]" as={`/tx/${tx._id}`}>
+                        <a>{`Tx ${tx._id}`}</a>
+                    </Link>
+                </li>
+            ))}
+            </ul>
+            
+    </>
 }

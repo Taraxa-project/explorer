@@ -10,7 +10,6 @@ module.exports = {
             useFindAndModify: false
         }
     },
-    port: process.env.PORT || 5000,
     taraxa: {
         node: {
             http: process.env.RPC_HTTP_PROVIDER || 'http://localhost:7777',

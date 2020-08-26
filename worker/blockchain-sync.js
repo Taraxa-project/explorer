@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 const config = require('config');
 const mongoose = require('mongoose');
 
@@ -97,8 +99,8 @@ async function sync() {
     // if genesis block changes, resync
     if (!chainState.genesis || chainState.genesis !== syncState.genesis) {
         console.log('New genesis block hash. Restarting chain sync.');
-        console.log('chainState', chainState);
-        console.log('syncState', syncState);
+        // console.log('chainState', chainState);
+        // console.log('syncState', syncState);
         await dropChainData();
         syncState = {
             number: -1,
@@ -111,9 +113,9 @@ async function sync() {
     while (!verifiedTip) {
         const chainBlockAtSyncNumber = await getBlockByNumber(syncState.number);
         if (chainBlockAtSyncNumber.hash !== syncState.hash) {
-            console.log('chainBlockAtSyncNumber', chainBlockAtSyncNumber);
-            console.log('syncState', syncState);
-            console.log('Block hash at height', syncState.number, 'has changed. Re-org detected, walking back.');
+            // console.log('chainBlockAtSyncNumber', chainBlockAtSyncNumber);
+            // console.log('syncState', syncState);
+            // console.log('Block hash at height', syncState.number, 'has changed. Re-org detected, walking back.');
             await Promise.all([
                 Block.deleteOne({_id: syncState.hash}),
                 Tx.deleteMany({blockHash: syncState.hash})

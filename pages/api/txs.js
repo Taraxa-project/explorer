@@ -16,8 +16,13 @@ export default async function handler(req, res) {
     let sortOrder = req.query.reverse ? -1 : 1;
     let blockHash = req.query.blockHash;
 
+    const query = {};
+    if (blockHash) {
+        query.blockHash = blockHash;
+    }
+
     try {
-        const txs = await Tx.find({blockHash}).limit(limit).skip(skip).sort({timestamp: sortOrder ? -1 : 1});
+        const txs = await Tx.find(query).limit(limit).skip(skip).sort({timestamp: sortOrder ? -1 : 1});
         res.json(txs);
     } catch (e) {
         console.error(e);

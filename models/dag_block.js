@@ -53,4 +53,4 @@ DAGBlock.methods.toRPC = function toRPC() {
     return json;
 };
 
-module.exports = mongoose.model('DAGBlock', DAGBlock);
+module.exports = mongoose.models?.DAGBlock || mongoose.model('DAGBlock', DAGBlock);

@@ -56,4 +56,4 @@ Tx.methods.toRPC = function toRPC() {
     return json;
 };
 
-module.exports = mongoose.models.Tx || mongoose.model('Tx', Tx);
+module.exports = mongoose.models?.Tx || mongoose.model('Tx', Tx);

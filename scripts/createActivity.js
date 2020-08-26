@@ -4,13 +4,13 @@ const Web3 = require('web3');
 const rpcHost = '127.0.0.1';
 
 const web3 = new Web3(new Web3.providers.HttpProvider(`http://${rpcHost}:7777`));
-web3.eth.defaultCommon = {
-    customChain: {
-        name: 'taraxa-testnet',
-        chainId: 1,
-        networkId: 1
-    },
-};
+// web3.eth.defaultCommon = {
+//     customChain: {
+//         name: 'taraxa-testnet',
+//         chainId: null,
+//         networkId: 1
+//     },
+// };
 
 const nodeConfs = {
     1: require('../dockerfiles/conf_taraxa1.json'),
@@ -26,10 +26,11 @@ for (let i = 1; i <= 5; i++) {
     const privateKey = nodeConfs[i].node_secret;
 
     const account = web3.eth.accounts.privateKeyToAccount(privateKey);
-    web3.eth.accounts.wallet.add(account);
 
     node[account.address] = {
-        privateKey
+        account,
+        privateKey,
+        nonce: 0
     };
 }
 
@@ -50,7 +51,7 @@ async function sendRandomTransaction() {
             value: Math.round(Number(balance) * .1),
             gas: 21000,
             // "gasPrice": 1000000000,
-            chainId: 1,
+            // chainId: null,
             // nonce: 0
         };
 
@@ -58,7 +59,16 @@ async function sendRandomTransaction() {
 
         transactions++;
 
-        return web3.eth.sendTransaction(tx);
+        // return web3.eth.sendTransaction(tx);
+        const signed = await node[sender].account.signTransaction(tx);
+        console.log('signed tx', signed);
+        return web3.eth.sendSignedTransaction(signed.rawTransaction);
+    }
+}
+
+async function sendRandomTransactions() {
+    for (const address of Object.keys(node)){
+        
     }
 }
 
