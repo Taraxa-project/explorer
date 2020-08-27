@@ -1,0 +1,49 @@
+html, body {
+  margin: 0px;
+  padding: 0px;
+}
+
+.site-layout-content {
+  background: #fff;
+  padding: 10px;
+  margin: 0px;
+  min-height: 700px;
+  overflow: scroll;
+}
+
+.site-layout-footer {
+  background: #fff;
+  height: 32px;
+  overflow: scroll;
+  text-align: center
+}
+
+a,
+a:hover,
+.nav-link,
+.nav-link:hover {
+  color: #20a960;
+  font-size: 1.1rem;
+}
+
+.navbar-dark .navbar-nav .nav-link,
+.navbar-dark .navbar-nav .nav-link:hover
+ {
+  color: #fff;
+  font-size: 1.1rem;
+}
+
+h1 {
+  font-size: 1.5rem;
+}
+
+ul {
+  margin: 0px;
+  padding-left: 14px;
+}
+
+.long-hash {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 140px;
+}
