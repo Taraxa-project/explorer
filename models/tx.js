@@ -5,13 +5,13 @@ const Tx = new mongoose.Schema({
     blockHash: {type: String, ref: 'Block', index: true},
     blockNumber: {type: Number, index: true},
     from: {type: String, index: true},
-    gas: {type: Number},
-    gasPrice: {type: Number},
+    gas: {type: Number, default: 0},
+    gasPrice: {type: Number, default: 0},
     input: {type: String},
-    nonce: {type: Number},
+    nonce: {type: Number, default: 0},
     to: {type: String, index: true},
-    transactionIndex: {type: Number},
-    value: {type: Number},
+    transactionIndex: {type: Number, default: 0},
+    value: {type: Number, default: 0},
 
     //not in rpc
     timestamp: {type: Date, default: Date.now} //override with block timestamp on finality

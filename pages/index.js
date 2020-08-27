@@ -57,7 +57,7 @@ export default function Index({blocks, txs}) {
                         <a>{`${tx._id}`}</a>
                     </Link>
                     </div> 
-                    Value: {tx.value} - {moment(new Date(tx.timestamp)).fromNow()}
+                    Value: {tx.value.toLocaleString()} - {moment(new Date(tx.timestamp)).fromNow()}
                   </ListGroupItem>
                 ))}
               </ListGroup>

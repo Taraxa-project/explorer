@@ -9,6 +9,9 @@ const Tx = require('../models/tx');
 
 const LogNetworkEvent = require('../models/log_network_event');
 
+const {fromEvent} = require('rxjs');
+const WebSocket = require('ws');
+
 const rpc = require('../lib/rpc');
 
 async function getChainState() {
@@ -84,7 +87,103 @@ async function getDagBlocksByLevel(number, fullTransactions = false) {
     return rpc.send(rpc.request('taraxa_getDagBlockByLevel', [number.toString(16), fullTransactions]));
 }
 
-async function sync() {
+async function realtimeSync() {
+    const topics = ['newPendingTransactions', 'newDagBlocks', 'newDagBlocksFinalized', 'newPbftBlocks', 'newHeads'];
+    let id = 0;
+    let subscriptionRequests = [];
+    let subscribed = {};
+    const ws = new WebSocket(config.taraxa.node.ws);
+    fromEvent(ws, 'message')
+    .subscribe(async function (o) {
+        try {
+            const jsonRpc = JSON.parse(o.data);
+            // handle subscription request responses
+            if (subscriptionRequests[jsonRpc.id]) {
+                console.log(`Subscribed to ${subscriptionRequests[jsonRpc.id].topic}`);
+                subscribed[jsonRpc.result] = subscriptionRequests[jsonRpc.id].topic;
+            // handle subscription data
+            } else if (subscribed[jsonRpc.params?.subscription]) {
+                console.log(subscribed[jsonRpc.params.subscription], jsonRpc.params.result);
+                switch(subscribed[jsonRpc.params.subscription]) {
+                    case 'newPendingTransactions':
+                        const tx = Tx.fromRPC(jsonRpc.params.result).toJSON()
+                        await Tx.findOneAndUpdate(
+                            {_id: tx._id},
+                            tx,
+                            {
+                                upsert: true,
+                            }
+                        )
+                        await new LogNetworkEvent({
+                            name: 'tx',
+                            data: jsonRpc.params.result
+                        }).save();
+                        break;
+                    case 'newDagBlocks':
+                        const dagBlock = DagBlock.fromRPC(jsonRpc.params.result).toJSON();
+                        await DagBlock.findOneAndUpdate(
+                            {_id: dagBlock._id},
+                            dagBlock,
+                            {upsert: true}
+                        )
+                        await new LogNetworkEvent({
+                            name: 'dagBlock',
+                            data: jsonRpc.params.result
+                        }).save();
+                        break;
+                    case 'newDagBlocksFinalized':
+                        const dagBlockFinalized = DagBlock.fromRPC(jsonRpc.params.result).toJSON();
+                        await DagBlock.findOneAndUpdate(
+                            {_id: dagBlockFinalized._id},
+                            dagBlockFinalized,
+                            {upsert: true}
+                        )
+                        await new LogNetworkEvent({
+                            name: 'dagBlock',
+                            data: jsonRpc.params.result
+                        }).save();
+                        break;
+                    case 'newPbftBlocks':
+                        const block = Block.fromRPC(jsonRpc.params.result).toJSON();
+                        await Block.findOneAndUpdate(
+                            {_id: block._id},
+                            block,
+                            {upsert: true}
+                        )
+                        await new LogNetworkEvent({
+                            name: 'block',
+                            data: jsonRpc.params.result
+                        }).save();
+                        break;
+                    default:
+                        console.log('Not persisting data for', subscribed[jsonRpc.params.subscription] )
+                        break;
+                }
+            } else {
+                console.log('Ignored message:', jsonRpc);
+            }
+        } catch (e) {
+            console.error(e, o.data);
+        }
+    });
+
+    ws.on('open', function () {
+        topics.forEach((topic) => {
+            subscriptionRequests[id.toString(16)] = {topic};
+            const request = rpc.request('eth_subscribe', [topic], id);
+            ws.send(JSON.stringify(request));
+            // console.log('Request', request);
+            id ++;
+        });
+    });
+
+    ws.on('close', function close() {
+        console.log('socket disconnected');
+        process.exit(1);
+    });
+}
+
+async function historicalSync() {
     const state = await Promise.all([
         getChainState(),
         getSyncState()
@@ -143,6 +242,32 @@ async function sync() {
             const notifications = [];
 
             const minBlock = Object.assign({}, block);
+
+            // SPECIAL CASE GENESIS BLOCK
+            if (block.number === '0x0') {
+                const fakeTx = new Tx({
+                    // _id: '0x0000000000000000000000000000000000000000000000000000000000000000',
+                    _id: 'GENESIS',
+                    blockHash: block.hash,
+                    blockNumber: block.number,
+                    to: '0xde2b1203d72d3549ee2f733b00b2789414c7cea5',
+                    value: 9007199254740991
+
+                })
+                txHashes.push(fakeTx._id);
+                bulkTx.push({
+                    updateOne: {
+                        filter: {_id: fakeTx._id},
+                        update: fakeTx.toJSON(),
+                        upsert: true
+                    }
+                });
+            }
+
+            for (const tx of block.transactions) {
+                txHashes.push(tx.hash);
+            }
+
             minBlock.transactions = txHashes;
 
             notifications.push({
@@ -163,7 +288,6 @@ async function sync() {
                         upsert: true
                     }
                 });
-                txHashes.push(tx.hash);
                 notifications.push({
                     insertOne: {
                         document: {
@@ -177,7 +301,7 @@ async function sync() {
             await Tx.bulkWrite(bulkTx, {ordered: true});
             await Block.findOneAndUpdate(
                 {_id: block.hash},
-                Block.fromRPC(block).toJSON(),
+                Block.fromRPC(minBlock).toJSON(),
                 {
                     upsert: true,
                 }
@@ -210,7 +334,7 @@ async function sync() {
             syncState.hash = block.hash;
 
             const completed = new Date();
-            console.log('Sync\'d block', syncState.number, syncState.hash, 'with', block.transactions.length, 'transactions, in', completed - started, 'ms');
+            console.log('Sync\'d block', syncState.number, syncState.hash, 'with', txHashes.length, 'transactions, in', completed - started, 'ms');
         }
     }
 
@@ -239,29 +363,16 @@ async function sync() {
         console.log(` + ${notifications.length} new dag blocks at level`, syncState.number + 1);
         await LogNetworkEvent.bulkWrite(notifications, {ordered: true});
     }
-
-    //TODO: switch to websocket to get realtime events instead of polling
-    setTimeout(async () => {
-        await doSync();
-    }, 10 * 1000);
-}
-
-async function doSync() {
-    try {
-        await sync();
-    } catch (e) {
-        console.error(e);
-        process.exit(1);
-    }
 }
 
 (async () => {
     try {
         await mongoose.connect(config.mongo.uri, config.mongo.options);
+        await historicalSync();
+        // switch to realtime events from socket
+        realtimeSync();
     } catch (e) {
         console.error(e);
         process.exit(1);
     }
-
-    await doSync();
 })();

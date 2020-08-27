@@ -3,5 +3,14 @@
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
   "/": "pages/index.js",
-  "/txs": "pages/txs.js"
+  "/block/[id]": "pages/block/[id].js",
+  "/tx/[id]": "pages/tx/[id].js",
+  "/blocks": "pages/blocks.js",
+  "/api/blocks": "pages/api/blocks.js",
+  "/txs": "pages/txs.js",
+  "/api/txs": "pages/api/txs.js",
+  "/accounts": "pages/accounts.js",
+  "/api/accounts": "pages/api/accounts.js",
+  "/dag_blocks": "pages/dag_blocks.js",
+  "/api/dag_blocks": "pages/api/dag_blocks.js"
 }

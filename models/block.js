@@ -10,7 +10,7 @@ const Block = new mongoose.Schema({
     miner: {type: String},
     mixHash: {type: String},
     nonce: {type: Number},
-    number: {type: Number, unique: true},
+    number: {type: Number},
     parentHash: {type: String},
     receiptsRoot: {type: String},
     sha3Uncles: {type: String},

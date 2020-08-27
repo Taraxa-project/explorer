@@ -33,12 +33,20 @@ function MyApp({Component, pageProps}) {
                 <Nav className="mr-auto"></Nav>
                 <Nav>
 
+                <Link href="/dag_blocks" as={`/dag_blocks`}>
+                    <Nav.Link href="/dag_blocks">DAG</Nav.Link>
+                </Link>
+
                 <Link href="/blocks" as={`/blocks`}>
                     <Nav.Link href="/blocks">Blocks</Nav.Link>
                 </Link>
                 
                 <Link href="/txs" as={`/txs`}>
                     <Nav.Link href="/txs">Transactions</Nav.Link>
+                </Link>
+
+                <Link href="/accounts" as={`/accounts`}>
+                    <Nav.Link href="/accounts">Accounts</Nav.Link>
                 </Link>
                 </Nav>
             </Navbar.Collapse>
@@ -49,7 +57,7 @@ function MyApp({Component, pageProps}) {
         </div>
     
         <div className="site-layout-footer">
-            Taraxa.io ©2020
+            © 2020 Taraxa.io
         </div>
         
     </>

@@ -29,6 +29,31 @@
       "static/chunks/webpack.js",
       "static/chunks/pages/_error.js"
     ],
+    "/accounts": [
+      "static/chunks/main.js",
+      "static/chunks/webpack.js",
+      "static/chunks/pages/accounts.js"
+    ],
+    "/block/[id]": [
+      "static/chunks/main.js",
+      "static/chunks/webpack.js",
+      "static/chunks/pages/block/[id].js"
+    ],
+    "/blocks": [
+      "static/chunks/main.js",
+      "static/chunks/webpack.js",
+      "static/chunks/pages/blocks.js"
+    ],
+    "/dag_blocks": [
+      "static/chunks/main.js",
+      "static/chunks/webpack.js",
+      "static/chunks/pages/dag_blocks.js"
+    ],
+    "/tx/[id]": [
+      "static/chunks/main.js",
+      "static/chunks/webpack.js",
+      "static/chunks/pages/tx/[id].js"
+    ],
     "/txs": [
       "static/chunks/main.js",
       "static/chunks/webpack.js",

@@ -34,11 +34,15 @@ export default function TxPage({data}) {
                     <a>{`Block ${data.blockHash}`}</a>
                 </Link>
                 </li>
-                <li>
-                    {`From ${data.from}`}
-                </li>
-                <li>
-                    {`To ${data.to}`}
+                {data.from ? (<li>From{' '}
+                <Link href="/address/[id]" as={`/address/${data.to}`}>
+                    <a>{`${data.from}`}</a>
+                </Link>
+                </li>) : ''}
+                <li>To{' '}
+                <Link href="/address/[id]" as={`/address/${data.to}`}>
+                    <a>{`${data.to}`}</a>
+                </Link>
                 </li>
                 
                 <li>
@@ -48,7 +52,7 @@ export default function TxPage({data}) {
                     {`Gas Price ${data.gasPrice}`}
                 </li>
                 <li>
-                    {`Value ${data.value}`}
+                    {`Value ${data.value.toLocaleString()}`}
                 </li>
             </ul>
     </>
