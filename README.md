@@ -1,29 +1,16 @@
-# Taraxa Dev Testnet
+# Taraxa Block Explorer
 
 ## Starting a Private Taraxa Testnet
 
 This project uses docker images of the following:
 - [Taraxa-Node](https://github.com/Taraxa-project/taraxa-node)
-- [Taraxa Explorer API](https://github.com/Taraxa-project/taraxa-explorer-backend)
-- [Taraxa Explorer UI](https://github.com/Taraxa-project/taraxa-explorer-frontend)
-
-Build them as necessary:
-
-```
-git clone git@github.com:Taraxa-project/taraxa-node.git
-git clone git@github.com:Taraxa-project/taraxa-explorer-backend.git
-git clone git@github.com:Taraxa-project/taraxa-explorer-frontend.git
-
-docker build -t taraxa/taraxa-node:latest ./taraxa-node
-docker build -t taraxa/taraxa-explorer-backend:latest ./taraxa-explorer-backend
-docker build -t taraxa/taraxa-explorer-frontend:latest ./taraxa-explorer-frontend
-```
+- [MongoDB](https://www.mongodb.com)
 
 Run Everything:
-```
-docker-compose up -d
-```
 
+```
+docker-compose up
+```
 
 This will start 5 taraxa nodes:
 
@@ -35,18 +22,20 @@ This will start 5 taraxa nodes:
 
 Node 1 is configured as a `boot node`, and the other 4 are configured to connect to it on startup.
 
-This will also start MongoDB, Taraxa Explorer Backend, and Taraxa Explorer Frontend
+1. MongoDB will be running on port 27017
+2. Taraxa Explorer will be running at [http://localhost:3000](http://localhost:3000)
+3. Taraxa Explorer Blockchain Sync daemon will start syncing the chain data to MongoDB
+4. Taraxa Explorer Websocket Service will start, providing real time data to the UI
 
-1. Taraxa Frontend will be running at [http://localhost:8080](http://localhost:8080)
-2. Taraxa Backend Swagger UI will be running at [http://localhost:8089/apidocs/](http://localhost:8089/apidocs/)
+# Generating blockchain transactions, blocks, etc
 
-## Install dependencies to test RPC
+## Install dev dependencies to use scripts for RPC commands
 
 ```
 npm i
 ```
 
-### RPC Test Scripts
+### RPC Scripts
 
 *Note: Scripts run against the boot node*
 
