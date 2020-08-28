@@ -12,17 +12,17 @@ const taraxa = new Web3(new Web3.providers.HttpProvider(`http://${rpcHost}:7777`
 //     },
 // };
 
-const nodeConfs = {
-    1: require('../dockerfiles/conf_taraxa1.json'),
-    2: require('../dockerfiles/conf_taraxa2.json'),
-    3: require('../dockerfiles/conf_taraxa3.json'),
-    4: require('../dockerfiles/conf_taraxa4.json'),
-    5: require('../dockerfiles/conf_taraxa5.json'),
-};
+const nodeConfs = [
+    require('../dockerfiles/conf_taraxa1.json'),
+    require('../dockerfiles/conf_taraxa2.json'),
+    require('../dockerfiles/conf_taraxa3.json'),
+    require('../dockerfiles/conf_taraxa4.json'),
+    require('../dockerfiles/conf_taraxa5.json')
+];
 
 const node = {};
 
-for (let i = 1; i <= 5; i++) {
+for (let i = 0; i < nodeConfs.length; i++) {
     const privateKey = nodeConfs[i].node_secret;
 
     const account = taraxa.accounts.privateKeyToAccount(privateKey);
@@ -42,46 +42,66 @@ async function sendRandomTransaction() {
     const receiverIndex = Math.floor(Math.random() * Object.keys(node).length);
     const receiver = Object.keys(node)[receiverIndex];
 
-    const balance = await taraxa.getBalance(sender);
+    const balance = node[sender].balance;
 
-    if (Number(balance)) {
-        const tx = {
-            from: sender,
-            to: receiver,
-            value: Math.round(Number(balance) * .1),
-            gas: 21000,
-            // "gasPrice": 1000000000,
-            // chainId: null,
-            // nonce: 0
-        };
+    if (balance) {
+        const value = Math.round(balance * .1);
+        if (value) {
+            const tx = {
+                from: sender,
+                to: receiver,
+                value,
+                gas: 21000,
+                gasPrice: 0,
+                chainId: 1,
+                nonce: node[sender].nonce
+            };
 
-        console.log('Sending Transaction ', transactions, tx);
-
-        transactions++;
-
-        // return taraxa.sendTransaction(tx);
-        const signed = await node[sender].account.signTransaction(tx);
-        console.log('signed tx', signed);
-        return taraxa.sendSignedTransaction(signed.rawTransaction);
+            node[sender].balance = node[sender].balance - value;
+            node[receiver].balance = node[receiver].balance + value;
+            node[sender].nonce = node[sender].nonce + 1;
+    
+            transactions++;
+    
+            // return taraxa.sendTransaction(tx);
+            const signed = await node[sender].account.signTransaction(tx);
+            return new Promise((resolve, reject) => {
+                taraxa.sendSignedTransaction(signed.rawTransaction)
+                    .once('sent', payload => {
+                        console.log('Sent tx', payload);
+                        resolve(payload);
+                    })
+                    .once('error', error => {
+                        console.error(error);
+                        reject(error);
+                    })
+            });
+        }
     }
 }
 
-async function sendRandomTransactions() {
-    for (const address of Object.keys(node)){
-        
+async function getStartingBalances() {
+    for(const address of Object.keys(node)) {
+        const balance = await taraxa.getBalance(address);
+        node[address].balance = Number(balance);
+    }
+}
+
+async function getStartingNonces() {
+    for(const address of Object.keys(node)) {
+        const nonce = await taraxa.getTransactionCount(address, 'pending');
+        node[address].nonce = Number(nonce);
     }
 }
 
 (async () => {
+    await getStartingBalances()
+    await getStartingNonces();
     while (true) {
         try {
-            const started = new Date();
             await sendRandomTransaction();
-            const complete = new Date();
-            console.log('Completed in', complete - started, 'ms');
         } catch (e) {
             console.log(e);
         }
-
     }
 })();
