@@ -262,6 +262,14 @@ async function historicalSync() {
                         upsert: true
                     }
                 });
+                notifications.push({
+                    insertOne: {
+                        document: {
+                            log: 'tx',
+                            data: fakeTx.toJSON()
+                        }
+                    }
+                });
             }
 
             for (const tx of block.transactions) {
@@ -274,17 +282,18 @@ async function historicalSync() {
                 insertOne: {
                     document: {
                         log: 'block',
-                        data: minBlock
+                        data: Block.fromRPC(minBlock).toJSON()
                     }
                 }
             });
 
             for (const tx of block.transactions) {
                 tx.timestamp = block.timestamp;
+                const t = Tx.fromRPC(tx).toJSON()
                 bulkTx.push({
                     updateOne: {
                         filter: {_id: tx.hash},
-                        update: Tx.fromRPC(tx).toJSON(),
+                        update: t,
                         upsert: true
                     }
                 });
@@ -292,7 +301,7 @@ async function historicalSync() {
                     insertOne: {
                         document: {
                             log: 'tx',
-                            data: tx
+                            data: t
                         }
                     }
                 });
@@ -309,9 +318,10 @@ async function historicalSync() {
 
             for (const dagBlockRPC of dagBlocks) {
                 const dagBlock =  DagBlock.fromRPC(dagBlockRPC);
+                const d = dagBlock.toJSON();
                 const existingDagBlock = await DagBlock.findOneAndUpdate(
                     {_id: dagBlock._id},
-                    dagBlock.toJSON(),
+                    d,
                     {upsert: true}
                 );
                 if (!existingDagBlock) {
@@ -319,7 +329,7 @@ async function historicalSync() {
                         insertOne: {
                             document: {
                                 log: 'dagBlock',
-                                data: dagBlockRPC
+                                data: d
                             }
                         }
                     });
