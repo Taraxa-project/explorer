@@ -88,7 +88,7 @@ async function getDagBlocksByLevel(number, fullTransactions = false) {
 }
 
 async function realtimeSync() {
-    const topics = ['newPendingTransactions', 'newDagBlocks', 'newDagBlocksFinalized', 'newPbftBlocks', 'newHeads'];
+    const topics = ['newDagBlocks', 'newDagBlocksFinalized', 'newPbftBlocks', 'newHeads'];
     let id = 0;
     let subscriptionRequests = [];
     let subscribed = {};
@@ -105,20 +105,6 @@ async function realtimeSync() {
             } else if (subscribed[jsonRpc.params?.subscription]) {
                 console.log(subscribed[jsonRpc.params.subscription], jsonRpc.params.result);
                 switch(subscribed[jsonRpc.params.subscription]) {
-                    case 'newPendingTransactions':
-                        const tx = Tx.fromRPC(jsonRpc.params.result).toJSON()
-                        await Tx.findOneAndUpdate(
-                            {_id: tx._id},
-                            tx,
-                            {
-                                upsert: true,
-                            }
-                        )
-                        await new LogNetworkEvent({
-                            name: 'tx',
-                            data: jsonRpc.params.result
-                        }).save();
-                        break;
                     case 'newDagBlocks':
                         const dagBlock = DagBlock.fromRPC(jsonRpc.params.result).toJSON();
                         await DagBlock.findOneAndUpdate(
@@ -127,33 +113,25 @@ async function realtimeSync() {
                             {upsert: true}
                         )
                         await new LogNetworkEvent({
-                            name: 'dagBlock',
-                            data: jsonRpc.params.result
+                            name: 'dag-block',
+                            data: dagBlock.toJSON()
                         }).save();
                         break;
                     case 'newDagBlocksFinalized':
-                        const dagBlockFinalized = DagBlock.fromRPC(jsonRpc.params.result).toJSON();
+                        const dagBlockFinalized = DagBlock.fromRPC(jsonRpc.params.result.block).toJSON();
+                        dagBlockFinalized.period = jsonRpc.params.result.period;
                         await DagBlock.findOneAndUpdate(
                             {_id: dagBlockFinalized._id},
                             dagBlockFinalized,
                             {upsert: true}
                         )
                         await new LogNetworkEvent({
-                            name: 'dagBlock',
-                            data: jsonRpc.params.result
+                            name: 'dag-block-finalized',
+                            data: dagBlockFinalized.toJSON()
                         }).save();
                         break;
                     case 'newPbftBlocks':
-                        const block = Block.fromRPC(jsonRpc.params.result).toJSON();
-                        await Block.findOneAndUpdate(
-                            {_id: block._id},
-                            block,
-                            {upsert: true}
-                        )
-                        await new LogNetworkEvent({
-                            name: 'block',
-                            data: jsonRpc.params.result
-                        }).save();
+                        await historicalSync();
                         break;
                     default:
                         console.log('Not persisting data for', subscribed[jsonRpc.params.subscription] )
@@ -328,7 +306,7 @@ async function historicalSync() {
                     notifications.push({
                         insertOne: {
                             document: {
-                                log: 'dagBlock',
+                                log: 'dag-block',
                                 data: d
                             }
                         }
@@ -362,7 +340,7 @@ async function historicalSync() {
             notifications.push({
                 insertOne: {
                     document: {
-                        log: 'dagBlock',
+                        log: 'dag-block',
                         data: dagBlockRPC
                     }
                 }

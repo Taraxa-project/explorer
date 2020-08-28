@@ -15,7 +15,7 @@ function WebsocketContainer({addNewBlock, addNewDagBlock}) {
           console.log('socket connected')
       }
       window.ws.onerror = error => {
-        console.error(error)
+          console.error(error)
       }
       window.ws.onmessage = evt => {
           // listen to data sent from the websocket server
@@ -23,8 +23,10 @@ function WebsocketContainer({addNewBlock, addNewDagBlock}) {
           console.log(message)
           if (message.log === 'block') {
               addNewBlock(message.data);
-          } else if (message.log === 'dagBlock') {
+          } else if (message.log === 'dag-block') {
               addNewDagBlock(message.data);
+          } else if (message.log === 'dag-block-finalized') {
+              finalizeDagBlock(message.data);
           }
       }
   
@@ -32,7 +34,7 @@ function WebsocketContainer({addNewBlock, addNewDagBlock}) {
           console.log('socket disconnected')
       }
     }
-});
+  })
 
   return (
       <>
