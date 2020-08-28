@@ -83,7 +83,10 @@ async function dropChainData() {
 async function getBlockByNumber(number, fullTransactions = false) {
     return rpc.send(rpc.request('eth_getBlockByNumber', [number.toString(16), fullTransactions]));
 }
-async function getDagBlocksByLevel(number, fullTransactions = false) {
+async function getDagBlocksByLevel(number, fullTransactions = false, returnEmptySet = false) {
+    if (returnEmptySet) {
+        return [];
+    }
     return rpc.send(rpc.request('taraxa_getDagBlockByLevel', [number.toString(16), fullTransactions]));
 }
 
@@ -131,7 +134,7 @@ async function realtimeSync() {
                         }).save();
                         break;
                     case 'newPbftBlocks':
-                        await historicalSync();
+                        await historicalSync(true);
                         break;
                     default:
                         console.log('Not persisting data for', subscribed[jsonRpc.params.subscription] )
@@ -142,6 +145,7 @@ async function realtimeSync() {
             }
         } catch (e) {
             console.error(e, o.data);
+            process.exit(1);
         }
     });
 
@@ -161,7 +165,7 @@ async function realtimeSync() {
     });
 }
 
-async function historicalSync() {
+async function historicalSync(subscribed = false) {
     const state = await Promise.all([
         getChainState(),
         getSyncState()
@@ -207,7 +211,7 @@ async function historicalSync() {
     while (syncState.number < chainState.number) {
         const allBlocks = await Promise.all([
             getBlockByNumber(syncState.number + 1, true),
-            getDagBlocksByLevel(syncState.number + 1, false)
+            getDagBlocksByLevel(syncState.number + 1, false, subscribed)
         ]);
         const block = allBlocks[0];
         const dagBlocks = allBlocks[1];
@@ -294,23 +298,25 @@ async function historicalSync() {
                 }
             );
 
-            for (const dagBlockRPC of dagBlocks) {
-                const dagBlock =  DagBlock.fromRPC(dagBlockRPC);
-                const d = dagBlock.toJSON();
-                const existingDagBlock = await DagBlock.findOneAndUpdate(
-                    {_id: dagBlock._id},
-                    d,
-                    {upsert: true}
-                );
-                if (!existingDagBlock) {
-                    notifications.push({
-                        insertOne: {
-                            document: {
-                                log: 'dag-block',
-                                data: d
+            if (!subscribed) {
+                for (const dagBlockRPC of dagBlocks) {
+                    const dagBlock =  DagBlock.fromRPC(dagBlockRPC);
+                    const d = dagBlock.toJSON();
+                    const existingDagBlock = await DagBlock.findOneAndUpdate(
+                        {_id: dagBlock._id},
+                        d,
+                        {upsert: true}
+                    );
+                    if (!existingDagBlock) {
+                        notifications.push({
+                            insertOne: {
+                                document: {
+                                    log: 'dag-block',
+                                    data: d
+                                }
                             }
-                        }
-                    });
+                        });
+                    }
                 }
             }
 
