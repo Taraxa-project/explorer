@@ -9,7 +9,7 @@ import Link from 'next/link'
 
 import {Container, Row, Col, Jumbotron, Card, ListGroup, ListGroupItem} from 'react-bootstrap'
 
-// import styles from '../styles/Home.module.css'
+import DAG from '../components/DAG'
 
 import config from 'config';
 import mongoose from 'mongoose'
@@ -19,19 +19,13 @@ import Tx from '../models/tx'
 
 import moment from 'moment';
 
-function Index({recentBlocks, recentTxs}) {
+function Index({recentBlocks, recentDagBlocks, recentTxs}) {
   return (
       <>
         <Container fluid>
           <Row>
-            <Col style={{paddingLeft: 5, paddingRight: 5, paddingTop: 5, paddingBottom: 0, margin: 0}}>
-              <Jumbotron style={{
-                marginHorizontal: 0, 
-                marginBottom: 10,
-                backgroundColor: "#f7f7f7"
-                }}>
-                <h1>DAG Viz here</h1>
-              </Jumbotron>
+            <Col style={{paddingLeft: 5, paddingRight: 5, paddingTop: 5, paddingBottom: 0, margin: 0, backgroundColor: '#0f1517'}}>
+                <DAG recentDagBlocks={recentDagBlocks}/>
             </Col>
           </Row>
         
