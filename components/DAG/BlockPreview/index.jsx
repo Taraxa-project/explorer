@@ -26,7 +26,7 @@ function BlockPreview(props) {
 					</div>
 					<div className="box block-preview-row">
 						<div className="box right block-preview-row-name">Hash</div>
-						<div className="box fill block-preview-row-value"><a href={"/dag/block/" + props.hash} target="_blank" rel="noopener noreferrer" >{props.hash}</a></div>
+						<div className="box fill block-preview-row-value"><a href={"/dag_block/" + props.hash} target="_blank" rel="noopener noreferrer" >{props.hash}</a></div>
 					</div>
 				</div> : <div> <div className="box block-preview-row">
 					<div className="box right block-preview-row-name">Number</div>

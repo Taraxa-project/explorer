@@ -2,7 +2,7 @@ version: '3'
 services:
     taraxa-node-testnet-1:
         container_name: taraxa-node-testnet-1
-        image: taraxa/taraxa-node:latest
+        image: taraxa/taraxa-node:25
         restart: always
         ports:
             - "10002:10002"
@@ -22,7 +22,7 @@ services:
                 ipv4_address: 172.28.1.1
     taraxa-node-testnet-2:
         container_name: taraxa-node-testnet-2
-        image: taraxa/taraxa-node:latest
+        image: taraxa/taraxa-node:25
         restart: always
         ports:
             - "10003:10003"
@@ -42,7 +42,7 @@ services:
                 ipv4_address: 172.28.1.2
     taraxa-node-testnet-3:
         container_name: taraxa-node-testnet-3
-        image: taraxa/taraxa-node:latest
+        image: taraxa/taraxa-node:25
         restart: always
         ports:
             - "10004:10004"
@@ -62,7 +62,7 @@ services:
                 ipv4_address: 172.28.1.3
     taraxa-node-testnet-4:
         container_name: taraxa-node-testnet-4
-        image: taraxa/taraxa-node:latest
+        image: taraxa/taraxa-node:25
         restart: always
         ports:
             - "10005:10005"
@@ -82,7 +82,7 @@ services:
                 ipv4_address: 172.28.1.4
     taraxa-node-testnet-5:
         container_name: taraxa-node-testnet-5
-        image: taraxa/taraxa-node:latest
+        image: taraxa/taraxa-node:25
         restart: always
         ports:
             - "10006:10006"

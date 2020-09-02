@@ -15,9 +15,10 @@ const LogNetworkEvent = require('./models/log_network_event');
     const events = LogNetworkEvent.find({_id: {$gte: now}}).tailable().cursor().addCursorFlag('noCursorTimeout', true);
     events
         .on('data', logEvent => {
+            const e = logEvent.toJSON();
             wsServer.clients.forEach(client => {
                 if (client.readyState === WebSocket.OPEN) {
-                  client.send(logEvent);
+                  client.send(JSON.stringify(e));
                 }
             });
         })

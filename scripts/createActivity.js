@@ -7,7 +7,7 @@ const taraxa = new Web3(new Web3.providers.HttpProvider(`http://${rpcHost}:7777`
 // taraxa.defaultCommon = {
 //     customChain: {
 //         name: 'taraxa-testnet',
-//         chainId: null,
+//         chainId: 1,
 //         networkId: 1
 //     },
 // };
@@ -65,17 +65,17 @@ async function sendRandomTransaction() {
     
             // return taraxa.sendTransaction(tx);
             const signed = await node[sender].account.signTransaction(tx);
-            return new Promise((resolve, reject) => {
-                taraxa.sendSignedTransaction(signed.rawTransaction)
-                    .once('sent', payload => {
-                        console.log('Sent tx', payload);
-                        resolve(payload);
-                    })
-                    .once('error', error => {
-                        console.error(error);
-                        reject(error);
-                    })
-            });
+            // return new Promise((resolve, reject) => {
+                await taraxa.sendSignedTransaction(signed.rawTransaction)
+                //     .once('sent', payload => {
+                //         console.log('Sent tx', transactions.toLocaleString(), payload);
+                //         resolve(payload);
+                //     })
+                //     .once('error', error => {
+                //         console.error(error);
+                //         reject(error);
+                //     })
+            // });
         }
     }
 }

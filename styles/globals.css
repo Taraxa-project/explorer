@@ -1,21 +1,24 @@
 html, body {
   margin: 0px;
   padding: 0px;
+  background-color: #0f1517;
 }
 
 .site-layout-content {
-  background: #fff;
-  padding: 10px;
+  color: #fff;
   margin: 0px;
+  padding: 10px;
   min-height: 700px;
-  overflow: scroll;
 }
 
 .site-layout-footer {
-  background: #fff;
+  color: #fff;
   height: 32px;
-  overflow: scroll;
   text-align: center
+}
+
+.card {
+  color: #000;
 }
 
 a,
@@ -87,9 +90,9 @@ ul {
 
 .dag {
   position: relative;
-margin-top: 160px;
+  margin-top: 160px;
   width: 100%;
-height: 550px;
+  height: 440px;
   background-color: #0f1517;
   align-items: center;
   font-size: calc(10px + 2vmin);
@@ -131,6 +134,7 @@ height: 550px;
   justify-content: center;
   background-color: transparent;
   padding: 0;
+  border: none;
 }
 
 .dag-controller button:hover {
@@ -175,14 +179,13 @@ height: 550px;
 
 
 .dag-graph-legend {
-
-position: absolute;
-left: 50%;
-margin-left: -330px;
-top: -150px;
-width: auto;
-height: 50px;
-font-size: 16px;
+  position: absolute;
+  left: 50%;
+  margin-left: -330px;
+  top: -150px;
+  width: auto;
+  height: 50px;
+  font-size: 16px;
 }
 
 /* @media screen and (max-width: $page-width) {

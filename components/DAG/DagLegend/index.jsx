@@ -6,28 +6,28 @@ const DagLegend = () => {
 
         <div className="dag-graph-legend-item box">
             <div className="box dag-graph-legend-item-icon dag-unfinalized"></div>
-            <div className="box dag-graph-legend-item-text">unfinalized DAG Block</div>
+            <div className="box dag-graph-legend-item-text">Unfinalized DAG Block</div>
         </div>
 
         <div className="dag-graph-legend-item box">
             <div className="box dag-graph-legend-item-icon dag-1"></div>
             <div className="box dag-graph-legend-item-icon dag-2"></div>
-            <div className="box dag-graph-legend-item-text">finalized DAG Block</div>
+            <div className="box dag-graph-legend-item-text">Finalized DAG Block</div>
         </div>
 
         <div className="dag-graph-legend-item box">
             <div className="box dag-graph-legend-item-icon dag-period"></div>
-            <div className="box dag-graph-legend-item-text">period DAG Block</div>
+            <div className="box dag-graph-legend-item-text">Period DAG Block</div>
         </div>
 
         <div className="dag-graph-legend-item box">
             <div className="box dag-graph-legend-item-icon pivot"></div>
-            <div className="box dag-graph-legend-item-text">pivot</div>
+            <div className="box dag-graph-legend-item-text">Pivot</div>
         </div>
 
         <div className="dag-graph-legend-item box">
             <div className="box dag-graph-legend-item-icon tip"></div>
-            <div className="box dag-graph-legend-item-text">tip</div>
+            <div className="box dag-graph-legend-item-text">Tip</div>
         </div>
 
         <div className="dag-graph-legend-item box">

@@ -10,13 +10,13 @@ const blocksInitialState = {
 }
 
 export default function reducer(state = blocksInitialState, action) {
+  let recent = [].concat(state.recent);
   switch (action.type) {
     case blockActionTypes.NEWBLOCK:
-      const recent = state.recent;
-      if (state.recent.length >= 20) {
-        recent = state.recent.shift();
+      if (state.recent.length >= 10) {
+        recent.pop();
       }
-      recent.push(action.data);
+      recent.unshift(action.data);
 
       return Object.assign({}, state, {
         tip: {

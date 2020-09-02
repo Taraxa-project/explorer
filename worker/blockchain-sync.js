@@ -10,6 +10,8 @@ const Tx = require('../models/tx');
 const LogNetworkEvent = require('../models/log_network_event');
 
 const {fromEvent} = require('rxjs');
+const { mergeMap } = require('rxjs/operators');
+
 const WebSocket = require('ws');
 
 const rpc = require('../lib/rpc');
@@ -91,62 +93,79 @@ async function getDagBlocksByLevel(number, fullTransactions = false, returnEmpty
 }
 
 async function realtimeSync() {
-    const topics = ['newDagBlocks', 'newDagBlocksFinalized', 'newPbftBlocks', 'newHeads'];
+    const topics = [
+        'newDagBlocks', 
+        'newDagBlocksFinalized', 
+        'newPbftBlocks', 
+        'newHeads'
+    ];
     let id = 0;
     let subscriptionRequests = [];
     let subscribed = {};
     const ws = new WebSocket(config.taraxa.node.ws);
-    fromEvent(ws, 'message')
-    .subscribe(async function (o) {
-        try {
-            const jsonRpc = JSON.parse(o.data);
-            // handle subscription request responses
-            if (subscriptionRequests[jsonRpc.id]) {
-                console.log(`Subscribed to ${subscriptionRequests[jsonRpc.id].topic}`);
-                subscribed[jsonRpc.result] = subscriptionRequests[jsonRpc.id].topic;
-            // handle subscription data
-            } else if (subscribed[jsonRpc.params?.subscription]) {
-                console.log(subscribed[jsonRpc.params.subscription], jsonRpc.params.result);
-                switch(subscribed[jsonRpc.params.subscription]) {
-                    case 'newDagBlocks':
-                        const dagBlock = DagBlock.fromRPC(jsonRpc.params.result).toJSON();
-                        await DagBlock.findOneAndUpdate(
-                            {_id: dagBlock._id},
-                            dagBlock,
-                            {upsert: true}
-                        )
-                        await new LogNetworkEvent({
-                            name: 'dag-block',
-                            data: dagBlock.toJSON()
-                        }).save();
-                        break;
-                    case 'newDagBlocksFinalized':
-                        const dagBlockFinalized = DagBlock.fromRPC(jsonRpc.params.result.block).toJSON();
-                        dagBlockFinalized.period = jsonRpc.params.result.period;
-                        await DagBlock.findOneAndUpdate(
-                            {_id: dagBlockFinalized._id},
-                            dagBlockFinalized,
-                            {upsert: true}
-                        )
-                        await new LogNetworkEvent({
-                            name: 'dag-block-finalized',
-                            data: dagBlockFinalized.toJSON()
-                        }).save();
-                        break;
-                    case 'newPbftBlocks':
-                        await historicalSync(true);
-                        break;
-                    default:
-                        console.log('Not persisting data for', subscribed[jsonRpc.params.subscription] )
-                        break;
+    const blockchainEvent$ = fromEvent(ws, 'message');
+
+    blockchainEvent$
+    .pipe(
+        mergeMap(async (o) => {
+            try {
+                const jsonRpc = JSON.parse(o.data);
+                // handle subscription request responses
+                if (subscriptionRequests[jsonRpc.id]) {
+                    console.log(`Subscribed to ${subscriptionRequests[jsonRpc.id].topic}`);
+                    subscribed[jsonRpc.result] = subscriptionRequests[jsonRpc.id].topic;
+                // handle subscription data
+                } else if (subscribed[jsonRpc.params?.subscription]) {
+                    // console.log(subscribed[jsonRpc.params.subscription], jsonRpc.params.result);
+                    switch(subscribed[jsonRpc.params.subscription]) {
+                        case 'newDagBlocks':
+                            const dagBlock = DagBlock.fromRPC(jsonRpc.params.result).toJSON();
+                            await DagBlock.findOneAndUpdate(
+                                {_id: dagBlock._id},
+                                dagBlock,
+                                {upsert: true}
+                            )
+                            await new LogNetworkEvent({
+                                log: 'dag-block',
+                                data: dagBlock
+                            }).save();
+                            return dagBlock;
+                        case 'newDagBlocksFinalized':
+                            const dagBlockFinalized = await DagBlock.findOneAndUpdate(
+                                {_id: jsonRpc.params.result.block},
+                                {period: jsonRpc.params.result.period},
+                                {upsert: false, new: true}
+                            )
+                            await new LogNetworkEvent({
+                                log: 'dag-block-finalized',
+                                data: jsonRpc.params.result
+                            }).save();
+                            
+                            return dagBlockFinalized;
+                        case 'newPbftBlocks':
+                            await new LogNetworkEvent({
+                                log: 'pbft-block',
+                                data: jsonRpc.params.result.pbft_block
+                            }).save();
+                            return;
+                        case 'newHeads':
+                            await historicalSync(true);
+                            return;
+                        default:
+                            console.log('Not persisting data for', subscribed[jsonRpc.params.subscription], jsonRpc.params.result )
+                            return;
+                    }
+                } else {
+                    console.log('Ignored message:', jsonRpc);
                 }
-            } else {
-                console.log('Ignored message:', jsonRpc);
+            } catch (e) {
+                console.error('Error', e, o.data);
             }
-        } catch (e) {
-            console.error(e, o.data);
-            process.exit(1);
-        }
+            
+        })
+    )
+    .subscribe(async function (o) {
+        // console.log(o)
     });
 
     ws.on('open', function () {

@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { connect } from 'react-redux'
+
 import BlockPreview from "./BlockPreview"
 import DagController from "./DagController"
 import DagLegend from "./DagLegend"
@@ -8,21 +10,18 @@ import * as dag_draw from "./dag_draw"
 
 let levelNodesPosition = {}
 
-function DAG(props) {
+function DAG({recentDagBlocks, history, highlight}) {
 
-	const isStart = useRef(true)
-	const refresh = useRef(0)
+    const [data] = useState(null)// Currently requested data
+    const [prevData] = useState(null)//Last requested data
 
-    const [data] = useState(null)// 当前请求的数据
-    const [prevData] = useState(null)//上一次请求的数据
-
-    const [cy, setCy] = useState(null)//初始化的DAG图，用于绑定事件；初始化以后不会再更新，防止相关绑定事件比如websocket多次触发。
-    const dagCy = useRef(null) //当前最新的DAG图
+    const [cy, setCy] = useState(null)//The initialized DAG graph is used for binding events; it will not be updated after initialization to prevent related binding events such as websocket from being triggered multiple times。
+    const dagCy = useRef(null) //Current latest DAG graph
 
 	const canvas = useRef(null)
 
-    const [startLevel, setStartLevel] = useState(s => { return 0 }) //DAG图开始level
-    const [cyChange, setCyChange] = useState(false) // DAG图是否更新
+    const [startLevel, setStartLevel] = useState(s => { return 0 }) //DAG chart start level
+    const [cyChange, setCyChange] = useState(false) // Whether the DAG diagram is updated
     const [blockPreview, setBlockPreview] = useState(null)
 
     const counter = useRef(0) // block number
@@ -113,16 +112,16 @@ function DAG(props) {
 
     // Websocket event
     let onBlock = useCallback((block) => {
-        dag_events.onBlock(props.history, block, level, firstLevel, lastDagX, isFirstBlock, cy, dagCy, canvas, levelNodesPosition, props.highlight)
-    }, [cy, props.history, props.highlight])
+        dag_events.onBlock(history, block, level, firstLevel, lastDagX, isFirstBlock, cy, dagCy, canvas, levelNodesPosition, highlight)
+    }, [cy, history, highlight])
 
     let onFinalized = useCallback((dt) => {
-        dag_events.onFinalized(props.history, dt, lastOrderX, lastDagX, period, level, cy, pauseNextAnimation, props.highlight)
-    }, [cy, props.history, props.highlight])
+        dag_events.onFinalized(history, dt, lastOrderX, lastDagX, period, level, cy, pauseNextAnimation, highlight)
+    }, [cy, history, highlight])
 
     let onSchedule = useCallback((dt) => {
-        dag_events.onSchedule(props.history, dt, prevPeriodLastHash, pauseNextAnimation, lastOrderX, lastDagX, counter, cy, canvas, props.highlight)
-    }, [cy, props.history, props.highlight])
+        dag_events.onSchedule(history, dt, prevPeriodLastHash, pauseNextAnimation, lastOrderX, lastDagX, counter, cy, canvas, highlight)
+    }, [cy, history, highlight])
 
 
     useEffect(() => {
@@ -143,45 +142,28 @@ function DAG(props) {
     }, [onKeydown])
 
     useEffect(() => {
-
-        console.log('Loading data')
-
-		let refreshTime = props.reload
-
-		if (!refreshTime)
-			refreshTime = 0
-
-        if (cy && (refreshTime === 0 || refreshTime > refresh.current) ) {
-
-            console.log('Doing data refresh', props.history, isStart.current, props.empty)
-
-			refresh.current = refreshTime
-
+        if (cy) {
             cy.remove('node')
             levelNodesPosition = {}
-			firstLevel.current = 0
-
-            if (props.history) {
-
-				// cy.reset()
-				if (isStart.current) {
-
-					isStart.current = false
-
-					if (!props.empty)
-                		getBlockHistory(props.filter, onBlock, onFinalized, onSchedule, onMiddle, props.highlight)
-
-				} else {
-
-					getBlockHistory(props.filter, onBlock, onFinalized, onSchedule, onMiddle, props.highlight)
-				}
-
-            } else {
-                console.log('Use recentDagBlocks', props.recentDagBlocks)
+            firstLevel.current = 0
+            const r = [].concat(recentDagBlocks);
+            r.reverse();
+            for (const block of r) {
+                block.hash = block._id;
+                onBlock(block)
+            }
+            for (const block of r) {
+                if (block.period) {
+                    onFinalized({
+                        block: block._id,
+                        period: block.period
+                    })
+                }
             }
         }
+            
         // eslint-disable-next-line
-    }, [cy, props.reload, props.history, props.highlight])
+    }, [cy, recentDagBlocks])
 
 
     return (
@@ -201,13 +183,16 @@ function DAG(props) {
 
             <DagLegend />
 
-            <div className="dag-levels-label">Levels</div>
-			<div className="dag-periods-label">Periods</div>
-
-
         </div>
     )
 
 }
 
-export default DAG
+const mapStateToProps = (state) => {
+    return {
+      recentBlocks: state.blocks.recent,
+      recentDagBlocks: state.dagBlocks.recent,
+    }
+  }
+  
+  export default connect(mapStateToProps)(DAG)

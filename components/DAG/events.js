@@ -6,7 +6,7 @@ export let onClick = (event) => {
     if (ele.isNode()) {
         let id = ele.data('id')
         if (ele.data('type') === "dag") {
-            window.open('/dag/block/' + id)
+            window.open('/dag_block/' + id)
         } else {
             id = id.slice(0, id.length - 6)
             window.open('/block/' + id)

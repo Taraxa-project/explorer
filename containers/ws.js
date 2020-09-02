@@ -3,10 +3,16 @@ import { connect } from 'react-redux'
 import { useEffect } from 'react';
 
 import { addNewBlock, setRecentBlocks } from '../store/blocks/action'
-import { addNewDagBlock, setRecentDagBlocks, finalizeDagBlock } from '../store/dag_blocks/action'
+
+import { 
+  addNewDagBlock, 
+  setRecentDagBlocks, 
+  finalizeDagBlock 
+} from '../store/dag_blocks/action';
+
 import { setRecentTxs } from '../store/txs/action'
 
-function WebsocketContainer({addNewBlock, addNewDagBlock}) {
+function WebsocketContainer({addNewBlock, addNewDagBlock, finalizeDagBlock}) {
 
   useEffect(() => {
     if (!window.ws) {
@@ -20,14 +26,16 @@ function WebsocketContainer({addNewBlock, addNewDagBlock}) {
       window.ws.onmessage = evt => {
           // listen to data sent from the websocket server
           const message = JSON.parse(evt.data)
-          console.log(message)
+          
           if (message.log === 'block') {
               addNewBlock(message.data);
           } else if (message.log === 'dag-block') {
               addNewDagBlock(message.data);
           } else if (message.log === 'dag-block-finalized') {
               finalizeDagBlock(message.data);
-          }
+          } else if (message.log === 'pbft-block') {
+              console.log('pbft-block', message.data);
+        }
       }
   
       window.ws.onclose = () => {

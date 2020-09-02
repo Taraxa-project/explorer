@@ -23,7 +23,7 @@ export async function getServerSideProps(context) {
             ]),
             Tx.aggregate([
                 {$match: {from: id}},
-                {$group: {_id: id, gas: {$sum: '$gas'}, value: {$sum: '$value'}}}
+                {$group: {_id: id, value: {$sum: '$value'}}}
             ]),
             Tx.find({
                 $or: [{from: id}, {to: id}]
@@ -36,16 +36,19 @@ export async function getServerSideProps(context) {
         const sent = activity[1][0];
         const transactions = activity[2];
         let balance = 0;
+        let totalSent = 0;
+        let totalRecieved = 0;
         if (received) {
-            balance = received.value;
+            totalRecieved = received.value;
         }
         if (sent) {
-            balance = balance - sent.value;
-            balance = balance - sent.gas;
+            totalSent = totalSent + sent.value;
         }
         props.data = JSON.parse(JSON.stringify({
             address: context.query.id,
-            balance: balance,
+            sent: sent.value,
+            received: received.value,
+            balance: totalRecieved - totalSent,
             transactions
         }));
 
