@@ -31,12 +31,12 @@ export async function getServerSideProps(context) {
 
 export default function BlockPage({data}) {
     return <>
-        <h1>Block {data.number}</h1>
+        <h1>Block {data._id}</h1>
         <Card style={{margin: 5, marginTop: 0, marginBottom: 10}} bg="dark" text="white">
             <Card.Body>
             <ul>
                 <li>Timestamp: {new Date(data.timestamp).toUTCString()}</li>
-                <li>Hash: {data._id}</li>
+                <li>Number: {data.number}</li>
 
                 <li>Author: {data.author}</li>
                 <li>Extra Data: {data.extraData}</li>
@@ -48,11 +48,11 @@ export default function BlockPage({data}) {
                             </Link></li>
                 <li>Mix Hash: {data.mixHash}</li>
                 <li>Nonce: {data.nonce}</li>
-                <li>Parent Hash: <Link href="/block/[id]" as={`/block/${data.parentHash}`}>
+                <li>Parent: <Link href="/block/[id]" as={`/block/${data.parentHash}`}>
                                 <a>{`${data.parentHash}`}</a>
                             </Link></li>
                 <li>Receipts Root: {data.receiptsRoot}</li>
-                <li>SHA3 of Uncles: {data.sha3Uncles}</li>
+                <li>Uncles Hash: {data.sha3Uncles}</li>
                 <li>Size: {data.size}</li>
                 <li>State Root: {data.stateRoot}</li>
                 <li>Total Difficulty: {data.totalDifficulty}</li>

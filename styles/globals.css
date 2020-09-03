@@ -38,6 +38,10 @@ a:hover,
 
 h1 {
   font-size: 1.5rem;
+  width: 100%;
+  text-overflow: ellipsis;
+  overflow:hidden ;
+  white-space:nowrap;
 }
 
 ul {

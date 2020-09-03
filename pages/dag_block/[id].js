@@ -32,7 +32,7 @@ export async function getServerSideProps(context) {
 export default function DagBlockPage({data}) {
     console.log('dag block', data)
     return <>
-       <h1>DAG Block</h1>
+       <h1>DAG Block {data._id}</h1>
        <Card style={{margin: 5, marginTop: 0, marginBottom: 10}} bg="dark" text="white">
             {/* <Card.Header>DAG Block {data._id}</Card.Header> */}
             <Card.Body>
