@@ -31,8 +31,8 @@ export async function getServerSideProps(context) {
 
 export default function BlockPage({data}) {
     return <>
-        <Card style={{margin: 5, marginTop: 0, marginBottom: 10}}>
-            <Card.Header>Block {data.number}</Card.Header>
+        <h1>Block {data.number}</h1>
+        <Card style={{margin: 5, marginTop: 0, marginBottom: 10}} bg="dark" text="white">
             <Card.Body>
             <ul>
                 <li>Timestamp: {new Date(data.timestamp).toUTCString()}</li>
@@ -43,10 +43,14 @@ export default function BlockPage({data}) {
                 <li>Gas Limit: {data.gasLimit}</li>
                 <li>Gas Used: {data.gasUsed}</li>
                 <li>Logs Bloom: {data.logsBloom}</li>
-                <li>Miner: {data.miner}</li>
+                <li>Miner: <Link href="/address/[id]" as={`/address/${data.miner}`}>
+                                <a>{`${data.miner}`}</a>
+                            </Link></li>
                 <li>Mix Hash: {data.mixHash}</li>
                 <li>Nonce: {data.nonce}</li>
-                <li>Parent Hash: {data.parentHash}</li>
+                <li>Parent Hash: <Link href="/block/[id]" as={`/block/${data.parentHash}`}>
+                                <a>{`${data.parentHash}`}</a>
+                            </Link></li>
                 <li>Receipts Root: {data.receiptsRoot}</li>
                 <li>SHA3 of Uncles: {data.sha3Uncles}</li>
                 <li>Size: {data.size}</li>
@@ -55,8 +59,8 @@ export default function BlockPage({data}) {
                 <li>Transactions: {data.transactions.length ? (
                     <ul>{data.transactions.map((tx) => (
                         <li key={tx._id}>
-                            <Link href="/tx/[id]" as={`/tx/${tx._id}`}>
-                                <a>{`Tx ${tx._id}`}</a>
+                            Tx <Link href="/tx/[id]" as={`/tx/${tx._id}`}>
+                                <a>{`${tx._id}`}</a>
                             </Link>
                         </li>
                     ))}

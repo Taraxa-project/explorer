@@ -4,6 +4,8 @@ import config from 'config';
 import mongoose from 'mongoose'
 import Tx from '../../models/tx'
 
+import {Container, Row, Col, Navbar, Nav, Button, Jumbotron, Card, ListGroup, ListGroupItem, Table} from 'react-bootstrap'
+
 export async function getServerSideProps(context) {
     let props = {
         data: {}
@@ -25,35 +27,43 @@ export async function getServerSideProps(context) {
 
 export default function TxPage({data}) {
   return <>
-   
-            <h1>Tx {data._id}</h1>
-            {new Date(data.timestamp).toString()}
-            <ul>
-                <li>
-                <Link href="/block/[id]" as={`/block/${data.blockHash}`}>
-                    <a>{`Block ${data.blockHash}`}</a>
-                </Link>
-                </li>
-                {data.from ? (<li>From{' '}
-                <Link href="/address/[id]" as={`/address/${data.to}`}>
-                    <a>{`${data.from}`}</a>
-                </Link>
-                </li>) : ''}
-                <li>To{' '}
-                <Link href="/address/[id]" as={`/address/${data.to}`}>
-                    <a>{`${data.to}`}</a>
-                </Link>
-                </li>
+    <h1>Tx {data._id}</h1>
+            <Card style={{margin: 5, marginTop: 0, marginBottom: 10}} bg="dark" text="white">
+            {/* <Card.Header>Tx {data._id}</Card.Header> */}
+            <Card.Body>
                 
-                <li>
-                    {`Gas ${data.gas}`}
-                </li>
-                <li>
-                    {`Gas Price ${data.gasPrice}`}
-                </li>
-                <li>
-                    {`Value ${data.value.toLocaleString()}`}
-                </li>
-            </ul>
+
+                <ul>
+                    <li>
+                        Timestamp {new Date(data.timestamp).toLocaleString()}
+                    </li>
+                    <li>
+                        Block <Link href="/block/[id]" as={`/block/${data.blockHash}`}>
+                            <a>{`${data.blockHash}`}</a>
+                        </Link>
+                    </li>
+                    {data.from ? (<li>From{' '}
+                        <Link href="/address/[id]" as={`/address/${data.to}`}>
+                            <a>{`${data.from}`}</a>
+                        </Link>
+                    </li>) : ''}
+                    <li>To{' '}
+                        <Link href="/address/[id]" as={`/address/${data.to}`}>
+                            <a>{`${data.to}`}</a>
+                        </Link>
+                    </li>
+                    
+                    <li>
+                        {`Gas ${data.gas}`}
+                    </li>
+                    <li>
+                        {`Gas Price ${data.gasPrice}`}
+                    </li>
+                    <li>
+                        {`Value ${data.value.toLocaleString()}`}
+                    </li>
+                </ul>
+            </Card.Body>
+        </Card>
     </>
 }

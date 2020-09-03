@@ -19,9 +19,9 @@ export default async function handler(req, res) {
     try {
         let blocks = [];
         if (fullTransactions) {
-            blocks = await Block.find().limit(limit).skip(skip).sort({number: reverse ? -1 : 1}).populate('transactions');
+            blocks = await Block.find().limit(limit).skip(skip).sort({level: reverse ? -1 : 1}).populate('transactions');
         } else {
-            blocks = await Block.find().limit(limit).skip(skip).sort({number: reverse ? -1 : 1});
+            blocks = await Block.find().limit(limit).skip(skip).sort({level: reverse ? -1 : 1});
         }
         res.json(blocks);
     } catch (e) {

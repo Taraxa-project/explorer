@@ -5,6 +5,8 @@ import mongoose from 'mongoose'
 import DAGBlock from '../../models/dag_block'
 import Tx from '../../models/tx'
 
+import {Container, Row, Col, Navbar, Nav, Button, Jumbotron, Card, ListGroup, ListGroupItem, Table} from 'react-bootstrap'
+
 export async function getServerSideProps(context) {
     const id = context.query.id;
     let props = {
@@ -63,21 +65,24 @@ export async function getServerSideProps(context) {
 
 export default function AddressPage({data}) {
     return <>
-       
-            <h1>Address {data.address}</h1>
+       <h1>Address {data.address}</h1>
+        <Card style={{margin: 5, marginTop: 0, marginBottom: 10}} bg="dark" text="white">
+            {/* <Card.Header>Address {data.address}</Card.Header> */}
+            <Card.Body>
             <ul>
                 <li>Balance: {data.balance.toLocaleString()}</li>
                 <li>Recent Transactions: 
                     <ul>{data.transactions.map((tx) => (
                         <li key={tx._id}>
-                            <Link href="/tx/[id]" as={`/tx/${tx._id}`}>
-                                <a>{`Tx ${tx._id}`}</a>
+                            Tx <Link href="/tx/[id]" as={`/tx/${tx._id}`}>
+                                <a>{`${tx._id}`}</a>
                             </Link>
                         </li>
                     ))}
                     </ul>
                 </li>
             </ul>
-            
+            </Card.Body>
+        </Card>
     </>
 }

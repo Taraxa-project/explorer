@@ -31,11 +31,11 @@ function Index({recentBlocks, recentTxs}) {
         
           <Row>
             <Col style={{padding: 0}} xs={12} sm={6}>
-            <Card style={{margin: 5, marginTop: 0, marginBottom: 10}}>
+            <Card style={{margin: 5, marginTop: 0, marginBottom: 10}} bg="dark" text="white">
               <Card.Header>Latest Blocks</Card.Header>
               <ListGroup className="list-group-recent-blocks" variant="flush">
                 {recentBlocks && recentBlocks.map((block) => (
-                  <ListGroupItem key={block._id}>
+                  <ListGroupItem key={block._id} variant="dark">
                     <div style={{whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}}>
                       #{block.number} <Link href="/block/[id]" as={`/block/${block._id}`}>
                         <a>{`${block._id}`}</a>
@@ -48,11 +48,11 @@ function Index({recentBlocks, recentTxs}) {
             </Card>
             </Col>
             <Col style={{padding: 0}} xs={12} sm={6}>
-            <Card style={{margin: 5, marginTop: 0, marginBottom: 0}}>
+            <Card style={{margin: 5, marginTop: 0, marginBottom: 0}} bg="dark" text="white">
               <Card.Header>Latest Transactions</Card.Header>
               <ListGroup className="list-group-recent-tx" variant="flush">
                 {recentTxs && recentTxs.map((tx) => (
-                  <ListGroupItem key={tx._id}>
+                  <ListGroupItem key={tx._id} variant="dark">
                     <div style={{whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}}>
                     <Link href="/tx/[id]" as={`/tx/${tx._id}`}>
                         <a>{`${tx._id}`}</a>
