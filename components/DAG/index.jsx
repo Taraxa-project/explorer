@@ -10,7 +10,7 @@ import * as dag_draw from "./dag_draw"
 
 let levelNodesPosition = {}
 
-function DAG({recentDagBlocks, history, highlight}) {
+function DAG({recentDagBlocks, recentPbftBlocks, history, highlight}) {
 
     const [data] = useState(null)// Currently requested data
     const [prevData] = useState(null)//Last requested data
@@ -169,19 +169,19 @@ function DAG({recentDagBlocks, history, highlight}) {
     return (
         <div className="dag box wide">
 
-            <DagController
+            {/* <DagController
                 onLeft={onLeft}
                 onRight={onRight}
                 onMiddle={onMiddle}
                 onUp={onUp}
                 onDown={onDown}
-            />
+            /> */}
 
             {blockPreview}
 
             <div id="dag-graph" className="dag-graph"></div>
 
-            <DagLegend />
+            {/* <DagLegend /> */}
 
         </div>
     )
@@ -192,6 +192,7 @@ const mapStateToProps = (state) => {
     return {
       recentBlocks: state.blocks.recent,
       recentDagBlocks: state.dagBlocks.recent,
+      recentPbftBlocks: state.pbftBlocks.recent
     }
   }
   

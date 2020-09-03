@@ -19,7 +19,7 @@ import Tx from '../models/tx'
 
 import moment from 'moment';
 
-function Index({recentBlocks, recentDagBlocks, recentTxs}) {
+function Index({recentBlocks, recentTxs}) {
   return (
       <>
         <Container fluid>
@@ -104,6 +104,7 @@ export const getServerSideProps = wrapper.getServerSideProps(async ({ store }) =
 const mapStateToProps = (state) => {
   return {
     recentBlocks: state.blocks.recent,
+    recentPbftBlocks: state.pbftBlocks.recent,
     recentDagBlocks: state.dagBlocks.recent,
     recentTxs: state.txs.recent,
     tip: state.blocks.tip

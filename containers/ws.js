@@ -10,9 +10,11 @@ import {
   finalizeDagBlock 
 } from '../store/dag_blocks/action';
 
+import { addNewPbftBlock, setRecentPbftBlocks } from '../store/pbft_blocks/action'
+
 import { setRecentTxs } from '../store/txs/action'
 
-function WebsocketContainer({addNewBlock, addNewDagBlock, finalizeDagBlock}) {
+function WebsocketContainer({addNewBlock, addNewDagBlock, finalizeDagBlock, addNewPbftBlock}) {
 
   useEffect(() => {
     if (!window.ws) {
@@ -34,7 +36,7 @@ function WebsocketContainer({addNewBlock, addNewDagBlock, finalizeDagBlock}) {
           } else if (message.log === 'dag-block-finalized') {
               finalizeDagBlock(message.data);
           } else if (message.log === 'pbft-block') {
-              console.log('pbft-block', message.data);
+              addNewPbftBlock(message.data);
         }
       }
   
@@ -54,6 +56,7 @@ const mapDispatchToProps = (dispatch) => {
   return {
     addNewBlock: bindActionCreators(addNewBlock, dispatch),
     addNewDagBlock: bindActionCreators(addNewDagBlock, dispatch),
+    addNewPbftBlock: bindActionCreators(addNewPbftBlock, dispatch),
     finalizeDagBlock: bindActionCreators(finalizeDagBlock, dispatch),
     setRecentBlocks: bindActionCreators(setRecentBlocks, dispatch),
     setRecentDagBlocks: bindActionCreators(setRecentDagBlocks, dispatch),

@@ -156,7 +156,7 @@ export let onBlock = (isHistory, block, level, firstLevel, lastDagX, isFirstBloc
     }
 
     if (node != null && isFirstBlock.current) {
-        cy.pan({ x: dagCy.current.width() / 2 - node.data.level * config.LevelWidth })
+        cy.pan({ x: dagCy.current.width() / 2 - node.data.level * config.LevelWidth - 4 * config.LevelWidth})
         lastDagX.current = node.position.x
         isFirstBlock.current = false
     }
@@ -176,10 +176,10 @@ export let onBlock = (isHistory, block, level, firstLevel, lastDagX, isFirstBloc
 
 		} else {
 
-	        cy.stop(false, true) //停止cy的未完成的动画，防止页面抖动
-
+			cy.stop(false, true) //停止cy的未完成的动画，防止页面抖动
+			let dpi = window.devicePixelRatio
 			cy.animate({
-	            panBy: { x: -50 } //只有level.current增大时才移动
+	            panBy: { x: -80 } //只有level.current增大时才移动
 	            // pan: { x: cy.width() / 2 - node.position.x }, //立即移动到当前位置
 	        }, {
 	            duration: config.Duration,
@@ -228,7 +228,6 @@ export let onFinalized = (isHistory, data, lastOrderX, lastDagX, period, level, 
             node.position('y', config.ChainBlockY)
 
         } else {
-
 			// onFinalized - move order blocks
             node.animate({
                 position: {
@@ -263,22 +262,18 @@ export let onFinalized = (isHistory, data, lastOrderX, lastDagX, period, level, 
 
 export let onSchedule = (isHistory, data, prevPeriodLastHash, pauseNextAnimation, lastOrderX, lastDagX, counter, cy, canvas, highlight) => {
 
-    if (typeof (data.block_number) === 'string') {
-        data.block_number = parseInt(data.block_number)
-    }
-
     if (!isHistory && pauseNextAnimation.current) {
         setTimeout(() => onSchedule(isHistory, data, prevPeriodLastHash, pauseNextAnimation, lastOrderX, lastDagX, counter, cy), 500)
         return
     }
 
-    var blocks = data.schedule_block.block_order
+    var blocks = data.schedule.dag_blocks_order
 
     //if hex type number, convert it
-    if (typeof (data.number) === 'string') {
-        data.number = parseInt(data.number)
+    if (typeof (data.period) === 'string') {
+        data.period = parseInt(data.period)
     }
-    var first_number = data.number
+    var first_number = data.period
 
     var N = blocks.length
 

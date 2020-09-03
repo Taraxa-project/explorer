@@ -63,26 +63,22 @@ export let draw = (level, data, prevData, cyChange, setCyChange, setCy, dagCy, c
     });
     // dagCy.current.reset()
     dagCy.current.zoom(1)
-    dagCy.current.pan({ x: dagCy.current.width() * 2 / 3 - level.current * 50, y: 50 });
-    dagCy.current.nodes('[label = "' + level.current.toString() + '"]').style('background-color', color.SelectColor)
-
-
+	dagCy.current.pan({ x: dagCy.current.width() - level.current * 80, y: 50 });
+	// dagCy.current.pan({ x: 0, y: 70 });
+	dagCy.current.nodes('[label = "' + level.current.toString() + '"]').style('background-color', color.SelectColor)
+	
 
     setCy(dagCy.current);
     setCyChange(!cyChange)
-
 
 	canvas.current = dagCy.current.cyCanvas({
 		zIndex: 0,
 		pixelRatio: "auto",
 	})
 
-
 	document.getElementById('dag-graph').children[0].style['z-index'] = '1'
 
-
 	dagCy.current.on('pan', () => {
-
 		drawLables(dagCy.current, canvas)
 	})
 }
