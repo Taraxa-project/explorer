@@ -77,7 +77,7 @@ export const getServerSideProps = wrapper.getServerSideProps(async ({ store }) =
       let blocks = await Block.find().limit(10).sort({timestamp: -1}).lean();
       blocks = JSON.parse(JSON.stringify(blocks));
 
-      let dagBlocks = await DagBlock.find().limit(20).sort({timestamp: -1}).lean();
+      let dagBlocks = await DagBlock.find().limit(50).sort({timestamp: -1}).lean();
       dagBlocks = JSON.parse(JSON.stringify(dagBlocks));
 
       let txs = await Tx.find().limit(10).sort({timestamp: -1}).lean();
@@ -89,7 +89,6 @@ export const getServerSideProps = wrapper.getServerSideProps(async ({ store }) =
       }
 
       if (dagBlocks.length) {
-        store.dispatch(addNewDagBlock(dagBlocks[0]))
         store.dispatch(setRecentDagBlocks(dagBlocks))
       }
 
