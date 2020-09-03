@@ -9,7 +9,7 @@ import Link from 'next/link'
 
 import {Container, Row, Col, Jumbotron, Card, ListGroup, ListGroupItem} from 'react-bootstrap'
 
-// import styles from '../styles/Home.module.css'
+import DAG from '../components/DAG'
 
 import config from 'config';
 import mongoose from 'mongoose'
@@ -24,14 +24,8 @@ function Index({recentBlocks, recentTxs}) {
       <>
         <Container fluid>
           <Row>
-            <Col style={{paddingLeft: 5, paddingRight: 5, paddingTop: 5, paddingBottom: 0, margin: 0}}>
-              <Jumbotron style={{
-                marginHorizontal: 0, 
-                marginBottom: 10,
-                backgroundColor: "#f7f7f7"
-                }}>
-                <h1>DAG Viz here</h1>
-              </Jumbotron>
+            <Col style={{paddingLeft: 5, paddingRight: 5, paddingTop: 5, paddingBottom: 0, margin: 0, backgroundColor: '#0f1517'}}>
+                <DAG/>
             </Col>
           </Row>
         
@@ -83,7 +77,7 @@ export const getServerSideProps = wrapper.getServerSideProps(async ({ store }) =
       let blocks = await Block.find().limit(10).sort({timestamp: -1}).lean();
       blocks = JSON.parse(JSON.stringify(blocks));
 
-      let dagBlocks = await DagBlock.find().limit(10).sort({timestamp: -1}).lean();
+      let dagBlocks = await DagBlock.find().limit(20).sort({timestamp: -1}).lean();
       dagBlocks = JSON.parse(JSON.stringify(dagBlocks));
 
       let txs = await Tx.find().limit(10).sort({timestamp: -1}).lean();
@@ -110,6 +104,7 @@ export const getServerSideProps = wrapper.getServerSideProps(async ({ store }) =
 const mapStateToProps = (state) => {
   return {
     recentBlocks: state.blocks.recent,
+    recentPbftBlocks: state.pbftBlocks.recent,
     recentDagBlocks: state.dagBlocks.recent,
     recentTxs: state.txs.recent,
     tip: state.blocks.tip

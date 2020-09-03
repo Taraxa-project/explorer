@@ -5,25 +5,25 @@ const blocksInitialState = {
 }
 
 export default function reducer(state = blocksInitialState, action) {
-  let recent = state.recent;
+  let recent = [].concat(state.recent);
   switch (action.type) {
-    case dagBlockActionTypes.NEWBLOCK:
-      if (state.recent.length >= 20) {
-        recent = state.recent.pop();
+    case dagBlockActionTypes.NEWDAGBLOCK:
+      if (state.recent.length >= 50) {
+        recent.pop();
       }
       recent.unshift(action.data);
 
       return Object.assign({}, state, {
         recent,
       })
-    case dagBlockActionTypes.RECENTBLOCKS:
+    case dagBlockActionTypes.RECENTDAGBLOCKS:
       return Object.assign({}, state, {
         recent: action.data,
       })
-    case dagBlockActionTypes.FINALIZEDBLOCK:
-      const index = state.recent.findIndex(doc => doc.hash === action.data.hash);
+    case dagBlockActionTypes.FINALIZEDDAGBLOCK:
+      const index = state.recent.findIndex(doc => doc.hash === action.data.block);
       if (index > -1) {
-        recent[index] = action.data
+        recent[index].period = action.data.period
       }
       return Object.assign({}, state, {
         recent

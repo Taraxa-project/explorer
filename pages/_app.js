@@ -16,6 +16,7 @@ function ReduxApp({Component, pageProps}) {
             <title>Taraxa Explorer</title>
             <link rel="icon" href="/favicon.ico" />
             <meta name="viewport" content="width=device-width, initial-scale=1"/>
+            <link href="https://unpkg.com/ionicons@4.2.2/dist/css/ionicons.min.css" rel="stylesheet"></link>
         </Head>
 
         <WebsocketContainer/>
