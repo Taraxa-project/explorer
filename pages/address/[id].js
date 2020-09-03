@@ -48,8 +48,8 @@ export async function getServerSideProps(context) {
         }
         props.data = JSON.parse(JSON.stringify({
             address: context.query.id,
-            sent: sent.value,
-            received: received.value,
+            sent: sent?.value || 0,
+            received: received?.value || 0,
             balance: totalRecieved - totalSent,
             transactions
         }));
@@ -71,8 +71,8 @@ export default function AddressPage({data}) {
             <Card.Body>
             <ul>
                 <li>Balance: {data.balance.toLocaleString()}</li>
-                <li>Sent: {data.sent.toLocaleString()}</li>
-                <li>Received: {data.received.toLocaleString()}</li>
+                <li>Sent: {data.sent?.toLocaleString()}</li>
+                <li>Received: {data.received?.toLocaleString()}</li>
             </ul>
             </Card.Body>
             <Card.Body>
