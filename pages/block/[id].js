@@ -56,17 +56,6 @@ export default function BlockPage({data}) {
                 <li>Size: {data.size}</li>
                 <li>State Root: {data.stateRoot}</li>
                 <li>Total Difficulty: {data.totalDifficulty}</li>
-                <li>Transactions: {data.transactions.length ? (
-                    <ul>{data.transactions.map((tx) => (
-                        <li key={tx._id}>
-                            Tx <Link href="/tx/[id]" as={`/tx/${tx._id}`}>
-                                <a>{`${tx._id}`}</a>
-                            </Link>
-                        </li>
-                    ))}
-                    </ul>
-                ) : '[ ]'}
-                </li>
                 <li>Transactions Root: {data.transactionsRoot}</li>
                 <li>Uncles: {data.uncles.length ? (
                     <ul>{data.uncles.map((uncle) => (
@@ -76,6 +65,30 @@ export default function BlockPage({data}) {
                 </li>
             </ul>
             </Card.Body>
+            <Card.Body>
+            <Card.Title>Transactions:</Card.Title>
+            <Table responsive variant="dark">
+              <tr>
+                <th>Timestamp</th>
+                <th>Block</th>
+                <th>Hash</th>
+                <th>Value</th>
+              </tr>
+              {data.transactions.map((tx) => (
+                  <tr key={tx._id}>
+                  <td>{new Date(tx.timestamp).toLocaleString()}</td>
+                  <td>{`${tx.blockNumber} `}</td>
+                  <td>
+                    <Link href="/tx/[id]" as={`/tx/${tx._id}`}>
+                        <a className="long-hash">{`${tx._id}`}</a>
+                    </Link>
+                  </td>
+                  <td>{tx.value.toLocaleString()}</td>
+                </tr>
+              ))}
+              {/* {error ? <li>Failed to load transactions</li> : ''} */}
+          </Table>
+          </Card.Body>
         </Card>    
     </>
 }
