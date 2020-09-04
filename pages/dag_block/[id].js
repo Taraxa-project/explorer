@@ -60,7 +60,7 @@ export default function DagBlockPage({data}) {
                         ))}
                         </ul>
                     </li>
-                    <li>VDF: {data.vdf}</li>
+                    <li>Verifiable Delay Function: {data.vdf}</li>
                 </ul>
             </Card.Body>
             <Card.Body>

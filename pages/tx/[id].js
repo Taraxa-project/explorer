@@ -3,18 +3,22 @@ import Link from 'next/link'
 import config from 'config';
 import mongoose from 'mongoose'
 import Tx from '../../models/tx'
+import DagBlock from '../../models/dag_block'
 
 import {Container, Row, Col, Navbar, Nav, Button, Jumbotron, Card, ListGroup, ListGroupItem, Table} from 'react-bootstrap'
 
 export async function getServerSideProps(context) {
     let props = {
-        data: {}
+        tx: {},
+        dags: []
     };
     try {
         mongoose.connection._readyState || await mongoose.connect(config.mongo.uri, config.mongo.options);
         const tx = await Tx.findOne({_id: context.query.id}).lean();
         if (tx) {
-            props.data = JSON.parse(JSON.stringify(tx));
+            props.tx = JSON.parse(JSON.stringify(tx));
+            const dags = await DagBlock.find({transactions: tx._id}).sort({timestamp: 1}).lean();
+            props.dags = JSON.parse(JSON.stringify(dags));
         }
     } catch (e) {
         console.error('Error in Server Props: ' + e.message);
@@ -25,45 +29,64 @@ export async function getServerSideProps(context) {
     }
 }  
 
-export default function TxPage({data}) {
+export default function TxPage({tx, dags}) {
   return <>
-    <h1>Tx {data._id}</h1>
+    <h1>Tx {tx._id}</h1>
             <Card style={{margin: 5, marginTop: 0, marginBottom: 10}} bg="dark" text="white">
-            {/* <Card.Header>Tx {data._id}</Card.Header> */}
             <Card.Body>
-                
-
                 <ul>
                     <li>
-                        Timestamp {new Date(data.timestamp).toLocaleString()}
+                        Timestamp {new Date(tx.timestamp).toLocaleString()}
                     </li>
                     <li>
-                        Block <Link href="/block/[id]" as={`/block/${data.blockHash}`}>
-                            <a>{`${data.blockHash}`}</a>
+                        Block <Link href="/block/[id]" as={`/block/${tx.blockHash}`}>
+                            <a>{`${tx.blockHash}`}</a>
                         </Link>
                     </li>
-                    {data.from ? (<li>From{' '}
-                        <Link href="/address/[id]" as={`/address/${data.to}`}>
-                            <a>{`${data.from}`}</a>
+                    {tx.from ? (<li>From{' '}
+                        <Link href="/address/[id]" as={`/address/${tx.to}`}>
+                            <a>{`${tx.from}`}</a>
                         </Link>
                     </li>) : ''}
                     <li>To{' '}
-                        <Link href="/address/[id]" as={`/address/${data.to}`}>
-                            <a>{`${data.to}`}</a>
+                        <Link href="/address/[id]" as={`/address/${tx.to}`}>
+                            <a>{`${tx.to}`}</a>
                         </Link>
                     </li>
                     
                     <li>
-                        {`Gas ${data.gas}`}
+                        {`Gas ${tx.gas}`}
                     </li>
                     <li>
-                        {`Gas Price ${data.gasPrice}`}
+                        {`Gas Price ${tx.gasPrice}`}
                     </li>
                     <li>
-                        {`Value ${data.value.toLocaleString()}`}
+                        {`Value ${tx.value.toLocaleString()}`}
                     </li>
                 </ul>
             </Card.Body>
+            <Card.Body>
+            <Card.Title>DAG Blocks:</Card.Title>
+            <Table responsive variant="dark">
+              <tr>
+                <th>Timestamp</th>
+                <th>Level</th>
+                <th>Hash</th>
+              </tr>
+              {dags.map((dagBlock) => (
+                  <tr key={dagBlock._id}>
+                  <td>{new Date(dagBlock.timestamp).toLocaleString()}</td>
+                  <td>{`${dagBlock.level} `}</td>
+                  <td>
+                    <Link href="/dag_block/[id]" as={`/dag_block/${dagBlock._id}`}>
+                        <a className="long-hash">{`${dagBlock._id}`}</a>
+                    </Link>
+                  </td>
+                </tr>
+              ))}
+              {/* {error ? <li>Failed to load transactions</li> : ''} */}
+          </Table>
+          </Card.Body>
         </Card>
     </>
 }
