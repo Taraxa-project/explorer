@@ -67,13 +67,14 @@ export default function AddressPage({data}) {
     return <>
        <h1>Address {data.address}</h1>
         <Card style={{margin: 5, marginTop: 0, marginBottom: 10}} bg="dark" text="white">
-            {/* <Card.Header>Address {data.address}</Card.Header> */}
             <Card.Body>
-            <ul>
-                <li>Balance: {data.balance.toLocaleString()}</li>
-                <li>Sent: {data.sent?.toLocaleString()}</li>
-                <li>Received: {data.received?.toLocaleString()}</li>
-            </ul>
+                <Card.Title>
+                    Balance: {data.balance.toLocaleString()}
+                </Card.Title>
+                <ul>
+                    <li>Sent: {data.sent?.toLocaleString()}</li>
+                    <li>Received: {data.received?.toLocaleString()}</li>
+                </ul>
             </Card.Body>
             <Card.Body>
             <Card.Title>Recent Transactions:</Card.Title>

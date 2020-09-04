@@ -8,7 +8,7 @@ const DAGBlock = new mongoose.Schema({
     sender: {type: String, index: true},
     sig: {type: String},
     timestamp: {type: Date, index: true},
-    tips: [{type: String}],
+    tips: [{type: String, ref: 'DAGBlock'}],
     transactions: [{type: String, ref: 'Tx'}],
     vdf: {type: String},
 }, {
