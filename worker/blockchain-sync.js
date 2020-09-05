@@ -356,11 +356,14 @@ async function historicalSync(subscribed = false) {
                         }
                     });
                 }
+
+                syncState.dagBlockLevel = dagBlock.level;;
             }
 
             if (notifications.length) {
                 await LogNetworkEvent.bulkWrite(notifications, {ordered: true});
             }
+
         }
     }
 }

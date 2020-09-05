@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 
 import DagBlock from '../../models/dag_block';
 import Block from '../../models/block';
+import Tx from '../../models/tx';
 
 import utils from 'web3-utils'
 
@@ -19,12 +20,14 @@ export default async function handler(req, res) {
     try {
         let blocks = [];
         let dagBlocks = [];
+        let txs = [];
 
         if (queryString) {
             console.log('Searching for', queryString)
             if(utils.isHexStrict(queryString.trim())){
                 blocks = await Block.find({_id: queryString.trim()}).limit(1);
                 dagBlocks = await DagBlock.find({_id: queryString.trim()}).limit(1);
+                txs = await Tx.find({_id: queryString.trim()}).limit(1);
             } else {
                 blocks = await Block.find({number: Number(queryString)}).limit(1);
                 dagBlocks = await DagBlock.find({level: Number(queryString)}).limit(1);
@@ -33,7 +36,8 @@ export default async function handler(req, res) {
         
         res.json({
             blocks,
-            dagBlocks
+            dagBlocks,
+            txs
         });
     } catch (e) {
         console.error(e);

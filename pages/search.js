@@ -6,7 +6,10 @@ import {Card, Table, Col, Row, Pagination, Form} from 'react-bootstrap'
 const fetcher = (url) => fetch(url).then((res) => res.json())
 
 export default function Search() {
-    const search = window?.location?.search;
+    let search = "";
+    if (typeof window !== "undefined") {
+        search = window?.location?.search;
+    }
     const params = new URLSearchParams(search);
     const queryString = params.get('query');
 
@@ -68,6 +71,34 @@ export default function Search() {
                         </Link>
                         </td>
                         <td>{block.transactions.length}</td>
+                    </tr>
+                    ))}
+                </tbody>
+            </Table>
+            </Card>
+        ) : ''}
+        {data?.txs?.length ? (
+            <Card style={{margin: 5, marginTop: 0, marginBottom: 10}} bg="dark" text="white">
+            <Table responsive variant="dark">
+                <thead>
+                <tr>
+                    <th>Transaction</th>
+                    <th>Block Number</th>
+                    <th>Hash</th>
+                    <th>Value</th>
+                </tr>
+                </thead>
+                <tbody>
+                    {data?.txs?.map((tx) => (
+                        <tr key={tx._id}>
+                        <td>{new Date(tx.timestamp).toLocaleString()}</td>
+                        <td>{`${tx.blockNumber} `}</td>
+                        <td>
+                        <Link href="/tx/[id]" as={`/tx/${tx._id}`}>
+                            <a className="long-hash">{`${tx._id}`}</a>
+                        </Link>
+                        </td>
+                        <td>{tx.value.toLocaleString()}</td>
                     </tr>
                     ))}
                 </tbody>
