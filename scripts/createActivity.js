@@ -65,17 +65,20 @@ async function sendRandomTransaction() {
     
             // return taraxa.sendTransaction(tx);
             const signed = await node[sender].account.signTransaction(tx);
-            // return new Promise((resolve, reject) => {
-                await taraxa.sendSignedTransaction(signed.rawTransaction)
-                //     .once('sent', payload => {
-                //         console.log('Sent tx', transactions.toLocaleString(), payload);
-                //         resolve(payload);
-                //     })
-                //     .once('error', error => {
-                //         console.error(error);
-                //         reject(error);
-                //     })
-            // });
+            // await taraxa.sendSignedTransaction(signed.rawTransaction)
+            return new Promise((resolve, reject) => {
+                setTimeout(() => {              
+                    taraxa.sendSignedTransaction(signed.rawTransaction)
+                        .once('sent', payload => {
+                            console.log('Sent tx', transactions.toLocaleString(), payload);
+                            resolve(payload);
+                        })
+                        .once('error', error => {
+                            console.error(error);
+                            reject(error);
+                        })
+                }, 500)
+            });
         }
     }
 }

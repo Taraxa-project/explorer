@@ -18,12 +18,21 @@ export default async function handler(req, res) {
 
     try {
         let blocks = [];
+        const total = await Block.countDocuments();
         if (fullTransactions) {
             blocks = await Block.find().limit(limit).skip(skip).sort({number: reverse ? -1 : 1}).populate('transactions');
         } else {
             blocks = await Block.find().limit(limit).skip(skip).sort({number: reverse ? -1 : 1});
         }
-        res.json(blocks);
+        res.json({
+            total,
+            reverse,
+            skip,
+            limit,
+            result: {
+                blocks
+            }
+        });
     } catch (e) {
         console.error(e);
         res.status(500).json({error: 'Internal error. Please try your request again.'});

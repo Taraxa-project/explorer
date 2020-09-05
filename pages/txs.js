@@ -1,16 +1,61 @@
 import Link from 'next/link'
-import {Card, Table} from 'react-bootstrap'
+import {useState} from 'react'
+
+import {Card, Table, Row, Col, Form, Pagination} from 'react-bootstrap'
 
 import useSwr from 'swr'
 
 const fetcher = (url) => fetch(url).then((res) => res.json())
 
 export default function Index() {
-  const { data, error } = useSwr('/api/txs?reverse=true', fetcher)
+  const [limit, setLimit] = useState(20);
+  const [skip, setSkip] = useState(0);
+  const [reverse, setReverse] = useState(true);
+
+  let query = `/api/txs?limit=${limit}`;
+  if (reverse) {
+    query += '&reverse=true'
+  }
+  if (skip) {
+    query += `&skip=${skip}`
+  }
+
+  const { data, error } = useSwr(query, fetcher)
+
+  function updateQueryReverse(e) {
+    let val = true;
+    if (e.target.value === "false") {
+      val = false;
+    }
+    setReverse(val);
+  }
+
+  function updateQuerySkip(e) {
+    setSkip(Number(e))
+  }
+
+  const total = data?.total || 0;
+  const txs = data?.result?.txs || [];
+  const pages = Math.ceil(total / limit);
+  const page = skip / limit + 1;
 
   return (
       <>
-        <h1>Recent Transactions</h1>
+        <Row>
+          <Col sm="8" md="10">
+            <h1>Transactions</h1>
+          </Col>
+          <Col>
+            <Form>
+              <Form.Group>
+                <Form.Control id="sortControl" size="sm" as="select" onChange={updateQueryReverse}>
+                  <option value="true">Newest</option>
+                  <option value="false">Oldest</option>
+                </Form.Control>
+              </Form.Group>
+            </Form>
+          </Col>
+        </Row>
         <Card style={{margin: 5, marginTop: 0, marginBottom: 10}} bg="dark" text="white">
           <Table responsive variant="dark">
               <tr>
@@ -19,7 +64,7 @@ export default function Index() {
                 <th>Hash</th>
                 <th>Value</th>
               </tr>
-              {data ? data.map((tx) => (
+              {txs ? txs.map((tx) => (
                   <tr key={tx._id}>
                   <td>{new Date(tx.timestamp).toLocaleString()}</td>
                   <td>{`${tx.blockNumber} `}</td>
@@ -31,9 +76,62 @@ export default function Index() {
                   <td>{tx.value.toLocaleString()}</td>
                 </tr>
               )) : ''}
-              {/* {error ? <li>Failed to load transactions</li> : ''} */}
           </Table>
         </Card>
+
+        {total > limit ?  (
+            
+            <Pagination>
+              {page < 2 ? '' : (
+                <>
+                <Pagination.First onClick={() => updateQuerySkip(0)}/>
+                <Pagination.Prev onClick={() => updateQuerySkip((page - 2) * limit)}/>
+                </>
+              )}
+              
+              {page !== 1 ? (
+                <Pagination.Item onClick={() => updateQuerySkip(0)}>{1}</Pagination.Item>
+              ) : ''}
+
+              {page > 4 ? (
+                <>
+                <Pagination.Ellipsis />
+                </>
+              ) : ''}
+              
+
+              {page - 2 > 1 ? (
+                <Pagination.Item onClick={() => updateQuerySkip((page - 3) * limit)}>{page - 2}</Pagination.Item>
+              ) : ''}
+              {page - 1 > 1 ? (
+                <Pagination.Item onClick={() => updateQuerySkip((page - 2) * limit)}>{page - 1}</Pagination.Item>
+              ) : ''}
+              <Pagination.Item active>{page}</Pagination.Item>
+              {page + 1 < pages ? (
+                <Pagination.Item onClick={() => updateQuerySkip(page * limit)}>{page + 1}</Pagination.Item>
+              ) : ''}
+              {page + 2 < pages ? (
+                <Pagination.Item onClick={() => updateQuerySkip((page +1) * limit)}>{page + 2}</Pagination.Item>
+              ) : ''}
+
+              {pages > page + 2  ? (
+                <>
+                <Pagination.Ellipsis />
+                </>
+              ) : ''}
+
+              {page !== pages ? (
+                <Pagination.Item onClick={() => updateQuerySkip((pages - 1) * limit)}>{pages}</Pagination.Item>
+              ) : ''}
+              
+              {page < pages ? (
+                <>
+                <Pagination.Next onClick={() => updateQuerySkip(page * limit)}/>
+                <Pagination.Last onClick={() => updateQuerySkip((pages - 1) * limit)}/>
+                </>
+              ) : ''}
+            </Pagination>
+        ) : ''}  
       </>
   )
 }

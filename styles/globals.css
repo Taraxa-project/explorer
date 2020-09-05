@@ -92,6 +92,16 @@ ul {
   flex: 1;
 }
 
+.pagination > .page-item.active > .page-link {
+  background-color: #20a960;
+  border-color: #20a960;
+  color: #fff;
+}
+
+.pagination > .page-item > .page-link {
+  color: #20a960;
+}
+
 .dag {
   margin-top: 10px;
   width: 100%;

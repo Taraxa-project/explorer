@@ -13,7 +13,7 @@ export default async function handler(req, res) {
 
     let skip = Number(req.query.skip) || 0;
     let limit = Number(req.query.limit) || 20;
-    let sortOrder = req.query.reverse ? -1 : 1;
+    let reverse = Boolean(req.query.reverse);
     let blockHash = req.query.blockHash;
 
     const query = {};
@@ -22,8 +22,17 @@ export default async function handler(req, res) {
     }
 
     try {
-        const txs = await Tx.find(query).limit(limit).skip(skip).sort({timestamp: sortOrder ? -1 : 1});
-        res.json(txs);
+        const total = await Tx.countDocuments();
+        const txs = await Tx.find(query).limit(limit).skip(skip).sort({timestamp: reverse ? -1 : 1});
+        res.json({
+            total,
+            reverse,
+            skip,
+            limit,
+            result: {
+                txs
+            }
+        });
     } catch (e) {
         console.error(e);
         res.status(500).json({error: 'Internal error. Please try your request again.'});
