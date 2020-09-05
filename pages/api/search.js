@@ -23,18 +23,14 @@ export default async function handler(req, res) {
         if (queryString) {
             console.log('Searching for', queryString)
             if(utils.isHexStrict(queryString.trim())){
-                console.log('Query using hex', queryString)
                 blocks = await Block.find({_id: queryString.trim()}).limit(1);
                 dagBlocks = await DagBlock.find({_id: queryString.trim()}).limit(1);
             } else {
-                console.log('Query using number', Number(queryString))
                 blocks = await Block.find({number: Number(queryString)}).limit(1);
                 dagBlocks = await DagBlock.find({level: Number(queryString)}).limit(1);
             }
         }
         
-        console.log('Result', {blocks, dagBlocks})
-
         res.json({
             blocks,
             dagBlocks
