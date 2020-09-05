@@ -64,7 +64,7 @@ export default function Index() {
                 <th>Hash</th>
                 <th>Value</th>
               </tr>
-              {txs ? txs.map((tx) => (
+              {data ? txs.map((tx) => (
                   <tr key={tx._id}>
                   <td>{new Date(tx.timestamp).toLocaleString()}</td>
                   <td>{`${tx.blockNumber} `}</td>
@@ -81,7 +81,7 @@ export default function Index() {
 
         {total > limit ?  (
             
-            <Pagination>
+            <Pagination className="justify-content-center" style={{padding: 10}}>
               {page < 2 ? '' : (
                 <>
                 <Pagination.First onClick={() => updateQuerySkip(0)}/>

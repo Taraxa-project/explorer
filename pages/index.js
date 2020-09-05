@@ -7,7 +7,7 @@ import { setRecentTxs } from '../store/txs/action'
 
 import Link from 'next/link'
 
-import {Container, Row, Col, Jumbotron, Card, ListGroup, ListGroupItem} from 'react-bootstrap'
+import {Container, Row, Col, Form, Button, InputGroup, FormControl, Jumbotron, Card, ListGroup, ListGroupItem} from 'react-bootstrap'
 
 import DAG from '../components/DAG'
 

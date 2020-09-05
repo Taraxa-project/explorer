@@ -93,13 +93,15 @@ ul {
 }
 
 .pagination > .page-item.active > .page-link {
-  background-color: #20a960;
   border-color: #20a960;
-  color: #fff;
+  color: #20a960;
+  border-bottom: solid 2px;
 }
 
 .pagination > .page-item > .page-link {
   color: #20a960;
+  border: none;
+  background-color: #0f1517;
 }
 
 .dag {

@@ -1,16 +1,36 @@
 import { wrapper } from '../store/store'
+import {useState} from 'react'
+import { useRouter } from 'next/router'
 
 import Head from 'next/head'
 import Link from 'next/link'
 
+import utils from 'web3-utils'
+
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../styles/globals.css';
 
-import {Navbar, Nav} from 'react-bootstrap'
+import {Navbar, Nav, Form, Button, InputGroup, FormControl} from 'react-bootstrap'
 
 import WebsocketContainer from '../containers/ws'
 
 function ReduxApp({Component, pageProps}) {
+    const [search, setSearch] = useState("");
+    const router = useRouter()
+
+    function updateSearch (e) {
+        setSearch(e.target.value);
+    }
+
+    function doSearch() {
+        if (search) {
+            if (utils.isAddress(search)) {
+                router.push(`/address/${search}`)
+            } else {
+                router.push(`/search?query=${search}`)
+            }
+        }
+    }
     return <>
         <Head>
             <title>Taraxa Explorer</title>
@@ -20,7 +40,7 @@ function ReduxApp({Component, pageProps}) {
         </Head>
 
         <WebsocketContainer/>
-            <Navbar collapseOnSelect expand="md" bg="dark" variant="dark">
+            <Navbar collapseOnSelect expand="lg" bg="dark" variant="dark">
                 <Link href="/" as={`/`}>
                     <Navbar.Brand href="/">
                         <img
@@ -36,8 +56,19 @@ function ReduxApp({Component, pageProps}) {
 
                 <Navbar.Toggle aria-controls="responsive-navbar-nav" />
                 <Navbar.Collapse id="responsive-navbar-nav">
-                    <Nav className="mr-auto"></Nav>
-                    <Nav>
+                    <InputGroup className="mr-auto" style={{padding: 10}}>
+                        <FormControl
+                            placeholder="Address, Hash, or Number"
+                            aria-label="Recipient's username"
+                            aria-describedby="basic-addon2"
+                            onChange={updateSearch}
+                        />
+                        <InputGroup.Append>
+                            <Button variant="outline-light" onClick={doSearch}>Search</Button>
+                        </InputGroup.Append>
+                    </InputGroup>
+                    
+                    <Nav style={{padding: 10}}>
 
                     <Link href="/dag_blocks" as={`/dag_blocks`}>
                         <Nav.Link href="/dag_blocks">DAG</Nav.Link>

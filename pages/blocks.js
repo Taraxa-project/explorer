@@ -86,7 +86,7 @@ export default function Index() {
 
           {total > limit ?  (
             
-            <Pagination>
+            <Pagination className="justify-content-center" style={{padding: 10}}>
               {page < 2 ? '' : (
                 <>
                 <Pagination.First onClick={() => updateQuerySkip(0)}/>
