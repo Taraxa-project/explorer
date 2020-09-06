@@ -58,12 +58,15 @@ export default function Index() {
         </Row>
         <Card style={{margin: 5, marginTop: 0, marginBottom: 10}} bg="dark" text="white">
           <Table responsive variant="dark">
-              <tr>
-                <th>Timestamp</th>
-                <th>Block</th>
-                <th>Hash</th>
-                <th>Value</th>
-              </tr>
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Block</th>
+                  <th>Hash</th>
+                  <th>Value</th>
+                </tr>
+              </thead>
+              <tbody>
               {data ? txs.map((tx) => (
                   <tr key={tx._id}>
                   <td>{new Date(tx.timestamp).toLocaleString()}</td>
@@ -76,6 +79,7 @@ export default function Index() {
                   <td>{tx.value.toLocaleString()}</td>
                 </tr>
               )) : ''}
+              </tbody>
           </Table>
         </Card>
 

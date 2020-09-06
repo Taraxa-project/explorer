@@ -107,7 +107,7 @@ ul {
 .dag {
   margin-top: 10px;
   width: 100%;
-  height: 420px;
+  height: 430px;
   background-color: #0f1517;
   align-items: center;
   font-size: calc(10px + 2vmin);
@@ -196,10 +196,11 @@ ul {
   position: absolute;
   left: 50%;
   margin-left: -330px;
-  top: -150px;
+  top: -10px;
   width: auto;
   height: 50px;
   font-size: 16px;
+  z-index: 5;
 }
 
 /* @media screen and (max-width: $page-width) {
@@ -286,16 +287,17 @@ font-size: 18px;
 .dag-levels-label {
 position: absolute;
 left: 50%;
-margin-left: -50px;
-top: -70px;
+margin-left: -46px;
+top: 0px;
 font-size: 18px;
-color: #555;
+color: #777;
+z-index: 4;
 }
 .dag-periods-label {
 position: absolute;
 left: 50%;
 margin-left: -50px;
-top: 390px;
+top: 400px;
 font-size: 18px;
 color: #15ac5b;
 }

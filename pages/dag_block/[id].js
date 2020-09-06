@@ -73,23 +73,26 @@ export default function DagBlockPage({data}) {
                     <Card.Body>
                         <Card.Title>Tips:</Card.Title>
                         <Table responsive variant="dark">
-                            <tr>
-                                <th>Timestamp</th>
-                                <th>Level</th>
-                                <th>Hash</th>
-                            </tr>
-                            {data.tips.map((dagBlock) => (
-                                <tr key={dagBlock._id}>
-                                <td>{new Date(dagBlock.timestamp).toLocaleString()}</td>
-                                <td>{`${dagBlock.level} `}</td>
-                                <td>
-                                    <Link href="/dag_block/[id]" as={`/dag_block/${dagBlock._id}`}>
-                                        <a className="long-hash">{`${dagBlock._id}`}</a>
-                                    </Link>
-                                </td>
+                            <thead>
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>Level</th>
+                                    <th>Hash</th>
                                 </tr>
-                            ))}
-                            {/* {error ? <li>Failed to load transactions</li> : ''} */}
+                            </thead>
+                            <tbody>
+                                {data.tips.map((dagBlock) => (
+                                    <tr key={dagBlock._id}>
+                                    <td>{new Date(dagBlock.timestamp).toLocaleString()}</td>
+                                    <td>{`${dagBlock.level} `}</td>
+                                    <td>
+                                        <Link href="/dag_block/[id]" as={`/dag_block/${dagBlock._id}`}>
+                                            <a className="long-hash">{`${dagBlock._id}`}</a>
+                                        </Link>
+                                    </td>
+                                    </tr>
+                                ))}
+                            </tbody>
                         </Table>
                     </Card.Body>
                 ) : ''}
@@ -97,26 +100,29 @@ export default function DagBlockPage({data}) {
                 <Card.Body>
                 <Card.Title>Transactions:</Card.Title>
                 <Table responsive variant="dark">
-                <tr>
-                    <th>Timestamp</th>
-                    <th>Block</th>
-                    <th>Hash</th>
-                    <th>Value</th>
-                </tr>
-                {data.transactions.map((tx) => (
-                    <tr key={tx._id}>
-                    <td>{new Date(tx.timestamp).toLocaleString()}</td>
-                    <td>{`${tx.blockNumber} `}</td>
-                    <td>
-                        <Link href="/tx/[id]" as={`/tx/${tx._id}`}>
-                            <a className="long-hash">{`${tx._id}`}</a>
-                        </Link>
-                    </td>
-                    <td>{tx.value.toLocaleString()}</td>
-                    </tr>
-                ))}
-                {/* {error ? <li>Failed to load transactions</li> : ''} */}
-            </Table>
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Block</th>
+                            <th>Hash</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {data.transactions.map((tx) => (
+                            <tr key={tx._id}>
+                            <td>{new Date(tx.timestamp).toLocaleString()}</td>
+                            <td>{`${tx.blockNumber} `}</td>
+                            <td>
+                                <Link href="/tx/[id]" as={`/tx/${tx._id}`}>
+                                    <a className="long-hash">{`${tx._id}`}</a>
+                                </Link>
+                            </td>
+                            <td>{tx.value.toLocaleString()}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </Table>
             </Card.Body>
             </Card>
         </Accordion>

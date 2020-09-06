@@ -74,25 +74,28 @@ export default function TxPage({tx, dags}) {
             <Card.Body>
             <Card.Title>DAG Blocks:</Card.Title>
             <Table responsive variant="dark">
-              <tr>
-                <th>Timestamp</th>
-                <th>Level</th>
-                <th>Hash</th>
-                <th>Transactions</th>
-              </tr>
-              {dags.map((dagBlock) => (
-                  <tr key={dagBlock._id}>
-                  <td>{new Date(dagBlock.timestamp).toLocaleString()}</td>
-                  <td>{`${dagBlock.level} `}</td>
-                  <td>
-                    <Link href="/dag_block/[id]" as={`/dag_block/${dagBlock._id}`}>
-                        <a className="long-hash">{`${dagBlock._id}`}</a>
-                    </Link>
-                  </td>
-                  <td>{`${dagBlock.transactions.length} `}</td>
-                </tr>
-              ))}
-              {/* {error ? <li>Failed to load transactions</li> : ''} */}
+                <thead>
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>Level</th>
+                        <th>Hash</th>
+                        <th>Transactions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {dags.map((dagBlock) => (
+                    <tr key={dagBlock._id}>
+                    <td>{new Date(dagBlock.timestamp).toLocaleString()}</td>
+                    <td>{`${dagBlock.level} `}</td>
+                    <td>
+                        <Link href="/dag_block/[id]" as={`/dag_block/${dagBlock._id}`}>
+                            <a className="long-hash">{`${dagBlock._id}`}</a>
+                        </Link>
+                    </td>
+                    <td>{`${dagBlock.transactions.length} `}</td>
+                    </tr>
+                ))}
+                </tbody>
           </Table>
           </Card.Body>
         </Card>

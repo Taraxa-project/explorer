@@ -153,7 +153,8 @@ function DAG({recentDagBlocks, recentPbftBlocks, history, highlight}) {
                 onBlock(block)
             }
             for (const block of r) {
-                if (block.period) {
+                if (block.period && block.period !== -1) {
+                    console.log(block.period)
                     onFinalized({
                         block: block._id,
                         period: block.period
@@ -179,9 +180,13 @@ function DAG({recentDagBlocks, recentPbftBlocks, history, highlight}) {
 
             {blockPreview}
 
-            <div id="dag-graph" className="dag-graph"></div>
-
             {/* <DagLegend /> */}
+
+            <div className="dag-levels-label">Dag Levels</div>
+            <div id="dag-graph" className="dag-graph"></div>
+            <div className="dag-periods-label">DAG Periods</div>
+
+            
 
         </div>
     )

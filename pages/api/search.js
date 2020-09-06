@@ -23,7 +23,6 @@ export default async function handler(req, res) {
         let txs = [];
 
         if (queryString) {
-            console.log('Searching for', queryString)
             if(utils.isHexStrict(queryString.trim())){
                 blocks = await Block.find({_id: queryString.trim()}).limit(1);
                 dagBlocks = await DagBlock.find({_id: queryString.trim()}).limit(1);

@@ -79,25 +79,28 @@ export default function AddressPage({data}) {
             <Card.Body>
             <Card.Title>Recent Transactions:</Card.Title>
             <Table responsive variant="dark">
-              <tr>
-                <th>Timestamp</th>
-                <th>Block</th>
-                <th>Hash</th>
-                <th>Value</th>
-              </tr>
-              {data.transactions.map((tx) => (
-                  <tr key={tx._id}>
-                  <td>{new Date(tx.timestamp).toLocaleString()}</td>
-                  <td>{`${tx.blockNumber} `}</td>
-                  <td>
-                    <Link href="/tx/[id]" as={`/tx/${tx._id}`}>
-                        <a className="long-hash">{`${tx._id}`}</a>
-                    </Link>
-                  </td>
-                  <td>{tx.value.toLocaleString()}</td>
-                </tr>
-              ))}
-              {/* {error ? <li>Failed to load transactions</li> : ''} */}
+                <thead>
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>Block</th>
+                        <th>Hash</th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {data.transactions.map((tx) => (
+                    <tr key={tx._id}>
+                    <td>{new Date(tx.timestamp).toLocaleString()}</td>
+                    <td>{`${tx.blockNumber} `}</td>
+                    <td>
+                        <Link href="/tx/[id]" as={`/tx/${tx._id}`}>
+                            <a className="long-hash">{`${tx._id}`}</a>
+                        </Link>
+                    </td>
+                    <td>{tx.value.toLocaleString()}</td>
+                    </tr>
+                ))}
+                </tbody>
           </Table>
           </Card.Body>
         </Card>

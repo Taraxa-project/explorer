@@ -80,11 +80,14 @@ export default function BlockPage({data}) {
                 <Card.Body>
                 <Card.Title>Transactions:</Card.Title>
                 <Table responsive variant="dark">
-                <tr>
-                    <th>Number</th>
-                    <th>Hash</th>
-                    <th>Value</th>
-                </tr>
+                    <thead>
+                        <tr>
+                            <th>Number</th>
+                            <th>Hash</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                <tbody>
                 {data.transactions.map((tx, index) => (
                     <tr key={tx._id}>
                         <td>{index + 1}</td>
@@ -96,7 +99,7 @@ export default function BlockPage({data}) {
                     <td>{tx.value.toLocaleString()}</td>
                     </tr>
                 ))}
-                {/* {error ? <li>Failed to load transactions</li> : ''} */}
+                </tbody>
             </Table>
             </Card.Body>
             </Card>    
