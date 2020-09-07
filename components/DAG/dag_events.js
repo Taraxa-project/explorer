@@ -44,7 +44,8 @@ export function block2node(block, levelNodesPosition) {
             "level": parseInt(block["level"]),
             "type": "dag",
             "period": 0
-        },
+		},
+		grabbable: false,
         "position": { x: config.LevelWidth * parseInt(block["level"]), y }  // String(block["hash"]).slice(0, 5).to_i(16)// //y: parseInt(String(block["timestamp"]).slice(-2))
     }
 }
@@ -155,8 +156,11 @@ export let onBlock = (isHistory, block, level, firstLevel, lastDagX, isFirstBloc
 	        })
 		})
 	}
-	console.log('PAN 1')
-	cy.pan({ x: dagCy.current.width() / 2 - level.current * config.LevelWidth + 5 * config.LevelWidth})
+	var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
+	var columnShift = Math.floor(width / config.LevelWidth / 2) * config.LevelWidth;
+	// old column shift was 5 * config.LevelWidth
+	// console.log('column shift', columnShift);
+	cy.pan({ x: dagCy.current.width() / 2 - level.current * config.LevelWidth + columnShift})
 
     if (node != null && isFirstBlock.current) {
         lastDagX.current = node.position.x

@@ -36,7 +36,7 @@ export async function getServerSideProps(context) {
 }  
 
 export default function DagBlockPage({data}) {
-    console.log('dag block', data)
+    // console.log('dag block', data)
     return <>
        <h1>DAG Block {data._id}</h1>
        <Accordion>

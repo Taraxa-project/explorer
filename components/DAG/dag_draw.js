@@ -58,7 +58,7 @@ export let draw = (level, data, prevData, cyChange, setCyChange, setCy, dagCy, c
             padding: 20,
             fit: false,
         },
-        // userPanningEnabled: false
+        userPanningEnabled: false,
         userZoomingEnabled: false
     });
     // dagCy.current.reset()

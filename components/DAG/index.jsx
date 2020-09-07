@@ -97,7 +97,10 @@ function DAG({recentDagBlocks, recentPbftBlocks, history, highlight, recentHisto
         events.onMouseout(event, setBlockPreview, dagCy)
     }, [])
 
-    let onClick = useCallback(events.onClick, [])
+    // let onClick = useCallback(events.onClick, [])
+    let onClick = useCallback((event) => {
+        events.onMouseover(event, onBlockPreview, dagCy)
+    }, [onBlockPreview])
 
     let onPan = useCallback(() => {
         //console.log('move')
