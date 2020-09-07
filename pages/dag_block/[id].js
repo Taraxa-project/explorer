@@ -46,7 +46,7 @@ export default function DagBlockPage({data}) {
                     <Card.Title>Level: {data.level}</Card.Title>
                     <ul>
                         <li>Hash: {data._id}</li>
-                        <li>Period Block: {data.period ? 'true' : 'false'}</li>
+                        <li>Period: {data.period}</li>
                         <li>Timestamp: {new Date(data.timestamp).toUTCString()}</li>
                         <li>Pivot: {' '}
                             <Link href="/dag_block/[id]" as={`/dag_block/${data.pivot}`}>

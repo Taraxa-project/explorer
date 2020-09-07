@@ -12,7 +12,7 @@ export default function reducer(state = blocksInitialState, action) {
     case dagBlockActionTypes.NEWDAGBLOCK:
       updated = [action.data];
       for (let block of recent) {
-        if (block.level > (state.level - 9)) {
+        if (block.level > (state.level - 14)) {
           updated.push(block);
         }
       }
@@ -28,7 +28,7 @@ export default function reducer(state = blocksInitialState, action) {
         }
       }
       for (let block of action.data) {
-        if (block.level > maxLevel - 10) {
+        if (block.level > maxLevel - 15) {
           updated.push(block);
         }
       }

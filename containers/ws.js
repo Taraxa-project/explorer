@@ -2,19 +2,12 @@ import { bindActionCreators } from 'redux'
 import { connect } from 'react-redux'
 import { useEffect } from 'react';
 
-import { addNewBlock, setRecentBlocks } from '../store/blocks/action'
+import { addNewBlock } from '../store/blocks/action'
+import { addNewDagBlock,  finalizeDagBlock } from '../store/dag_blocks/action';
+import { addNewPbftBlock } from '../store/pbft_blocks/action'
+import { addNewHistory } from '../store/history/action'
 
-import { 
-  addNewDagBlock, 
-  setRecentDagBlocks, 
-  finalizeDagBlock 
-} from '../store/dag_blocks/action';
-
-import { addNewPbftBlock, setRecentPbftBlocks } from '../store/pbft_blocks/action'
-
-import { setRecentTxs } from '../store/txs/action'
-
-function WebsocketContainer({addNewBlock, addNewDagBlock, finalizeDagBlock, addNewPbftBlock}) {
+function WebsocketContainer({addNewBlock, addNewDagBlock, finalizeDagBlock, addNewPbftBlock, addNewHistory}) {
 
   useEffect(() => {
     if (!window.ws) {
@@ -29,15 +22,17 @@ function WebsocketContainer({addNewBlock, addNewDagBlock, finalizeDagBlock, addN
           // listen to data sent from the websocket server
           const message = JSON.parse(evt.data)
           
-          if (message.log === 'block') {
-              addNewBlock(message.data);
-          } else if (message.log === 'dag-block') {
+          if (message.log === 'dag-block') {
               addNewDagBlock(message.data);
           } else if (message.log === 'dag-block-finalized') {
               finalizeDagBlock(message.data);
           } else if (message.log === 'pbft-block') {
               addNewPbftBlock(message.data);
-        }
+          } else if (message.log === 'block') {
+              addNewBlock(message.data);
+          }
+
+          addNewHistory(message);
       }
   
       window.ws.onclose = () => {
@@ -58,9 +53,7 @@ const mapDispatchToProps = (dispatch) => {
     addNewDagBlock: bindActionCreators(addNewDagBlock, dispatch),
     addNewPbftBlock: bindActionCreators(addNewPbftBlock, dispatch),
     finalizeDagBlock: bindActionCreators(finalizeDagBlock, dispatch),
-    setRecentBlocks: bindActionCreators(setRecentBlocks, dispatch),
-    setRecentDagBlocks: bindActionCreators(setRecentDagBlocks, dispatch),
-    setRecentTxs: bindActionCreators(setRecentTxs, dispatch),
+    addNewHistory: bindActionCreators(addNewHistory, dispatch),
   }
 }
 

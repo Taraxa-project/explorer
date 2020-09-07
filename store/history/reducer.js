@@ -1,14 +1,14 @@
-import { blockActionTypes } from './action'
+import { historyActionTypes } from './action'
 
-const blocksInitialState = {
+const historyInitialState = {
   recent: [],
 }
 
-export default function reducer(state = blocksInitialState, action) {
+export default function reducer(state = historyInitialState, action) {
   let recent = [].concat(state.recent);
   switch (action.type) {
-    case blockActionTypes.NEWPBFTBLOCK:
-      if (state.recent.length >= 20) {
+    case historyActionTypes.ADDHISTORY:
+      if (state.recent.length >= 100) {
         recent.pop();
       }
       recent.unshift(action.data);
@@ -16,7 +16,7 @@ export default function reducer(state = blocksInitialState, action) {
       return Object.assign({}, state, {
         recent,
       })
-    case blockActionTypes.RECENTPBFTBLOCKS:
+    case historyActionTypes.RECENTHISTORY:
       return Object.assign({}, state, {
         recent: action.data,
       })

@@ -1,8 +1,8 @@
 import { connect } from 'react-redux'
 import { wrapper } from '../store/store'
 
-import { addNewBlock, setRecentBlocks } from '../store/blocks/action'
-import { addNewDagBlock, setRecentDagBlocks, finalizeDagBlock } from '../store/dag_blocks/action'
+import { setRecentBlocks } from '../store/blocks/action'
+import { setRecentHistory } from '../store/history/action'
 import { setRecentTxs } from '../store/txs/action'
 
 import Link from 'next/link'
@@ -16,6 +16,7 @@ import mongoose from 'mongoose'
 import Block from '../models/block'
 import DagBlock from '../models/dag_block'
 import Tx from '../models/tx'
+import LogNetworkEvent from '../models/log_network_event'
 
 import moment from 'moment';
 
@@ -77,23 +78,22 @@ export const getServerSideProps = wrapper.getServerSideProps(async ({ store }) =
       let blocks = await Block.find().limit(10).sort({timestamp: -1}).lean();
       blocks = JSON.parse(JSON.stringify(blocks));
 
-      let dagBlocks = await DagBlock.find().limit(50).sort({timestamp: -1}).lean();
-      dagBlocks = JSON.parse(JSON.stringify(dagBlocks));
-
       let txs = await Tx.find().limit(10).sort({timestamp: -1}).lean();
       txs = JSON.parse(JSON.stringify(txs));
 
-      if (blocks.length) {
-        store.dispatch(addNewBlock(blocks[0]))
-        store.dispatch(setRecentBlocks(blocks))
-      }
+      let history = await LogNetworkEvent.find().limit(50).sort({_id: -1});
+      history = JSON.parse(JSON.stringify(history));
 
-      if (dagBlocks.length) {
-        store.dispatch(setRecentDagBlocks(dagBlocks))
+      if (blocks.length) {
+        store.dispatch(setRecentBlocks(blocks))
       }
 
       if (txs.length) {
         store.dispatch(setRecentTxs(txs))
+      }
+
+      if(history.length) {
+        store.dispatch(setRecentHistory(history))
       }
   } catch (e) {
       console.error('Error fetching data for index page: ' + e.message);
@@ -103,10 +103,7 @@ export const getServerSideProps = wrapper.getServerSideProps(async ({ store }) =
 const mapStateToProps = (state) => {
   return {
     recentBlocks: state.blocks.recent,
-    recentPbftBlocks: state.pbftBlocks.recent,
-    recentDagBlocks: state.dagBlocks.recent,
     recentTxs: state.txs.recent,
-    tip: state.blocks.tip
   }
 }
 

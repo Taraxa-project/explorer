@@ -364,7 +364,7 @@ export let onSchedule = (isHistory, data, prevPeriodLastHash, pauseNextAnimation
 
         setTimeout(() => {
             pauseNextAnimation.current = false
-        }, config.Duration * N)
+        }, config.Duration)
     }
 
 

@@ -12,4 +12,4 @@ const LogNetworkEvent = new mongoose.Schema({
     versionKey: false
 });
 
-module.exports = mongoose.model('LogNetworkEvent', LogNetworkEvent);
+module.exports = mongoose.models?.LogNetworkEvent || mongoose.model('LogNetworkEvent', LogNetworkEvent);

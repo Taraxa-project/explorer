@@ -4,6 +4,7 @@ import thunkMiddleware from 'redux-thunk'
 import blocks from './blocks/reducer'
 import dagBlocks from './dag_blocks/reducer'
 import pbftBlocks from './pbft_blocks/reducer'
+import history from './history/reducer'
 import txs from './txs/reducer'
 
 const bindMiddleware = (middleware) => {
@@ -18,7 +19,8 @@ const combinedReducer = combineReducers({
   blocks,
   dagBlocks,
   pbftBlocks,
-  txs,
+  history,
+  txs
 })
 
 const reducer = (state, action) => {

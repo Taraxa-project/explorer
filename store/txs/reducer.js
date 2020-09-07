@@ -1,10 +1,10 @@
 import { txActionTypes } from './action'
 
-const txsInitialState = {
+const txInitialState = {
   recent: [],
 }
 
-export default function reducer(state = txsInitialState, action) {
+export default function reducer(state = txInitialState, action) {
   switch (action.type) {
     case txActionTypes.RECENTTXS:
       return Object.assign({}, state, {

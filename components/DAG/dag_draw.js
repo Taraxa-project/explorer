@@ -63,7 +63,7 @@ export let draw = (level, data, prevData, cyChange, setCyChange, setCy, dagCy, c
     });
     // dagCy.current.reset()
     dagCy.current.zoom(1)
-	dagCy.current.pan({ x: dagCy.current.width() - level.current * 80, y: 50 });
+	dagCy.current.pan({ x: dagCy.current.width() - 80, y: 70 });
 	// dagCy.current.pan({ x: 0, y: 70 });
 	dagCy.current.nodes('[label = "' + level.current.toString() + '"]').style('background-color', color.SelectColor)
 	

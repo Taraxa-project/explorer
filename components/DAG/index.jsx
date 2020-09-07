@@ -10,8 +10,8 @@ import * as dag_draw from "./dag_draw"
 
 let levelNodesPosition = {}
 
-function DAG({recentDagBlocks, recentPbftBlocks, history, highlight}) {
-
+function DAG({recentDagBlocks, recentPbftBlocks, history, highlight, recentHistory, newHistory}) {
+    const [historyLoaded, setHistoryLoaded] = useState(false)
     const [data] = useState(null)// Currently requested data
     const [prevData] = useState(null)//Last requested data
 
@@ -143,29 +143,41 @@ function DAG({recentDagBlocks, recentPbftBlocks, history, highlight}) {
 
     useEffect(() => {
         if (cy) {
-            cy.remove('node')
-            levelNodesPosition = {}
-            firstLevel.current = 0
-            const r = [].concat(recentDagBlocks);
-            r.reverse();
-            for (const block of r) {
-                block.hash = block._id;
-                onBlock(block)
-            }
-            for (const block of r) {
-                if (block.period && block.period !== -1) {
-                    console.log(block.period)
-                    onFinalized({
-                        block: block._id,
-                        period: block.period
-                    })
+            if (!historyLoaded) {
+                console.log('loading history', recentHistory)
+                cy.remove('node')
+                levelNodesPosition = {}
+                firstLevel.current = 0
+                const history = [].concat(recentHistory);
+                history.reverse();
+                for (const h of history) {
+                    if (h.log === 'dag-block') {
+                        const block = h.data;
+                        block.hash = block._id;
+                        onBlock(block)
+                    } else if (h.log === 'dag-block-finalized') {
+                        onFinalized(h.data);
+                    } else if (h.log === 'pbft-block') {
+                        onSchedule(h.data);
+                    }
+                }
+                setHistoryLoaded(true);
+            } else {
+                console.log('loading new data', newHistory)
+                if (newHistory.log === 'dag-block') {
+                    const block = newHistory.data;
+                    block.hash = block._id;
+                    onBlock(block)
+                } else if (newHistory.log === 'dag-block-finalized') {
+                    onFinalized(newHistory.data);
+                } else if (newHistory.log === 'pbft-block') {
+                    onSchedule(newHistory.data);
                 }
             }
         }
             
         // eslint-disable-next-line
-    }, [cy, recentDagBlocks])
-
+    }, [cy, newHistory])
 
     return (
         <div className="dag box wide">
@@ -184,7 +196,7 @@ function DAG({recentDagBlocks, recentPbftBlocks, history, highlight}) {
 
             <div className="dag-levels-label">Dag Levels</div>
             <div id="dag-graph" className="dag-graph"></div>
-            <div className="dag-periods-label">DAG Periods</div>
+            {/* <div className="dag-periods-label">DAG Periods</div> */}
 
             
 
@@ -197,7 +209,9 @@ const mapStateToProps = (state) => {
     return {
       recentBlocks: state.blocks.recent,
       recentDagBlocks: state.dagBlocks.recent,
-      recentPbftBlocks: state.pbftBlocks.recent
+      recentPbftBlocks: state.pbftBlocks.recent,
+      recentHistory: state.history.recent,
+      newHistory: state.history.recent[0]
     }
   }
   

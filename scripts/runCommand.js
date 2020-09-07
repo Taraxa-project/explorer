@@ -82,7 +82,7 @@ program
     .description('get taraxa network version')
     .action(async function () {
         const response = await rpc.netVersion();
-        console.log(response.data);
+        console.log(response);
     });
 
 program
@@ -90,7 +90,7 @@ program
     .description('get taraxa network peers')
     .action(async function () {
         const response = await rpc.netPeerCount();
-        console.log(response.data);
+        console.log(response);
     });
 
 program
@@ -108,18 +108,16 @@ program
     .description('get taraxa transaction by hash')
     .action(async function (cmdObj) {
         const response = await taraxa.getTransaction(cmdObj.hash);
-        console.log(response);
+        console.log(JSON.stringify(response, null, 2));
     });
 
 program
-    .command('getBlockNumber')
+    .command('blockNumber')
     .description('get taraxa block number')
     .action(async function () {
         try {
-            const blockNumberS = await taraxa.getBlockNumber();
-            console.log(blockNumberS);
-            const response = await blockNumber();
-            console.log(response.data);
+            const response = await rpc.blockNumber();
+            console.log(JSON.stringify(response, null, 2));
         } catch (e) {
             console.error(e);
         }
@@ -127,30 +125,40 @@ program
     });
 
 program
-    .command('getDagBlockLevel')
+    .command('dagBlockLevel')
     .description('get taraxa dag block level')
     .action(async function () {
         try {
-            const response = await rpc.getDagBlockByLevel(level);
-            console.log(JSON.stringify(response.data, null, 2));
-            // const blockNumber = await taraxa.dagBlockLevel();
-            // console.log(blockNumber);
+            const response = await rpc.dagBlockByLevel();
+            console.log(JSON.stringify(response, null, 2));
         } catch (e) {
             console.error(e);
         }
     });
 
 program
-    .command('getDagBlockByLevel')
+    .command('getScheduleBlockByPeriod')
+    .description('get taraxa dag blocks by period')
+    .option('-p, --period <number>', 'period')
+    .action(async function (cmdObj) {
+        const period = Number(cmdObj.period) || 1;
+        try {
+            const response = await rpc.getScheduleBlockByPeriod(period);
+            console.log(JSON.stringify(response, null, 2));
+        } catch (e) {
+            console.error(e);
+        }
+    });
+
+    program
+    .command('getDagBlocksByLevel')
     .description('get taraxa dag blocks by level')
     .option('-l, --level <number>', 'level')
     .action(async function (cmdObj) {
         const level = Number(cmdObj.level) || 1;
         try {
-            const response = await rpc.getDagBlockByLevel(level);
-            console.log(JSON.stringify(response.data, null, 2));
-            // const response = await taraxa.getDagBlockByLevel(level, false);
-            // console.log(response);
+            const response = await rpc.getDagBlocksByLevel(level);
+            console.log(JSON.stringify(response, null, 2));
 
         } catch (e) {
             console.error(e);
@@ -165,7 +173,21 @@ program
         const hash = cmdObj.hash;
         try {
             const response = await rpc.getBlockByHash(hash);
-            console.log(JSON.stringify(response.data, null, 2));
+            console.log(JSON.stringify(response, null, 2));
+        } catch (e) {
+            console.error(e);
+        }
+    });
+
+program
+    .command('getDagBlockByHash')
+    .description('get taraxa dag blocks by hash')
+    .option('-h, --hash <string>', 'hash')
+    .action(async function (cmdObj) {
+        const hash = cmdObj.hash;
+        try {
+            const response = await rpc.getDagBlockByHash(hash);
+            console.log(JSON.stringify(response, null, 2));
         } catch (e) {
             console.error(e);
         }
@@ -179,7 +201,7 @@ program
         const number = Number(cmdObj.number).toString(16);
         try {
             const response = await rpc.getBlockByNumber(number, true);
-            console.log(JSON.stringify(response.data, null, 2));
+            console.log(JSON.stringify(response, null, 2));
         } catch (e) {
             console.error(e);
         }

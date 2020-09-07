@@ -59,7 +59,7 @@ async function getSyncState() {
         hash: '',
         genesis: '',
         number: -1,
-        dagBlockLevel: -1,
+        dagBlockLevel: 0,
         dagBlockPeriod: -1
     };
 
@@ -101,6 +101,24 @@ async function getDagBlocksByLevel(number, fullTransactions = false, returnEmpty
     return rpc.getDagBlockByLevel(number.toString(16), fullTransactions);
 }
 
+function formatPbftBlock(pbftBlock) {
+    // todo: rpc currently incorrectly returns hex without the 0x prefix
+    const dagPeriodBlocks = pbftBlock.schedule.dag_blocks_order;
+    if(!dagPeriodBlocks[0].startsWith('0x')){
+        dagPeriodBlocks.forEach((dagPeriodBlock, index) => {
+            pbftBlock.schedule.dag_blocks_order[index] = `0x${dagPeriodBlock}`
+        })
+    }
+
+    // todo: rpc currently incorrectly returns integer, but it should return hex
+    let dagPeriod = pbftBlock.period;
+    if (typeof dagPeriod === 'string' ) {
+        pbftBlock.period = parseInt(dagPeriod, 16);
+    }
+
+    return pbftBlock;
+}
+
 async function realtimeSync() {
     const topics = [
         'newDagBlocks', 
@@ -125,7 +143,7 @@ async function realtimeSync() {
                     subscribed[jsonRpc.result] = subscriptionRequests[jsonRpc.id].topic;
                 // handle subscription data
                 } else if (subscribed[jsonRpc.params?.subscription]) {
-                    // console.log(subscribed[jsonRpc.params.subscription], jsonRpc.params.result);
+                    // console.log(subscribed[jsonRpc.params.subscription], JSON.stringify(jsonRpc.params.result, null, 2));
                     switch(subscribed[jsonRpc.params.subscription]) {
                         case 'newDagBlocks':
                             const dagBlock = DagBlock.fromRPC(jsonRpc.params.result).toJSON();
@@ -140,7 +158,7 @@ async function realtimeSync() {
                             }).save();
                             return dagBlock;
                         case 'newDagBlocksFinalized':
-                            console.log('finalized', jsonRpc.params.result.period)
+                            // console.log(subscribed[jsonRpc.params.subscription], JSON.stringify(jsonRpc.params.result, null, 2));
                             const dagBlockFinalized = await DagBlock.findOneAndUpdate(
                                 {_id: jsonRpc.params.result.block},
                                 {period: jsonRpc.params.result.period},
@@ -148,17 +166,25 @@ async function realtimeSync() {
                             )
                             await new LogNetworkEvent({
                                 log: 'dag-block-finalized',
-                                data: jsonRpc.params.result
+                                data: {
+                                    block: dagBlockFinalized._id,
+                                    period: dagBlockFinalized.period
+                                }
                             }).save();
                             
                             return dagBlockFinalized;
                         case 'newPbftBlocks':
+                            // console.log(subscribed[jsonRpc.params.subscription], JSON.stringify(jsonRpc.params.result, null, 2));
+                            const pbftBlock = formatPbftBlock(jsonRpc.params.result.pbft_block)
+                            
+                            await DagBlock.updateMany({_id: {$in: pbftBlock.schedule.dag_blocks_order}}, {$set: {period: pbftBlock.period}})
                             await new LogNetworkEvent({
                                 log: 'pbft-block',
-                                data: jsonRpc.params.result.pbft_block
+                                data: pbftBlock
                             }).save();
                             return;
                         case 'newHeads':
+                            console.log(subscribed[jsonRpc.params.subscription], JSON.stringify(jsonRpc.params.result, null, 2));
                             await historicalSync(true);
                             return;
                         default:
@@ -215,7 +241,9 @@ async function historicalSync(subscribed = false) {
         syncState = {
             number: -1,
             hash: '',
-            genesis: ''
+            genesis: '',
+            dagBlockLevel: 0,
+            dagBlockPeriod: -1
         };
         verifiedTip = true;
     }
@@ -245,6 +273,11 @@ async function historicalSync(subscribed = false) {
             const txHashes = [];
 
             const minBlock = Object.assign({}, block);
+            let scheduleBlock = {
+                schedule: {
+                    dag_blocks_order: []
+                }
+            }
 
             // SPECIAL CASE GENESIS BLOCK
             if (block.number === '0x0') {
@@ -254,7 +287,8 @@ async function historicalSync(subscribed = false) {
                     blockHash: block.hash,
                     blockNumber: block.number,
                     to: '0xde2b1203d72d3549ee2f733b00b2789414c7cea5',
-                    value: 9007199254740991
+                    value: 9007199254740991,
+                    timestamp: new Date(0)
 
                 })
                 txHashes.push(fakeTx._id);
@@ -265,20 +299,71 @@ async function historicalSync(subscribed = false) {
                         upsert: true
                     }
                 });
-                notifications.push({
-                    insertOne: {
-                        document: {
-                            log: 'tx',
-                            data: fakeTx.toJSON()
-                        }
+            } else {
+                if (!subscribed) { // no need to do this if already getting dag blocks over websocket
+                    const scheduleBlockRPC = await rpc.getScheduleBlockByPeriod(block.number);
+                    scheduleBlock = formatPbftBlock(scheduleBlockRPC);
+                    const getDagPromises = [];
+                    for (const dagBlockHash of scheduleBlock.schedule.dag_blocks_order) {
+                        getDagPromises.push(rpc.getDagBlockByHash(dagBlockHash))
                     }
-                });
+                    const dagBlocks = await Promise.all(getDagPromises);
+                    for (const dagBlockRPC of dagBlocks) {
+                        const dagBlock =  DagBlock.fromRPC(dagBlockRPC);
+                        const d = dagBlock.toJSON();
+                        const existingDagBlock = await DagBlock.findOneAndUpdate(
+                            {_id: dagBlock._id},
+                            d,
+                            {upsert: true}
+                        );
+                        if (!existingDagBlock) {
+                            notifications.push({
+                                insertOne: {
+                                    document: {
+                                        log: 'dag-block',
+                                        data: d
+                                    }
+                                }
+                            });
+                        }
+        
+                        syncState.dagBlockLevel = dagBlock.level - 1;
+                    }
+                    if (dagBlocks.length) {
+                        // send for last dag block in schedule 
+                        const dagBlockRPC = dagBlocks[dagBlocks.length - 1];
+                        const dagBlock =  DagBlock.fromRPC(dagBlockRPC);
+                        notifications.push({
+                            insertOne: {
+                                document: {
+                                    log: 'dag-block-finalized',
+                                    data: {
+                                        block: dagBlock._id,
+                                        period: dagBlock.period
+                                    }
+                                }
+                            }
+                        });
+                    }
+
+                    notifications.push({
+                        insertOne: {
+                            document: {
+                                log: 'pbft-block',
+                                data: scheduleBlock
+                            }
+                        }
+                    });
+                    
+                    syncState.dagBlockPeriod = block.number;
+                }
             }
+
+
 
             for (const tx of block.transactions) {
                 txHashes.push(tx.hash);
             }
-
             minBlock.transactions = txHashes;
 
             notifications.push({
@@ -298,14 +383,6 @@ async function historicalSync(subscribed = false) {
                         filter: {_id: tx.hash},
                         update: t,
                         upsert: true
-                    }
-                });
-                notifications.push({
-                    insertOne: {
-                        document: {
-                            log: 'tx',
-                            data: t
-                        }
                     }
                 });
             }
@@ -331,12 +408,13 @@ async function historicalSync(subscribed = false) {
         }
     }
 
-    // sync dag blocks to tip
+    // sync unfinalized dag blocks to tip
     if (!subscribed) { // no need to do this if already getting dag blocks over websocket
         while (syncState.dagBlockLevel < chainState.dagBlockLevel) {
+            console.log('DAG sync:', syncState.dagBlockLevel + 1, 'of', chainState.dagBlockLevel);
             const notifications = [];
 
-            const dagBlocks = await rpc.getDagBlocksByLevel(syncState.dagBlockLevel + 1, true);
+            const dagBlocks = await rpc.getDagBlocksByLevel(syncState.dagBlockLevel + 1, false);
             
             for (const dagBlockRPC of dagBlocks) {
                 const dagBlock =  DagBlock.fromRPC(dagBlockRPC);
@@ -357,7 +435,7 @@ async function historicalSync(subscribed = false) {
                     });
                 }
 
-                syncState.dagBlockLevel = dagBlock.level;;
+                syncState.dagBlockLevel = dagBlock.level;
             }
 
             if (notifications.length) {
@@ -365,6 +443,8 @@ async function historicalSync(subscribed = false) {
             }
 
         }
+    } else {
+        console.log('Skipping historical DAG sync...');
     }
 }
 

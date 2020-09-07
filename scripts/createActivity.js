@@ -77,7 +77,7 @@ async function sendRandomTransaction() {
                             console.error(error);
                             reject(error);
                         })
-                }, 500)
+                }, 1500)
             });
         }
     }
