@@ -156,7 +156,7 @@ export let onBlock = (isHistory, block, level, firstLevel, lastDagX, isFirstBloc
 		})
 	}
 	console.log('PAN 1')
-	cy.pan({ x: dagCy.current.width() / 2 - node.data.level * config.LevelWidth + 5 * config.LevelWidth})
+	cy.pan({ x: dagCy.current.width() / 2 - level.current * config.LevelWidth + 5 * config.LevelWidth})
 
     if (node != null && isFirstBlock.current) {
         lastDagX.current = node.position.x
