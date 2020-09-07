@@ -59,6 +59,7 @@ function DAG({recentDagBlocks, recentPbftBlocks, history, highlight, recentHisto
 			adjustment -= 100
 		}
 
+        console.log('PAN 3')
 		cy.pan({
 			x: -lastOrderX.current + adjustment,
 			y: 0
@@ -144,7 +145,7 @@ function DAG({recentDagBlocks, recentPbftBlocks, history, highlight, recentHisto
     useEffect(() => {
         if (cy) {
             if (!historyLoaded) {
-                console.log('loading history', recentHistory)
+                // console.log('loading history', recentHistory)
                 cy.remove('node')
                 levelNodesPosition = {}
                 firstLevel.current = 0
@@ -163,7 +164,7 @@ function DAG({recentDagBlocks, recentPbftBlocks, history, highlight, recentHisto
                 }
                 setHistoryLoaded(true);
             } else {
-                console.log('loading new data', newHistory)
+                // console.log('loading new data', newHistory)
                 if (newHistory.log === 'dag-block') {
                     const block = newHistory.data;
                     block.hash = block._id;
@@ -196,7 +197,7 @@ function DAG({recentDagBlocks, recentPbftBlocks, history, highlight, recentHisto
 
             <div className="dag-levels-label">Dag Levels</div>
             <div id="dag-graph" className="dag-graph"></div>
-            {/* <div className="dag-periods-label">DAG Periods</div> */}
+            <div className="dag-periods-label">DAG Periods</div>
 
             
 

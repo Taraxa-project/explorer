@@ -1,6 +1,6 @@
 export const LevelRange = 20
 export const NodeBorderWidth = 2
-export const Duration = 50
+export const Duration = 20
 export const RemainPeriod = 10
 export const RemainLevel = 30
 export const ChainBlockY = 480

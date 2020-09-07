@@ -1,6 +1,7 @@
 import * as config from "./config"
 import * as color from "./color"
 import { drawLables } from "./dag_draw"
+import { first } from "rxjs/operators"
 
 export function getNextNodeY(yRange, nodeHeight, levelNodes) {
 
@@ -153,10 +154,11 @@ export let onBlock = (isHistory, block, level, firstLevel, lastDagX, isFirstBloc
 				'width': 1
 	        })
 		})
-    }
+	}
+	console.log('PAN 1')
+	cy.pan({ x: dagCy.current.width() / 2 - node.data.level * config.LevelWidth + 5 * config.LevelWidth})
 
     if (node != null && isFirstBlock.current) {
-        cy.pan({ x: dagCy.current.width() / 2 - node.data.level * config.LevelWidth - 4 * config.LevelWidth})
         lastDagX.current = node.position.x
         isFirstBlock.current = false
     }
@@ -348,7 +350,7 @@ export let onSchedule = (isHistory, data, prevPeriodLastHash, pauseNextAnimation
 		} else {
 			adjustment -= 100
 		}
-
+		console.log('PAN 2')
 		cy.pan({ x: -lastOrderX.current + adjustment })
 
 		// setTimeout(() => {
@@ -399,7 +401,9 @@ let copyBlock = (hash, index, counter, lastDagX, cy, currentPeriod, first_number
 		node_order_data.data.type = 'order'
 		node_order_data.data.period = currentPeriod
 		node_order_data.data.number = counter.current
-		node_order_data.data.label = counter.current.toString()
+		node_order_data.data.label = first_number
+
+		let periodColor = currentPeriod % 2 === 0 ? color.PeriodEvenLineColor : color.PeriodLineColor
 
 		try {
 
@@ -408,10 +412,11 @@ let copyBlock = (hash, index, counter, lastDagX, cy, currentPeriod, first_number
 			var node_order = cy.elements('node[id="' + hash + '_order"]').select()
 
 			node_order.style({
-				'background-color': highlight === hash ? color.NodeHoverColor : color.NodeOrderColor,
+				'background-color': highlight === hash ? color.NodeHoverColor : periodColor,
 				'border-width': config.NodeBorderWidth,
-				'border-color': highlight === hash ? color.NodeHoverColor : color.NodeOrderColor,
-				'color':  highlight === hash ? '#000' : ''
+				'border-color': highlight === hash ? color.NodeHoverColor : periodColor,
+				'color':  '#000',
+				'font-size': '10px'
 			})
 
 			if (isHistory) {
@@ -468,8 +473,8 @@ let copyBlock = (hash, index, counter, lastDagX, cy, currentPeriod, first_number
 					var edge = cy.add(edge_data)
 					// var edge = cy.elements('edge[id="' + edge_id + '"]').select()
 					edge.style({
-						"line-color": color.OrderColor,
-						'source-arrow-color': color.OrderColor,
+						"line-color": periodColor,
+						'source-arrow-color': periodColor,
 						'line-style': 'solid'
 					});
 				}

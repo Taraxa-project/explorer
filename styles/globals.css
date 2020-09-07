@@ -297,7 +297,7 @@ z-index: 4;
 position: absolute;
 left: 50%;
 margin-left: -50px;
-top: 400px;
+top: 450px;
 font-size: 18px;
 color: #15ac5b;
 }
@@ -307,7 +307,7 @@ color: #15ac5b;
 
 position: absolute;
   display: block;
-  background-color: #333;
+  background-color: rgba(51, 51, 51, 0.75);
   width: auto;
   height: auto;
 padding: 20px;
