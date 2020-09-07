@@ -157,10 +157,9 @@ export let onBlock = (isHistory, block, level, firstLevel, lastDagX, isFirstBloc
 		})
 	}
 	var width = (window.innerWidth > 0) ? window.innerWidth : screen.width;
-	var columnShift = Math.floor(width / config.LevelWidth / 2) * config.LevelWidth;
+	var columnShift = (Math.floor(width / config.LevelWidth) / 2) * config.LevelWidth;
 	// old column shift was 5 * config.LevelWidth
-	// console.log('column shift', columnShift);
-	cy.pan({ x: dagCy.current.width() / 2 - level.current * config.LevelWidth + columnShift})
+	cy.pan({ x: dagCy.current.width() / 2 - level.current * config.LevelWidth + columnShift - 50})
 
     if (node != null && isFirstBlock.current) {
         lastDagX.current = node.position.x

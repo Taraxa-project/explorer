@@ -1,3 +1,5 @@
+import { useState, useEffect } from 'react';
+
 import { connect } from 'react-redux'
 import { wrapper } from '../store/store'
 
@@ -21,6 +23,21 @@ import LogNetworkEvent from '../models/log_network_event'
 import moment from 'moment';
 
 function Index({recentBlocks, recentTxs}) {
+
+  moment.relativeTimeThreshold('s', 60);
+  moment.relativeTimeThreshold('ss', 1);
+
+  const [tick, newTick] = useState(new Date().valueOf())
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      newTick(new Date().valueOf())
+    })
+    return function cleanup() {
+      clearInterval(timer);
+    }
+  })
+
   return (
       <>
         <Container fluid>
