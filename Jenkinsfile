@@ -24,13 +24,11 @@ pipeline {
             }
         }
         stage('Push Docker Image') {
-            def packageJSON = readJSON file: 'package.json'
-            def packageJSONVersion = packageJSON.version
             when {branch 'master'}
             steps {
-                sh "docker tag ${IMAGE}:latest ${IMAGE}:${packageJSONVersion}-${BUILD_NUMBER}"
-                sh "docker push ${IMAGE}:${packageJSONVersion}-${BUILD_NUMBER}"
-                sh "docker push ${IMAGE}:latest"
+                sh 'VERSION=$(grep -m1 version package.json | awk -F: '{ print $2 }' | sed 's/[", ]//g') docker tag ${IMAGE}:latest ${IMAGE}:${VERSION}-${BUILD_NUMBER}'
+                sh 'VERSION=$(grep -m1 version package.json | awk -F: '{ print $2 }' | sed 's/[", ]//g') docker push ${IMAGE}:${VERSION}-${BUILD_NUMBER}'
+                sh 'docker push ${IMAGE}:latest'
             }
         }
     }
