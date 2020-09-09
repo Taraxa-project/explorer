@@ -26,8 +26,8 @@ pipeline {
         stage('Push Docker Image') {
             when {branch 'master'}
             steps {
-                sh 'VERSION=$(grep -m1 version package.json | awk -F: \'{ print $2 }\' | sed \'s/[", ]//g\') docker tag ${IMAGE}:latest ${IMAGE}:${VERSION}-${BUILD_NUMBER}'
-                sh 'VERSION=$(grep -m1 version package.json | awk -F: \'{ print $2 }\' | sed \'s/[", ]//g\') docker push ${IMAGE}:${VERSION}-${BUILD_NUMBER}'
+                sh 'docker tag ${IMAGE}:latest ${IMAGE}:$(grep -m1 version package.json | awk -F: \'{ print $2 }\' | sed \'s/[", ]//g\')-${BUILD_NUMBER}'
+                sh 'docker push ${IMAGE}:$(grep -m1 version package.json | awk -F: \'{ print $2 }\' | sed \'s/[", ]//g\')-${BUILD_NUMBER}'
                 sh 'docker push ${IMAGE}:latest'
             }
         }
