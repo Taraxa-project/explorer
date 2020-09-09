@@ -24,9 +24,9 @@ pipeline {
             }
         }
         stage('Push Docker Image') {
-            when {branch 'master'}
             def packageJSON = readJSON file: 'package.json'
             def packageJSONVersion = packageJSON.version
+            when {branch 'master'}
             steps {
                 sh "docker tag ${IMAGE}:latest ${IMAGE}:${packageJSONVersion}-${BUILD_NUMBER}"
                 sh "docker push ${IMAGE}:${packageJSONVersion}-${BUILD_NUMBER}"
