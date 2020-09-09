@@ -184,7 +184,7 @@ async function realtimeSync() {
                             }).save();
                             return;
                         case 'newHeads':
-                            console.log(subscribed[jsonRpc.params.subscription], JSON.stringify(jsonRpc.params.result, null, 2));
+                            // console.log(subscribed[jsonRpc.params.subscription], JSON.stringify(jsonRpc.params.result, null, 2));
                             await historicalSync(true);
                             return;
                         default:
@@ -443,8 +443,6 @@ async function historicalSync(subscribed = false) {
             }
 
         }
-    } else {
-        console.log('Skipping historical DAG sync...');
     }
 }
 

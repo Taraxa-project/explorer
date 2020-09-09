@@ -67,11 +67,19 @@ async function sendRandomTransaction() {
             const signed = await node[sender].account.signTransaction(tx);
             // await taraxa.sendSignedTransaction(signed.rawTransaction)
             return new Promise((resolve, reject) => {
+                let transactionHash = "";
                 setTimeout(() => {              
                     taraxa.sendSignedTransaction(signed.rawTransaction)
-                        .once('sent', payload => {
-                            console.log('Sent tx', transactions.toLocaleString(), payload);
-                            resolve(payload);
+                        .once('transactionHash', txHash => {
+                            console.log('Sending tx', transactions.toLocaleString(), txHash);
+                            transactionHash = txHash;
+                            resolve(txHash);
+                        })
+                        // .once('sent', payload => {
+                        //     console.log('Sent tx', transactions.toLocaleString(), payload);
+                        // })
+                        .once('receipt', payload => {
+                            console.log(' * Confirmed tx', transactions.toLocaleString(), transactionHash);
                         })
                         .once('error', error => {
                             console.error(error);
