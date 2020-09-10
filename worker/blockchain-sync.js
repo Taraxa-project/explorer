@@ -287,15 +287,15 @@ async function historicalSync(subscribed = false) {
             // SPECIAL CASE GENESIS BLOCK
             if (block.number === '0x0') {
                 let genesis = taraxaConfig?.chain_config?.final_chain?.state?.genesis_balances || {};
-                Object.keys(genesis).forEach(address => {
+                Object.keys(genesis).forEach((address, index) => {
                     const fakeTx = new Tx({
                         // _id: '0x0000000000000000000000000000000000000000000000000000000000000000',
-                        _id: 'GENESIS',
+                        _id: 'GENESIS_'+index,
                         blockHash: block.hash,
                         blockNumber: block.number,
                         to: `0x${address}`,
                         value: genesis[address],
-                        timestamp: new Date(0)
+                        timestamp: new Date(0x5d422b80 * 1000)
     
                     })
                     txHashes.push(fakeTx._id);
