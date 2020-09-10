@@ -11,7 +11,11 @@ const LogNetworkEvent = require('./models/log_network_event');
         port: 3001
     });
 
-    const now = new mongoose.Types.ObjectId();
+    const newEvent = await new LogNetworkEvent({
+        log: 'ws-server',
+        data: {started: true}
+    }).save();
+    const now = newEvent._id;
     const events = LogNetworkEvent.find({_id: {$gte: now}}).tailable().cursor().addCursorFlag('noCursorTimeout', true);
     events
         .on('data', logEvent => {

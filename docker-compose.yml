@@ -1,7 +1,18 @@
 version: '3'
+volumes:
+    taraxa_data:
+    mongodb_data:
 services:
-    taraxa-node-testnet-1:
-        container_name: taraxa-node-testnet-1
+    taraxa-config:
+        container_name: taraxa-config
+        image: node:latest
+        volumes:
+            - taraxa_data:/var/taraxa
+        command: >
+            sh -c "npm i -g taraxa-cli &&
+                taraxa generate -d /var/taraxa"
+    taraxa-node:
+        container_name: taraxa-node
         image: taraxa/taraxa-node:25
         restart: always
         ports:
@@ -13,94 +24,11 @@ services:
             - "10002"
             - "7777"
             - "8777"
-        command: ["--conf_taraxa", "/config/conf_taraxa.json", "--boot_node"]
+        command: ["--conf_taraxa", "/var/taraxa/conf/private.json", "--boot_node"]
         volumes:
-            - ~/.taraxa-node/db/testnet1:/taraxadb
-            - ./dockerfiles/conf_taraxa1.json:/config/conf_taraxa.json
-        networks:
-            testnet_network:
-                ipv4_address: 172.28.1.1
-    taraxa-node-testnet-2:
-        container_name: taraxa-node-testnet-2
-        image: taraxa/taraxa-node:25
-        restart: always
-        ports:
-            - "10003:10003"
-            - "10003:10003/udp"
-            - "7778:7778"
-            - "8778:8778"
-        expose:
-            - "10003"
-        command: ["--conf_taraxa", "/config/conf_taraxa.json"]
-        volumes:
-            - ~/.taraxa-node/db/testnet2:/taraxadb
-            - ./dockerfiles/conf_taraxa2.json:/config/conf_taraxa.json
+            - taraxa_data:/var/taraxa
         depends_on:
-            - taraxa-node-testnet-1
-        networks:
-            testnet_network:
-                ipv4_address: 172.28.1.2
-    taraxa-node-testnet-3:
-        container_name: taraxa-node-testnet-3
-        image: taraxa/taraxa-node:25
-        restart: always
-        ports:
-            - "10004:10004"
-            - "10004:10004/udp"
-            - "7779:7779"
-            - "8779:8779"
-        expose:
-            - "10004"
-        command: ["--conf_taraxa", "/config/conf_taraxa.json"]
-        volumes:
-            - ~/.taraxa-node/db/testnet3:/taraxadb
-            - ./dockerfiles/conf_taraxa3.json:/config/conf_taraxa.json
-        depends_on:
-            - taraxa-node-testnet-1
-        networks:
-            testnet_network:
-                ipv4_address: 172.28.1.3
-    taraxa-node-testnet-4:
-        container_name: taraxa-node-testnet-4
-        image: taraxa/taraxa-node:25
-        restart: always
-        ports:
-            - "10005:10005"
-            - "10005:10005/udp"
-            - "7780:7780"
-            - "8780:8780"
-        expose:
-            - "10005"
-        command: ["--conf_taraxa", "/config/conf_taraxa.json"]
-        volumes:
-            - ~/.taraxa-node/db/testnet4:/taraxadb
-            - ./dockerfiles/conf_taraxa4.json:/config/conf_taraxa.json
-        depends_on:
-            - taraxa-node-testnet-1
-        networks:
-            testnet_network:
-                ipv4_address: 172.28.1.4
-    taraxa-node-testnet-5:
-        container_name: taraxa-node-testnet-5
-        image: taraxa/taraxa-node:25
-        restart: always
-        ports:
-            - "10006:10006"
-            - "10006:10006/udp"
-            - "7781:7781"
-            - "8781:8781"
-        expose:
-            - "10006"
-        command: ["--conf_taraxa", "/config/conf_taraxa.json"]
-        volumes:
-            - ~/.taraxa-node/db/testnet5:/taraxadb
-            - ./dockerfiles/conf_taraxa5.json:/config/conf_taraxa.json
-        depends_on:
-            - taraxa-node-testnet-1
-        networks:
-            testnet_network:
-                ipv4_address: 172.28.1.5
-
+            - taraxa-config
     mongodb:
         container_name: mongodb
         image: mongo:latest
@@ -111,9 +39,7 @@ services:
             - "27017"
         command: ["mongod"]
         volumes: 
-            - ~/.mongodb:/data/db
-        networks:
-            - testnet_network
+            - mongodb_data:/data/db
 
     taraxa-explorer-sync:
         container_name: taraxa-explorer-sync
@@ -121,15 +47,15 @@ services:
             context: .
         restart: always
         environment:
-            - RPC_HTTP_PROVIDER=http://taraxa-node-testnet-1:7777
-            - RPC_WS_PROVIDER=ws://taraxa-node-testnet-1:8777
+            - RPC_HTTP_PROVIDER=http://taraxa-node:7777
+            - RPC_WS_PROVIDER=ws://taraxa-node:8777
             - MONGO_URI=mongodb://mongodb:27017/explorer-api-testnet
         depends_on:
-            - taraxa-node-testnet-1
+            - taraxa-node
             - mongodb
-        networks:
-            - testnet_network
-        command: ["node", "./worker/blockchain-sync"]
+        command: ["node", "./worker/blockchain-sync", "-c", "/var/taraxa/conf/private.json"]
+        volumes:
+            - taraxa_data:/var/taraxa
     taraxa-explorer:
         container_name: taraxa-explorer
         build: 
@@ -138,12 +64,10 @@ services:
         environment:
             - MONGO_URI=mongodb://mongodb:27017/explorer-api-testnet
         depends_on:
-            - taraxa-node-testnet-1
+            - taraxa-node
             - mongodb
         ports:
             - "3000:3000"
-        networks:
-            - testnet_network
         command: ["npm", "start"]
     taraxa-explorer-wsserver:
         container_name: taraxa-explorer-wsserver
@@ -155,15 +79,6 @@ services:
         ports:
             - "3001:3001"
         depends_on:
-            - taraxa-node-testnet-1
+            - taraxa-node
             - mongodb
-        networks:
-            - testnet_network
         command: ["node", "./ws-server"]
-            
-networks:
-    testnet_network:
-        ipam:
-            driver: default
-            config:
-                - subnet: 172.28.0.0/16

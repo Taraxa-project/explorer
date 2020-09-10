@@ -1,5 +1,8 @@
 #!/usr/bin/env node
 
+const { program } = require('commander');
+const pkg = require('../package.json');
+
 const config = require('config');
 const mongoose = require('mongoose');
 
@@ -15,6 +18,8 @@ const { mergeMap } = require('rxjs/operators');
 const WebSocket = require('ws');
 
 const rpc = require('../lib/rpc');
+
+let taraxaConfig;
 
 async function getChainState() {
     const state = await Promise.all([
@@ -281,24 +286,28 @@ async function historicalSync(subscribed = false) {
 
             // SPECIAL CASE GENESIS BLOCK
             if (block.number === '0x0') {
-                const fakeTx = new Tx({
-                    // _id: '0x0000000000000000000000000000000000000000000000000000000000000000',
-                    _id: 'GENESIS',
-                    blockHash: block.hash,
-                    blockNumber: block.number,
-                    to: '0xde2b1203d72d3549ee2f733b00b2789414c7cea5',
-                    value: 9007199254740991,
-                    timestamp: new Date(0)
-
+                let genesis = taraxaConfig?.chain_config?.final_chain?.state?.genesis_balances || {};
+                Object.keys(genesis).forEach(address => {
+                    const fakeTx = new Tx({
+                        // _id: '0x0000000000000000000000000000000000000000000000000000000000000000',
+                        _id: 'GENESIS',
+                        blockHash: block.hash,
+                        blockNumber: block.number,
+                        to: `0x${address}`,
+                        value: genesis[address],
+                        timestamp: new Date(0)
+    
+                    })
+                    txHashes.push(fakeTx._id);
+                    bulkTx.push({
+                        updateOne: {
+                            filter: {_id: fakeTx._id},
+                            update: fakeTx.toJSON(),
+                            upsert: true
+                        }
+                    });
                 })
-                txHashes.push(fakeTx._id);
-                bulkTx.push({
-                    updateOne: {
-                        filter: {_id: fakeTx._id},
-                        update: fakeTx.toJSON(),
-                        upsert: true
-                    }
-                });
+                
             } else {
                 if (!subscribed) { // no need to do this if already getting dag blocks over websocket
                     const scheduleBlockRPC = await rpc.getScheduleBlockByPeriod(block.number);
@@ -446,8 +455,16 @@ async function historicalSync(subscribed = false) {
     }
 }
 
-(async () => {
+program.version(pkg.version);
+program.option('-c, --config <string>', 'path to taraxa config file')
+program.action(async function (cmdObj) {
     try {
+        if (!cmdObj.config) {
+            throw new Error('path to config file not specified. Please use --config')
+        }
+
+        taraxaConfig = require(cmdObj.config);
+    
         await mongoose.connect(config.mongo.uri, config.mongo.options);
         await historicalSync();
         // switch to realtime events from socket
@@ -456,4 +473,5 @@ async function historicalSync(subscribed = false) {
         console.error(e);
         process.exit(1);
     }
-})();
+})
+program.parse(process.argv)
