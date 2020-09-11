@@ -16,7 +16,7 @@ This project uses docker images of the following:
 Run Everything:
 
 ```
-docker-compose up
+docker-compose up --build
 ```
 
 Note: The taraxa-config container must start up and write the config first before the other containers will start correctly. You may see some errors at first as services restart, until that config file is written. 
