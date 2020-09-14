@@ -40,7 +40,7 @@ Taraxa does not create blocks if there are no transactions happening on the netw
 
 ### Using the faucet to generate transactions
 
-You can paste the address from MetaMask or Brave into the faucet and receive tokens every few seconds
+You can paste the address from MetaMask or Brave into the faucet page of the Explorer and receive tokens every few seconds
 
 ### Configure Remix IDE
 
