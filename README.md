@@ -33,10 +33,14 @@ Note: The taraxa-config container must start up and write the config first befor
 
 Taraxa does not create blocks if there are no transactions happening on the network. In order to see blocks or any other activity, you will need to create transactions on the network.
 
-### Configure MetaMask
+### Configure MetaMask or Brave Browser
 
-- Add custom network `Taraxa Testnet`, at `http://127.0.0.1:7777`
+- Create custom RPC named `Taraxa Testnet`, at `http://127.0.0.1:7777`
 - Set chain id to `7777777`
+
+### Using the faucet to generate transactions
+
+You can paste the address from MetaMask or Brave into the faucet and receive tokens every few seconds
 
 ### Configure Remix IDE
 
