@@ -36,7 +36,7 @@ Taraxa does not create blocks if there are no transactions happening on the netw
 ### Configure MetaMask
 
 - Add custom network `Taraxa Testnet`, at `http://127.0.0.1:7777`
-- Send coins using the command above
+- Set chain id to `7777777`
 
 ### Configure Remix IDE
 
