@@ -456,14 +456,18 @@ program.action(async function (cmdObj) {
             throw new Error('path to config file not specified. Please use --config')
         }
 
-        taraxaConfig = require(cmdObj.config);
+        try {
+            taraxaConfig = require(cmdObj.config);
+        } catch (e) {
+            throw new Error('Could not open config file: '+ cmdObj.config)
+        }
     
         await mongoose.connect(config.mongo.uri, config.mongo.options);
         await historicalSync();
         // switch to realtime events from socket
         realtimeSync();
     } catch (e) {
-        console.error(e);
+        console.error(e.message);
         process.exit(1);
     }
 })
