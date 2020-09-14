@@ -9,14 +9,13 @@ import { setRecentTxs } from '../store/txs/action'
 
 import Link from 'next/link'
 
-import {Container, Row, Col, Form, Button, InputGroup, FormControl, Jumbotron, Card, ListGroup, ListGroupItem} from 'react-bootstrap'
+import {Container, Row, Col, Card, ListGroup, ListGroupItem} from 'react-bootstrap'
 
 import DAG from '../components/DAG'
 
 import config from 'config';
 import mongoose from 'mongoose'
 import Block from '../models/block'
-import DagBlock from '../models/dag_block'
 import Tx from '../models/tx'
 import LogNetworkEvent from '../models/log_network_event'
 

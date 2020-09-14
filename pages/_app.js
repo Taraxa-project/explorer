@@ -36,7 +36,6 @@ function ReduxApp({Component, pageProps}) {
             <title>Taraxa Explorer</title>
             <link rel="icon" href="/favicon.ico" />
             <meta name="viewport" content="width=device-width, initial-scale=1"/>
-            <link href="https://unpkg.com/ionicons@4.2.2/dist/css/ionicons.min.css" rel="stylesheet"></link>
         </Head>
 
         <WebsocketContainer/>
@@ -85,6 +84,10 @@ function ReduxApp({Component, pageProps}) {
                     <Link href="/accounts" as={`/accounts`}>
                         <Nav.Link href="/accounts">Accounts</Nav.Link>
                     </Link>
+
+                    <Link href="/faucet" as={`/faucet`}>
+                        <Nav.Link href="/faucet">Faucet</Nav.Link>
+                    </Link>
                     </Nav>
                 </Navbar.Collapse>
             </Navbar>
@@ -94,7 +97,26 @@ function ReduxApp({Component, pageProps}) {
             </div>
         
             <div className="site-layout-footer">
-                © 2020 Taraxa.io
+                <p><Link href="/dag_blocks" as={`/dag_blocks`}>
+                        <a href="/dag_blocks">DAG</a>
+                    </Link>
+                    {' / '}
+                    <Link href="/blocks" as={`/blocks`}>
+                        <a href="/blocks">Blocks</a>
+                    </Link>
+                    {' / '}
+                    <Link href="/txs" as={`/txs`}>
+                        <a href="/txs">Transactions</a>
+                    </Link>
+                    {' / '}
+                    <Link href="/accounts" as={`/accounts`}>
+                        <a href="/accounts">Accounts</a>
+                    </Link>
+                    {' / '}
+                    <Link href="/faucet" as={`/faucet`}>
+                        <a href="/faucet">Faucet</a>
+                    </Link></p>
+                <p>© 2020 Taraxa.io</p>
             </div>
     </>
 }

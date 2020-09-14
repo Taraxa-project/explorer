@@ -10,7 +10,7 @@ services:
             - taraxa_data:/var/taraxa
         command: >
             sh -c "npm i -g taraxa-cli &&
-                taraxa generate -d /var/taraxa"
+                taraxa config -d /var/taraxa -g 0xe414bd813ca44201b5e109d8e8f1aab5db4000d9"
     taraxa-node:
         container_name: taraxa-node
         image: taraxa/taraxa-node:25
@@ -37,7 +37,7 @@ services:
             - "27017:27017"
         expose:
             - "27017"
-        command: ["mongod"]
+        command: ["mongod", "--quiet"]
         volumes: 
             - mongodb_data:/data/db
 
@@ -49,7 +49,7 @@ services:
         environment:
             - RPC_HTTP_PROVIDER=http://taraxa-node:7777
             - RPC_WS_PROVIDER=ws://taraxa-node:8777
-            - MONGO_URI=mongodb://mongodb:27017/explorer-api-testnet
+            - MONGO_URI=mongodb://mongodb:27017/explorer-dev
         depends_on:
             - taraxa-node
             - mongodb
@@ -62,9 +62,8 @@ services:
             context: .
         restart: always
         environment:
-            - MONGO_URI=mongodb://mongodb:27017/explorer-api-testnet
+            - MONGO_URI=mongodb://mongodb:27017/explorer-dev
         depends_on:
-            - taraxa-node
             - mongodb
         ports:
             - "3000:3000"
@@ -75,10 +74,22 @@ services:
             context: .
         restart: always
         environment:
-            - MONGO_URI=mongodb://mongodb:27017/explorer-api-testnet
+            - MONGO_URI=mongodb://mongodb:27017/explorer-dev
         ports:
             - "3001:3001"
         depends_on:
-            - taraxa-node
             - mongodb
         command: ["node", "./ws-server"]
+    taraxa-faucet:
+        container_name: taraxa-faucet
+        build: 
+            context: .
+        restart: always
+        environment:
+            - MONGO_URI=mongodb://mongodb:27017/explorer-dev
+            - RPC_HTTP_PROVIDER=http://taraxa-node:7777
+            - RPC_WS_PROVIDER=ws://taraxa-node:8777
+        depends_on:
+            - taraxa-node
+            - mongodb
+        command: ["node", "./worker/faucet"]

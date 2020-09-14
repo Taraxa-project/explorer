@@ -99,13 +99,6 @@ async function dropChainData() {
     ]);
 }
 
-async function getDagBlocksByLevel(number, fullTransactions = false, returnEmptySet = false) {
-    if (returnEmptySet) {
-        return [];
-    }
-    return rpc.getDagBlockByLevel(number.toString(16), fullTransactions);
-}
-
 function formatPbftBlock(pbftBlock) {
     // todo: rpc currently incorrectly returns hex without the 0x prefix
     const dagPeriodBlocks = pbftBlock.schedule.dag_blocks_order;
