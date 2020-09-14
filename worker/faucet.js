@@ -18,7 +18,7 @@ async function drip() {
         const tx = {
             from: account.address,
             to: cup.address,
-            value: 1 * 1e10,
+            value: 1 * 1e18,
             gas: 21000,
             gasPrice: 1,
             nonce: fn.nonce - 1
