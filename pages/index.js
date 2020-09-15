@@ -66,7 +66,7 @@ function Index({recentBlocks, recentTxs}) {
             </Col>
             <Col style={{padding: 0}} xs={12} sm={6}>
             <Card style={{margin: 5, marginTop: 0, marginBottom: 0}} bg="dark" text="white">
-              <Card.Header>Latest Transactions</Card.Header>
+              <Card.Header>Recent Transactions</Card.Header>
               <ListGroup className="list-group-recent-tx" variant="flush">
                 {recentTxs && recentTxs.map((tx) => (
                   <ListGroupItem key={tx._id} variant="dark">

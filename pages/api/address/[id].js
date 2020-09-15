@@ -1,6 +1,7 @@
 import config from 'config';
 import mongoose from 'mongoose';
 
+import Block from '../../../models/block'
 import Tx from '../../../models/tx';
 
 export default async function userHandler(req, res) {
@@ -17,7 +18,7 @@ export default async function userHandler(req, res) {
 
     let skip = Number(req.query.skip) || 0;
     let limit = Number(req.query.limit) || 20;
-    let sortOrder = req.query.reverse ? -1 : 1;
+    let sortOrder = req.query.reverse ? 1 : -1;
 
     switch (method) {
         case 'GET':
@@ -52,13 +53,17 @@ export default async function userHandler(req, res) {
                     })
                         .sort({timestamp: sortOrder})
                         .skip(skip)
-                        .limit(limit)
+                        .limit(limit),
+                    Tx.countDocuments({
+                        $or: [{from: id}, {to: id}]
+                    })
                 ]);
             
                 const received = activity[0];
                 const sent = activity[1];
                 const mined = activity[2];
                 const transactions = activity[3];
+                const count = activity[4];
         
                 let totalSent = 0;
                 let totalRecieved = 0;
@@ -75,13 +80,14 @@ export default async function userHandler(req, res) {
                     totalMined = totalMined + mined[0].value;
                 }
                 return res.json({
-                    address,
+                    address: id,
                     sent: totalSent,
                     received: totalRecieved,
                     mined: totalMined,
                     fees: totalGas,
                     balance: totalRecieved + totalMined - totalSent - totalGas,
-                    transactions
+                    transactions,
+                    count
                 });
             } catch (e) {
                 console.error(e);

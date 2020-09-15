@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import {useState} from 'react'
 
 import config from 'config';
 import mongoose from 'mongoose'
@@ -6,7 +7,11 @@ import DAGBlock from '../../models/dag_block'
 import Block from '../../models/block'
 import Tx from '../../models/tx'
 
-import {Container, Row, Col, Navbar, Nav, Button, Jumbotron, Card, ListGroup, ListGroupItem, Table} from 'react-bootstrap'
+import {Form, Container, Row, Col, Pagination, Navbar, Nav, Button, Jumbotron, Card, ListGroup, ListGroupItem, Table} from 'react-bootstrap'
+
+import useSwr from 'swr'
+
+const fetcher = (url) => fetch(url).then((res) => res.json())
 
 export async function getServerSideProps(context) {
     const id = context.query.id;
@@ -56,13 +61,17 @@ export async function getServerSideProps(context) {
             })
                 .sort({timestamp: sortOrder})
                 .skip(skip)
-                .limit(limit)
+                .limit(limit),
+            Tx.countDocuments({
+                $or: [{from: id}, {to: id}]
+            })
         ]);
     
         const received = activity[0];
         const sent = activity[1];
         const mined = activity[2];
         const transactions = activity[3];
+        const count = activity[4];
 
         let totalSent = 0;
         let totalRecieved = 0;
@@ -86,7 +95,8 @@ export async function getServerSideProps(context) {
             mined: totalMined,
             fees: totalGas,
             balance: totalRecieved + totalMined - totalSent - totalGas,
-            transactions
+            transactions,
+            count
         }));
 
     } catch (e) {
@@ -99,8 +109,61 @@ export async function getServerSideProps(context) {
 }  
 
 export default function AddressPage({data}) {
+    const [limit, setLimit] = useState(20);
+    const [skip, setSkip] = useState(0);
+    const [reverse, setReverse] = useState(false);
+
+    let query = `/api/address/${data.address}?limit=${limit}`;
+    if (reverse) {
+        query += '&reverse=true'
+    }
+    if (skip) {
+        query += `&skip=${skip}`
+    }
+
+    const { data: newData, error } = useSwr(query, fetcher)
+    if (newData) {
+        data = newData;
+    }
+
+    if (error) {
+        console.error(error)
+    }
+
+    const total = data?.count || 0;
+    const transactions = data?.transactions || [];
+    const pages = Math.ceil(total / limit);
+    const page = skip / limit + 1;
+
+    function updateQueryReverse(e) {
+        let val = true;
+        if (e.target.value === "false") {
+        val = false;
+        }
+        setReverse(val);
+    }
+
+    function updateQuerySkip(e) {
+        setSkip(Number(e))
+    }
+  
     return <>
-       <h1>Address {data.address}</h1>
+    <Row>
+          <Col sm="8" md="10">
+          <h1>Address {data.address}</h1>
+          </Col>
+          <Col>
+            <Form>
+              <Form.Group>
+                <Form.Control id="sortControl" size="sm" as="select" onChange={updateQueryReverse}>
+                  <option value="false">Newest</option>
+                  <option value="true">Oldest</option>
+                </Form.Control>
+              </Form.Group>
+            </Form>
+          </Col>
+        </Row>
+       
         <Card style={{margin: 5, marginTop: 0, marginBottom: 10}} bg="dark" text="white">
             <Card.Body>
                 <Card.Title>
@@ -114,7 +177,7 @@ export default function AddressPage({data}) {
                 </ul>
             </Card.Body>
             <Card.Body>
-            <Card.Title>Recent Transactions:</Card.Title>
+            <Card.Title>Transactions:</Card.Title>
             <Table responsive variant="dark">
                 <thead>
                     <tr>
@@ -143,5 +206,59 @@ export default function AddressPage({data}) {
           </Table>
           </Card.Body>
         </Card>
+
+        {total > limit ?  (
+            
+            <Pagination className="justify-content-center" style={{padding: 10}}>
+              {page < 2 ? '' : (
+                <>
+                <Pagination.First onClick={() => updateQuerySkip(0)}/>
+                <Pagination.Prev onClick={() => updateQuerySkip((page - 2) * limit)}/>
+                </>
+              )}
+              
+              {page !== 1 ? (
+                <Pagination.Item onClick={() => updateQuerySkip(0)}>{1}</Pagination.Item>
+              ) : ''}
+
+              {page > 4 ? (
+                <>
+                <Pagination.Ellipsis />
+                </>
+              ) : ''}
+              
+
+              {page - 2 > 1 ? (
+                <Pagination.Item onClick={() => updateQuerySkip((page - 3) * limit)}>{page - 2}</Pagination.Item>
+              ) : ''}
+              {page - 1 > 1 ? (
+                <Pagination.Item onClick={() => updateQuerySkip((page - 2) * limit)}>{page - 1}</Pagination.Item>
+              ) : ''}
+              <Pagination.Item active>{page}</Pagination.Item>
+              {page + 1 < pages ? (
+                <Pagination.Item onClick={() => updateQuerySkip(page * limit)}>{page + 1}</Pagination.Item>
+              ) : ''}
+              {page + 2 < pages ? (
+                <Pagination.Item onClick={() => updateQuerySkip((page +1) * limit)}>{page + 2}</Pagination.Item>
+              ) : ''}
+
+              {pages > page + 2  ? (
+                <>
+                <Pagination.Ellipsis />
+                </>
+              ) : ''}
+
+              {page !== pages ? (
+                <Pagination.Item onClick={() => updateQuerySkip((pages - 1) * limit)}>{pages}</Pagination.Item>
+              ) : ''}
+              
+              {page < pages ? (
+                <>
+                <Pagination.Next onClick={() => updateQuerySkip(page * limit)}/>
+                <Pagination.Last onClick={() => updateQuerySkip((pages - 1) * limit)}/>
+                </>
+              ) : ''}
+            </Pagination>
+        ) : ''}  
     </>
 }
