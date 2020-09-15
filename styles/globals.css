@@ -109,6 +109,11 @@ ul {
   background-color: #0f1517;
 }
 
+.pagination > .page-item > .page-link:focus, .pagination > .page-item > .page-link:active {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
 .dag {
   margin-top: 10px;
   width: 100%;
