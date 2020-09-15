@@ -82,7 +82,7 @@ export async function getServerSideProps(context) {
         }
         if (sent.length) {
             totalSent = totalSent + sent[0].value;
-            totalGas = totalGas + sent[0].gas;
+            totalGas = totalGas + Number(sent[0].gas);
         }
         if (mined.length) {
             totalMined = totalMined + mined[0].value;

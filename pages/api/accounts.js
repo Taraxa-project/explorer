@@ -16,20 +16,18 @@ export default async function handler(req, res) {
     let sortOrder = req.query.reverse ? -1 : 1;
 
     try {
-        const uniqueAddressesByReceipt = await Tx.aggregate([
+        const uniqueAddressesBySentCount = await Tx.aggregate([
             {
                 $group: {
-                    _id: '$to',
-                    receivedSum: {$sum: '$value'},
-                    receivedMax: {$max: '$value'},
-                    mostRecent: {$max: '$timestamp'}
+                    _id: '$from',
+                    count: {$sum: 1},
                 }
             },
-            { $sort : { receivedSum : sortOrder } },
+            { $sort : { count : sortOrder } },
             { $skip : skip },
             { $limit : limit }
         ])
-        res.json(uniqueAddressesByReceipt);
+        res.json(uniqueAddressesBySentCount);
     } catch (e) {
         console.error(e);
         res.status(500).json({error: 'Internal error. Please try your request again.'});
