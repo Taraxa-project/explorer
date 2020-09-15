@@ -20,7 +20,7 @@ async function drip() {
             to: cup.address,
             value: 1 * 1e18,
             gas: 21000,
-            gasPrice: 1,
+            gasPrice: 1 * 1e9,
             nonce: fn.nonce - 1
         };
         const signed = await account.signTransaction(tx);

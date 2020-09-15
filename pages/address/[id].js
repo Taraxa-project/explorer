@@ -11,7 +11,7 @@ export async function getServerSideProps(context) {
     const id = context.query.id;
     let skip = Number(context.query.skip) || 0;
     let limit = Number(context.query.limit) || 20;
-    let sortOrder = context.query.reverse ? -1 : 1;
+    let sortOrder = context.query.reverse ? 1 : -1;
 
     let props = {
         data: {
@@ -107,6 +107,7 @@ export default function AddressPage({data}) {
                     <tr>
                         <th>Timestamp</th>
                         <th>Block</th>
+                        <th>Action</th>
                         <th>Hash</th>
                         <th>Value</th>
                     </tr>
@@ -116,6 +117,7 @@ export default function AddressPage({data}) {
                     <tr key={tx._id}>
                     <td>{new Date(tx.timestamp).toLocaleString()}</td>
                     <td>{`${tx.blockNumber} `}</td>
+                    <td>{data.address === tx.to ? 'Received' : 'Sent'}</td>
                     <td>
                         <Link href="/tx/[id]" as={`/tx/${tx._id}`}>
                             <a className="long-hash">{`${tx._id}`}</a>
