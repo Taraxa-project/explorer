@@ -10,7 +10,7 @@ function BlockPreview(props) {
 
 			<div className="box block-preview-row">
 				<div className="box right block-preview-row-name">Type</div>
-				<div className="box fill block-preview-row-value">{(props.type === 'dag' ? 'DAG' : 'Chain') + ' Block'}</div>
+				<div className="box fill block-preview-row-value">{(props.type === 'dag' ? 'DAG' : 'PBFT') + ' Block'}</div>
 			</div>
 
 			{props.type === "dag" ?
@@ -34,7 +34,7 @@ function BlockPreview(props) {
 				</div>
 					<div className="box block-preview-row">
 						<div className="box right block-preview-row-name">Hash</div>
-						<div className="box fill block-preview-row-value"><a href={"/block/" + props.hash} target="_blank" rel="noopener noreferrer" >{props.hash}</a></div>
+						<div className="box fill block-preview-row-value">{props.hash}</div>
 					</div>
 				</div>
 

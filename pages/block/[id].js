@@ -67,7 +67,7 @@ export default function BlockPage({data}) {
                         <li>State Root: {data.stateRoot}</li>
                         <li>Total Difficulty: {data.totalDifficulty}</li>
                         <li>Transactions Root: {data.transactionsRoot}</li>
-                        <li>Uncles: {data.uncles.length ? (
+                        <li>Uncles: {data.uncles?.length ? (
                             <ul>{data.uncles.map((uncle) => (
                                 <li key={uncle}>{uncle}</li>
                             ))}
@@ -88,7 +88,7 @@ export default function BlockPage({data}) {
                         </tr>
                     </thead>
                 <tbody>
-                {data.transactions.map((tx, index) => (
+                {data.transactions?.map((tx, index) => (
                     <tr key={tx._id}>
                         <td>{index + 1}</td>
                     <td>

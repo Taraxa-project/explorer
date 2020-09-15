@@ -9,9 +9,16 @@ import {Container, Row, Col, Navbar, Nav, Button, Jumbotron, Card, ListGroup, Li
 
 export async function getServerSideProps(context) {
     const id = context.query.id;
+    let skip = Number(context.query.skip) || 0;
+    let limit = Number(context.query.limit) || 20;
+    let sortOrder = context.query.reverse ? -1 : 1;
+
     let props = {
         data: {
             address: '',
+            sent: 0,
+            received: 0,
+            fees: 0,
             balance: 0,
             transactions: []
         }
@@ -25,32 +32,48 @@ export async function getServerSideProps(context) {
             ]),
             Tx.aggregate([
                 {$match: {from: id}},
-                {$group: {_id: id, value: {$sum: '$value'}}}
+                {
+                    $group: {
+                        _id: id, 
+                        gas: {
+                            $sum: {
+                                $multiply: ['$gas', '$gasPrice']
+                            }
+                        },
+                        value: {
+                            $sum: '$value'
+                        }
+                    }
+                }
             ]),
             Tx.find({
                 $or: [{from: id}, {to: id}]
             })
-                .sort({timestamp: -1})
-                .limit(20)
+                .sort({timestamp: sortOrder})
+                .skip(skip)
+                .limit(limit)
         ]);
     
-        const received = activity[0][0];
-        const sent = activity[1][0];
+        const received = activity[0];
+        const sent = activity[1];
         const transactions = activity[2];
-        let balance = 0;
+
         let totalSent = 0;
         let totalRecieved = 0;
-        if (received) {
-            totalRecieved = received.value;
+        let totalGas = 0;
+        if (received.length) {
+            totalRecieved = received[0].value;
         }
-        if (sent) {
-            totalSent = totalSent + sent.value;
+        if (sent.length) {
+            totalSent = totalSent + sent[0].value;
+            totalGas = totalGas + sent[0].gas;
         }
         props.data = JSON.parse(JSON.stringify({
             address: context.query.id,
-            sent: sent?.value || 0,
-            received: received?.value || 0,
-            balance: totalRecieved - totalSent,
+            sent: totalSent,
+            received: totalRecieved,
+            fees: totalGas,
+            balance: totalRecieved - totalSent - totalGas,
             transactions
         }));
 
@@ -72,8 +95,9 @@ export default function AddressPage({data}) {
                     Balance: {data.balance.toLocaleString()}
                 </Card.Title>
                 <ul>
-                    <li>Sent: {data.sent?.toLocaleString()}</li>
                     <li>Received: {data.received?.toLocaleString()}</li>
+                    <li>Sent: {data.sent?.toLocaleString()}</li>
+                    <li>Fees: {data.fees?.toLocaleString()}</li>
                 </ul>
             </Card.Body>
             <Card.Body>

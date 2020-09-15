@@ -29,7 +29,19 @@ export default async function userHandler(req, res) {
                     ]),
                     Tx.aggregate([
                         {$match: {from: id}},
-                        {$group: {_id: id, gas: {$sum: '$gas'}, value: {$sum: '$value'}}}
+                        {
+                            $group: {
+                                _id: id, 
+                                gas: {
+                                    $sum: {
+                                        $multiply: ['$gas', '$gasPrice']
+                                    }
+                                },
+                                value: {
+                                    $sum: '$value'
+                                }
+                            }
+                        }
                     ]),
                     Tx.find({
                         $or: [{from: id}, {to: id}]
@@ -42,9 +54,22 @@ export default async function userHandler(req, res) {
                 const received = activity[0];
                 const sent = activity[1];
                 const transactions = activity[2];
+                let totalSent = 0;
+                let totalRecieved = 0;
+                let totalGas = 0;
+                if (received.length) {
+                    totalRecieved = received[0].value;
+                }
+                if (sent.length) {
+                    totalSent = totalSent + sent[0].value;
+                    totalGas = totalGas + sent[0].gas;
+                }
                 return res.json({
                     address,
-                    balance: received.value - sent.value - sent.gas,
+                    sent: totalSent,
+                    received: totalRecieved,
+                    fees: totalGas,
+                    balance: totalRecieved - totalSent - totalGas,
                     transactions
                 });
             } catch (e) {
