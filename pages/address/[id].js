@@ -3,6 +3,7 @@ import Link from 'next/link'
 import config from 'config';
 import mongoose from 'mongoose'
 import DAGBlock from '../../models/dag_block'
+import Block from '../../models/block'
 import Tx from '../../models/tx'
 
 import {Container, Row, Col, Navbar, Nav, Button, Jumbotron, Card, ListGroup, ListGroupItem, Table} from 'react-bootstrap'
@@ -46,6 +47,10 @@ export async function getServerSideProps(context) {
                     }
                 }
             ]),
+            Block.aggregate([
+                {$match: {miner: id}},
+                {$group: {_id: id, value: {$sum: '$reward'}}}
+            ]),
             Tx.find({
                 $or: [{from: id}, {to: id}]
             })
@@ -56,10 +61,12 @@ export async function getServerSideProps(context) {
     
         const received = activity[0];
         const sent = activity[1];
-        const transactions = activity[2];
+        const mined = activity[2];
+        const transactions = activity[3];
 
         let totalSent = 0;
         let totalRecieved = 0;
+        let totalMined = 0;
         let totalGas = 0;
         if (received.length) {
             totalRecieved = received[0].value;
@@ -68,12 +75,17 @@ export async function getServerSideProps(context) {
             totalSent = totalSent + sent[0].value;
             totalGas = totalGas + sent[0].gas;
         }
+        if (mined.length) {
+            totalMined = totalMined + mined[0].value;
+        }
+          
         props.data = JSON.parse(JSON.stringify({
             address: context.query.id,
             sent: totalSent,
             received: totalRecieved,
+            mined: totalMined,
             fees: totalGas,
-            balance: totalRecieved - totalSent - totalGas,
+            balance: totalRecieved + totalMined - totalSent - totalGas,
             transactions
         }));
 
@@ -97,6 +109,7 @@ export default function AddressPage({data}) {
                 <ul>
                     <li>Received: {data.received?.toLocaleString()}</li>
                     <li>Sent: {data.sent?.toLocaleString()}</li>
+                    <li>Mined: {data.mined?.toLocaleString()}</li>
                     <li>Fees: {data.fees?.toLocaleString()}</li>
                 </ul>
             </Card.Body>

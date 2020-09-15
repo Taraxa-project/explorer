@@ -43,6 +43,7 @@ export default function BlockPage({data}) {
 
                     <li>Gas Limit: {data.gasLimit}</li>
                     <li>Gas Used: {data.gasUsed}</li>
+                    <li>Block Reward: {data.reward}</li>
                     <li>Miner: <Link href="/address/[id]" as={`/address/${data.miner}`}>
                                     <a>{`${data.miner}`}</a>
                                 </Link></li>

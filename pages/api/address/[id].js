@@ -43,6 +43,10 @@ export default async function userHandler(req, res) {
                             }
                         }
                     ]),
+                    Block.aggregate([
+                        {$match: {miner: id}},
+                        {$group: {_id: id, value: {$sum: '$gasUsed'}}}
+                    ]),
                     Tx.find({
                         $or: [{from: id}, {to: id}]
                     })
@@ -53,9 +57,12 @@ export default async function userHandler(req, res) {
             
                 const received = activity[0];
                 const sent = activity[1];
-                const transactions = activity[2];
+                const mined = activity[2];
+                const transactions = activity[3];
+        
                 let totalSent = 0;
                 let totalRecieved = 0;
+                let totalMined = 0;
                 let totalGas = 0;
                 if (received.length) {
                     totalRecieved = received[0].value;
@@ -64,12 +71,16 @@ export default async function userHandler(req, res) {
                     totalSent = totalSent + sent[0].value;
                     totalGas = totalGas + sent[0].gas;
                 }
+                if (mined.length) {
+                    totalMined = totalMined + mined[0].value;
+                }
                 return res.json({
                     address,
                     sent: totalSent,
                     received: totalRecieved,
+                    mined: totalMined,
                     fees: totalGas,
-                    balance: totalRecieved - totalSent - totalGas,
+                    balance: totalRecieved + totalMined - totalSent - totalGas,
                     transactions
                 });
             } catch (e) {

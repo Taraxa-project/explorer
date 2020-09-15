@@ -269,6 +269,7 @@ async function historicalSync(subscribed = false) {
             const started = new Date();
             const bulkTx = [];
             const txHashes = [];
+            let blockReward = 0;
 
             const minBlock = Object.assign({}, block);
             let scheduleBlock = {
@@ -365,7 +366,10 @@ async function historicalSync(subscribed = false) {
 
             for (const tx of block.transactions) {
                 txHashes.push(tx.hash);
+                blockReward = blockReward + Number(tx.gas) * Number(tx.gasPrice);
+
             }
+            minBlock.reward = blockReward;
             minBlock.transactions = txHashes;
 
             notifications.push({
@@ -380,6 +384,7 @@ async function historicalSync(subscribed = false) {
             for (const tx of block.transactions) {
                 tx.timestamp = block.timestamp;
                 const t = Tx.fromRPC(tx).toJSON()
+
                 bulkTx.push({
                     updateOne: {
                         filter: {_id: tx.hash},

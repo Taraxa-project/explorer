@@ -9,7 +9,7 @@ export let onClick = (event) => {
             window.open('/dag_block/' + id)
         } else {
             id = id.slice(0, id.length - 6)
-            window.open('/block/' + id)
+            // window.open('/block/' + id)
         }
     }
 }

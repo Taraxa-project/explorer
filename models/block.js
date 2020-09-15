@@ -13,6 +13,7 @@ const Block = new mongoose.Schema({
     number: {type: Number},
     parentHash: {type: String},
     receiptsRoot: {type: String},
+    reward: {type: Number, default: 0},
     sha3Uncles: {type: String},
     size: {type: Number},
     stateRoot: {type: String},
