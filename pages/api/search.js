@@ -16,6 +16,7 @@ export default async function handler(req, res) {
     }
 
     let queryString = req.query.query || "";
+    queryString = queryString.trim();
 
     try {
         let blocks = [];
@@ -23,10 +24,11 @@ export default async function handler(req, res) {
         let txs = [];
 
         if (queryString) {
-            if(utils.isHexStrict(queryString.trim())){
-                blocks = await Block.find({_id: queryString.trim()}).limit(1);
-                dagBlocks = await DagBlock.find({_id: queryString.trim()}).limit(1);
-                txs = await Tx.find({_id: queryString.trim()}).limit(1);
+            if(utils.isHexStrict(queryString)){
+                const hex = queryString.toLowerCase();
+                blocks = await Block.find({_id: hex}).limit(1);
+                dagBlocks = await DagBlock.find({_id: hex}).limit(1);
+                txs = await Tx.find({_id: hex}).limit(1);
             } else {
                 blocks = await Block.find({number: Number(queryString)}).limit(1);
                 dagBlocks = await DagBlock.find({level: Number(queryString)}).limit(1);

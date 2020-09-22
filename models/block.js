@@ -7,7 +7,7 @@ const Block = new mongoose.Schema({
     gasLimit: {type: Number},
     gasUsed: {type: Number},
     logsBloom: {type: String},
-    miner: {type: String},
+    miner: {type: String, index: true},
     mixHash: {type: String},
     nonce: {type: Number},
     number: {type: Number},
