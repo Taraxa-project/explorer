@@ -25,7 +25,7 @@ function ReduxApp({Component, pageProps}) {
     function doSearch() {
         if (search) {
             if (utils.isAddress(search)) {
-                router.push(`/address/${search}`)
+                router.push(`/address/${search.toLowerCase()}`)
             } else {
                 router.push(`/search?query=${search}`)
             }
