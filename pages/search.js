@@ -11,7 +11,7 @@ export default function Search() {
         search = window?.location?.search;
     }
     const params = new URLSearchParams(search);
-    let queryString = params.get('query');
+    let queryString = params.get('query') || '';
     queryString = queryString.toLowerCase();
 
     let query = `/api/search?query=${queryString}`;
