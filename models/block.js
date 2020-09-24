@@ -49,24 +49,4 @@ Block.statics.fromRPC = function fromRPC(data) {
     return new this(json);
 };
 
-Block.methods.toRPC = function toRPC() {
-    const json = this.toJSON();
-
-    // get hash from primary key _id
-    json.hash = this._id;
-    delete json._id;
-
-    const hexKeys = ['gasLimit', 'gasUsed', 'nonce', 'number', 'size', 'timestamp'];
-    hexKeys.forEach(key => {
-        if (key === 'timestamp') {
-            json[key] = this[key].valueOf() / 1000;
-        }
-        if (this[key]) {
-            json[key] = this[key].toString(16);
-        }
-    });
-
-    return json;
-};
-
 module.exports = mongoose.models?.Block || mongoose.model('Block', Block);

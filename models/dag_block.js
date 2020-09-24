@@ -33,24 +33,4 @@ DAGBlock.statics.fromRPC = function fromRPC(json) {
     return new this(json);
 };
 
-DAGBlock.methods.toRPC = function toRPC() {
-    const json = this.toJSON();
-
-    // using hash as primary key
-    json.hash = this._id;
-    delete json._id;
-
-    const hexKeys = ['level', 'period', 'timestamp'];
-    hexKeys.forEach(key => {
-        if (key === 'timestamp') {
-            json[key] = this[key].valueOf() / 1000;
-        }
-        if (this[key]) {
-            json[key] = this[key].toString(16);
-        }
-    });
-
-    return json;
-};
-
 module.exports = mongoose.models?.DAGBlock || mongoose.model('DAGBlock', DAGBlock);

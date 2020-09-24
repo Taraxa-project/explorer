@@ -5,6 +5,9 @@ import mongoose from 'mongoose'
 import Block from '../../models/block'
 import Tx from '../../models/tx'
 
+import { IoMdCheckmark, IoMdClose } from 'react-icons/io';
+import { IconContext } from "react-icons";
+
 import {Accordion, Container, Row, Col, Navbar, Nav, Button, Jumbotron, Card, ListGroup, ListGroupItem, Table} from 'react-bootstrap'
 
 export async function getServerSideProps(context) {
@@ -84,20 +87,36 @@ export default function BlockPage({data}) {
                     <thead>
                         <tr>
                             <th>Number</th>
+                            <th>Status</th>
                             <th>Hash</th>
+                            <th>To</th>
+                            <th>From</th>
                             <th>Value</th>
+                            <th>Fee</th>
                         </tr>
                     </thead>
                 <tbody>
                 {data.transactions?.map((tx, index) => (
                     <tr key={tx._id}>
                         <td>{index + 1}</td>
-                    <td>
-                        <Link href="/tx/[id]" as={`/tx/${tx._id}`}>
-                            <a className="long-hash">{`${tx._id}`}</a>
-                        </Link>
-                    </td>
-                    <td>{tx.value.toLocaleString()}</td>
+                        <td>{tx.status ? <IoMdCheckmark size={20}/> : <IoMdClose  size={25} color="red"/>}{tx.status}</td>
+                        <td className="table-cell-overflow2">
+                            <Link href="/tx/[id]" as={`/tx/${tx._id}`}>
+                                <a className="long-hash">{`${tx._id}`}</a>
+                            </Link>
+                        </td>
+                        <td className="table-cell-overflow">
+                            <Link href="/address/[id]" as={`/address/${tx.to}`}>
+                                <a className="long-hash">{`${tx.to}`}</a>
+                            </Link>
+                        </td>
+                        <td className="table-cell-overflow">
+                        <Link href="/address/[id]" as={`/address/${tx.from}`}>
+                                <a className="long-hash">{`${tx.from}`}</a>
+                            </Link>
+                        </td>
+                        <td>{tx.value.toLocaleString()}</td>
+                        <td>{tx.gasUsed * tx.gasPrice}</td>
                     </tr>
                 ))}
                 </tbody>

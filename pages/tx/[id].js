@@ -56,19 +56,37 @@ export default function TxPage({tx, dags}) {
                     <li>
                         Block Number {`${tx.blockNumber}`}
                     </li>
+
+                    <li>
+                        {`Status ${tx.status === true ? 'Success' : 'Failed'}`}
+                    </li>
                     
                     <li>
-                        {`Gas ${tx.gas}`}
+                        {`Gas Limit ${tx.gas}`}
                     </li>
+
+                    <li>
+                        {`Gas Used ${tx.gasUsed}`}
+                    </li>
+
                     <li>
                         {`Gas Price ${tx.gasPrice}`}
                     </li>
+
                     <li>
                         {`Nonce ${tx.nonce}`}
                     </li>
+
                     <li>
                         {`Value ${tx.value.toLocaleString()}`}
                     </li>
+
+                    {tx.contractAddress ? (
+                        <li>
+                            {`Deployed Contract ${tx.contractAddress}`}
+                        </li>
+
+                    ) : ''}
                 </ul>
             </Card.Body>
             <Card.Body>

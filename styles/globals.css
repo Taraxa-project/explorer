@@ -347,3 +347,17 @@ color: #fff;
   width: 200px;
   word-break: break-all;
 }
+
+.table-cell-overflow {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: clip;
+  max-width: 100px;
+}
+
+.table-cell-overflow2 {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: clip;
+  max-width: 200px;
+}

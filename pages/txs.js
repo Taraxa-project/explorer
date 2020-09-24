@@ -3,6 +3,8 @@ import {useState} from 'react'
 
 import {Card, Table, Row, Col, Form, Pagination} from 'react-bootstrap'
 
+import { IoMdCheckmark, IoMdClose } from 'react-icons/io';
+
 import useSwr from 'swr'
 
 const fetcher = (url) => fetch(url).then((res) => res.json())
@@ -62,6 +64,7 @@ export default function Index() {
                 <tr>
                   <th>Timestamp</th>
                   <th>Block</th>
+                  <th>Status</th>
                   <th>Hash</th>
                   <th>Value</th>
                 </tr>
@@ -71,6 +74,7 @@ export default function Index() {
                   <tr key={tx._id}>
                   <td>{new Date(tx.timestamp).toLocaleString()}</td>
                   <td>{`${tx.blockNumber} `}</td>
+                  <td>{tx.status ? <IoMdCheckmark size={20}/> : <IoMdClose  size={25} color="red"/>}{tx.status}</td>
                   <td>
                     <Link href="/tx/[id]" as={`/tx/${tx._id}`}>
                         <a className="long-hash">{`${tx._id}`}</a>
