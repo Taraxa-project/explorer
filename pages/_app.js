@@ -10,6 +10,9 @@ import utils from 'web3-utils'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../styles/globals.css';
 
+import { IoIosSearch } from 'react-icons/io';
+
+
 import {Navbar, Nav, Form, Button, InputGroup, FormControl} from 'react-bootstrap'
 
 import WebsocketContainer from '../containers/ws'
@@ -55,7 +58,7 @@ function ReduxApp({Component, pageProps}) {
 
                 <Navbar.Toggle aria-controls="responsive-navbar-nav" />
                 <Navbar.Collapse id="responsive-navbar-nav">
-                    <InputGroup className="mr-auto" style={{padding: 10}}>
+                    <InputGroup className="mr-auto" style={{padding: 10, maxWidth: 800, marginLeft: 'auto', marginRight: 'auto'}}>
                         <FormControl
                             placeholder="Address, Hash, or Number"
                             aria-label="Recipient's username"
@@ -63,7 +66,7 @@ function ReduxApp({Component, pageProps}) {
                             onChange={updateSearch}
                         />
                         <InputGroup.Append>
-                            <Button variant="outline-light" onClick={doSearch}>Search</Button>
+                            <Button variant="outline-light" onClick={doSearch}><IoIosSearch/></Button>
                         </InputGroup.Append>
                     </InputGroup>
                     

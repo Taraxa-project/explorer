@@ -14,7 +14,13 @@ const Tx = new mongoose.Schema({
     value: {type: Number, default: 0},
 
     //not in rpc
-    timestamp: {type: Date, default: Date.now} //override with block timestamp on finality
+    timestamp: {type: Date, default: Date.now},
+
+    //from receipt
+    contractAddress: {type: String,},
+    cumulativeGasUsed: {type: Number},
+    gasUsed: {type: Number},
+    status: {type: Boolean},
 });
 
 Tx.statics.fromRPC = function fromRPC(data) {
@@ -34,26 +40,6 @@ Tx.statics.fromRPC = function fromRPC(data) {
     });
 
     return new this(json);
-};
-
-Tx.methods.toRPC = function toRPC() {
-    const json = this.toJSON();
-
-    // using hash as primary key
-    json.hash = this._id;
-    delete json._id;
-
-    // delete non standard key
-    delete json.timestamp;
-
-    const hexKeys = ['blockNumber', 'gas', 'gasPrice', 'nonce', 'value'];
-    hexKeys.forEach(key => {
-        if (this[key]) {
-            json[key] = this[key].toString(16);
-        }
-    });
-
-    return json;
 };
 
 module.exports = mongoose.models?.Tx || mongoose.model('Tx', Tx);

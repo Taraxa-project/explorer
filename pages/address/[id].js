@@ -9,6 +9,8 @@ import Tx from '../../models/tx'
 
 import {Form, Container, Row, Col, Pagination, Navbar, Nav, Button, Jumbotron, Card, ListGroup, ListGroupItem, Table} from 'react-bootstrap'
 
+import { IoMdCheckmark, IoMdClose } from 'react-icons/io';
+
 import useSwr from 'swr'
 
 const fetcher = (url) => fetch(url).then((res) => res.json())
@@ -33,8 +35,19 @@ export async function getServerSideProps(context) {
         mongoose.connection._readyState || await mongoose.connect(config.mongo.uri, config.mongo.options);
         const activity = await Promise.all([
             Tx.aggregate([
-                {$match: {to: id}},
+                {$match: {to: id, status: true}},
                 {$group: {_id: id, value: {$sum: '$value'}}}
+            ]),
+            Tx.aggregate([
+                {$match: {from: id, status: true}},
+                {
+                    $group: {
+                        _id: id, 
+                        value: {
+                            $sum: '$value'
+                        }
+                    }
+                }
             ]),
             Tx.aggregate([
                 {$match: {from: id}},
@@ -43,12 +56,9 @@ export async function getServerSideProps(context) {
                         _id: id, 
                         gas: {
                             $sum: {
-                                $multiply: ['$gas', '$gasPrice']
+                                $multiply: ['$gasUsed', '$gasPrice']
                             }
                         },
-                        value: {
-                            $sum: '$value'
-                        }
                     }
                 }
             ]),
@@ -69,9 +79,10 @@ export async function getServerSideProps(context) {
     
         const received = activity[0];
         const sent = activity[1];
-        const mined = activity[2];
-        const transactions = activity[3];
-        const count = activity[4];
+        const gas = activity[2];
+        const mined = activity[3];
+        const transactions = activity[4];
+        const count = activity[5];
 
         let totalSent = 0;
         let totalRecieved = 0;
@@ -81,11 +92,13 @@ export async function getServerSideProps(context) {
             totalRecieved = received[0].value;
         }
         if (sent.length) {
-            totalSent = totalSent + sent[0].value;
-            totalGas = totalGas + Number(sent[0].gas);
+            totalSent = sent[0].value;
+        }
+        if (gas.length) {
+            totalGas = gas[0].gas;
         }
         if (mined.length) {
-            totalMined = totalMined + mined[0].value;
+            totalMined = mined[0].value;
         }
           
         props.data = JSON.parse(JSON.stringify({
@@ -184,22 +197,27 @@ export default function AddressPage({data}) {
                         <th>Timestamp</th>
                         <th>Block</th>
                         <th>Action</th>
+                        <th>Status</th>
                         <th>Hash</th>
                         <th>Value</th>
+                        <th>Fee</th>
                     </tr>
                 </thead>
                 <tbody>
                     {data.transactions.map((tx) => (
+                    
                     <tr key={tx._id}>
                     <td>{new Date(tx.timestamp).toLocaleString()}</td>
                     <td>{`${tx.blockNumber} `}</td>
-                    <td>{data.address === tx.to ? 'Received' : 'Sent'}</td>
-                    <td>
+                    <td>{data.address === tx.to ? 'Receive' : 'Send'}</td>
+                    <td>{tx.status ? <IoMdCheckmark size={20}/> : <IoMdClose  size={25} color="red"/>}{tx.status}</td>
+                    <td className="table-cell-overflow2">
                         <Link href="/tx/[id]" as={`/tx/${tx._id}`}>
                             <a className="long-hash">{`${tx._id}`}</a>
                         </Link>
                     </td>
                     <td>{tx.value.toLocaleString()}</td>
+                    <td>{tx.gasUsed * tx.gasPrice}</td>
                     </tr>
                 ))}
                 </tbody>

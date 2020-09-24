@@ -25,8 +25,19 @@ export default async function userHandler(req, res) {
             try {
                 const activity = await Promise.all([
                     Tx.aggregate([
-                        {$match: {to: id}},
+                        {$match: {to: id, status: true}},
                         {$group: {_id: id, value: {$sum: '$value'}}}
+                    ]),
+                    Tx.aggregate([
+                        {$match: {from: id, status: true}},
+                        {
+                            $group: {
+                                _id: id, 
+                                value: {
+                                    $sum: '$value'
+                                }
+                            }
+                        }
                     ]),
                     Tx.aggregate([
                         {$match: {from: id}},
@@ -35,12 +46,9 @@ export default async function userHandler(req, res) {
                                 _id: id, 
                                 gas: {
                                     $sum: {
-                                        $multiply: ['$gas', '$gasPrice']
+                                        $multiply: ['$gasUsed', '$gasPrice']
                                     }
                                 },
-                                value: {
-                                    $sum: '$value'
-                                }
                             }
                         }
                     ]),
@@ -61,9 +69,10 @@ export default async function userHandler(req, res) {
             
                 const received = activity[0];
                 const sent = activity[1];
-                const mined = activity[2];
-                const transactions = activity[3];
-                const count = activity[4];
+                const gas = activity[2];
+                const mined = activity[3];
+                const transactions = activity[4];
+                const count = activity[5];
         
                 let totalSent = 0;
                 let totalRecieved = 0;
@@ -73,8 +82,10 @@ export default async function userHandler(req, res) {
                     totalRecieved = received[0].value;
                 }
                 if (sent.length) {
-                    totalSent = totalSent + sent[0].value;
-                    totalGas = totalGas + Number(sent[0].gas);
+                    totalSent = sent[0].value;
+                }
+                if (gas.length) {
+                    totalGas = gas[0].gas;
                 }
                 if (mined.length) {
                     totalMined = totalMined + mined[0].value;

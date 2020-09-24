@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+const _ = require('lodash');
 const { program } = require('commander');
 const pkg = require('../package.json');
 
@@ -218,6 +219,21 @@ async function realtimeSync() {
     });
 }
 
+async function getTransactionReceipts(hashes, limit) {
+    const _hashes = Object.assign([], _.zip(hashes, _.range(hashes.length)));
+    const results = [];
+
+    const awaitWorker = async () => {
+        while (_hashes.length > 0) {
+            const [hash, idx] = _hashes.pop();
+            results[idx] = await rpc.getTransactionReceipt(hash)
+        }
+    };
+
+    await Promise.all(_.range(limit).map(awaitWorker));
+    return results;
+}
+
 async function historicalSync(subscribed = false) {
     const state = await Promise.all([
         getChainState(),
@@ -289,7 +305,12 @@ async function historicalSync(subscribed = false) {
                         blockNumber: block.number,
                         to: `0x${address}`,
                         value: genesis[address],
-                        timestamp: new Date(0x5d422b80 * 1000)
+                        timestamp: new Date(0x5d422b80 * 1000),
+
+                        status: true,
+                        gasUsed: 0,
+                        cumulativeGasUsed: 0,
+
     
                     })
                     txHashes.push(fakeTx._id);
@@ -362,13 +383,14 @@ async function historicalSync(subscribed = false) {
                 }
             }
 
+            const txReceipts = await getTransactionReceipts(block.transactions.map(tx => tx.hash), 20);
 
-
-            for (const tx of block.transactions) {
+            block.transactions.forEach((tx, idx) => {
                 txHashes.push(tx.hash);
-                blockReward = blockReward + Number(tx.gas) * Number(tx.gasPrice);
+                const receipt = txReceipts[idx];
+                blockReward = blockReward + Number(receipt.gasUsed) * Number(tx.gasPrice);
+            })
 
-            }
             minBlock.reward = blockReward;
             minBlock.transactions = txHashes;
 
@@ -381,9 +403,15 @@ async function historicalSync(subscribed = false) {
                 }
             });
 
-            for (const tx of block.transactions) {
+            block.transactions.forEach((tx, idx) => {
+                const receipt = txReceipts[idx];
                 tx.timestamp = block.timestamp;
+                
                 const t = Tx.fromRPC(tx).toJSON()
+                t.status = receipt.status === '0' ? false : true
+                t.gasUsed = parseInt(receipt.gasUsed, 16);
+                t.cumulativeGasUsed = parseInt(receipt.cumulativeGasUsed, 16);
+                t.contractAddress = receipt.contractAddress === '0x0000000000000000000000000000000000000000' ? undefined : receipt.contractAddress
 
                 bulkTx.push({
                     updateOne: {
@@ -392,7 +420,7 @@ async function historicalSync(subscribed = false) {
                         upsert: true
                     }
                 });
-            }
+            });
 
             await Tx.bulkWrite(bulkTx, {ordered: true});
             await Block.findOneAndUpdate(
