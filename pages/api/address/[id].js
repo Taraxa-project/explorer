@@ -1,16 +1,6 @@
-import config from 'config';
-import mongoose from 'mongoose';
-
-import Block from '../../../models/block'
-import Tx from '../../../models/tx';
+import {getAddress} from '../../../lib/db'
 
 export default async function userHandler(req, res) {
-    try {
-        mongoose.connection._readyState || await mongoose.connect(config.mongo.uri, config.mongo.options);
-    } catch (e) {
-        console.error(e);
-        return res.status(500).json({error: 'Internal error. Please try your request again.'});
-    }
     const {
         query: {id},
         method,
@@ -20,89 +10,15 @@ export default async function userHandler(req, res) {
     let limit = Number(req.query.limit) || 20;
     let sortOrder = req.query.reverse ? 1 : -1;
 
+    let query = {id, skip, limit, sortOrder}
+
     switch (method) {
         case 'GET':
             try {
-                const activity = await Promise.all([
-                    Tx.aggregate([
-                        {$match: {to: id, status: true}},
-                        {$group: {_id: id, value: {$sum: '$value'}}}
-                    ]),
-                    Tx.aggregate([
-                        {$match: {from: id, status: true}},
-                        {
-                            $group: {
-                                _id: id, 
-                                value: {
-                                    $sum: '$value'
-                                }
-                            }
-                        }
-                    ]),
-                    Tx.aggregate([
-                        {$match: {from: id}},
-                        {
-                            $group: {
-                                _id: id, 
-                                gas: {
-                                    $sum: {
-                                        $multiply: ['$gasUsed', '$gasPrice']
-                                    }
-                                },
-                            }
-                        }
-                    ]),
-                    Block.aggregate([
-                        {$match: {miner: id}},
-                        {$group: {_id: id, value: {$sum: '$gasUsed'}}}
-                    ]),
-                    Tx.find({
-                        $or: [{from: id}, {to: id}]
-                    })
-                        .sort({timestamp: sortOrder})
-                        .skip(skip)
-                        .limit(limit),
-                    Tx.countDocuments({
-                        $or: [{from: id}, {to: id}]
-                    })
-                ]);
-            
-                const received = activity[0];
-                const sent = activity[1];
-                const gas = activity[2];
-                const mined = activity[3];
-                const transactions = activity[4];
-                const count = activity[5];
-        
-                let totalSent = 0;
-                let totalRecieved = 0;
-                let totalMined = 0;
-                let totalGas = 0;
-                if (received.length) {
-                    totalRecieved = received[0].value;
-                }
-                if (sent.length) {
-                    totalSent = sent[0].value;
-                }
-                if (gas.length) {
-                    totalGas = gas[0].gas;
-                }
-                if (mined.length) {
-                    totalMined = totalMined + mined[0].value;
-                }
-                return res.json({
-                    address: id,
-                    sent: totalSent,
-                    received: totalRecieved,
-                    mined: totalMined,
-                    fees: totalGas,
-                    balance: totalRecieved + totalMined - totalSent - totalGas,
-                    transactions,
-                    count
-                });
+                const address = await getAddress(query)
+                return res.json(address);
             } catch (e) {
-                console.error(e);
-                res.status(500).json({error: 'Internal error. Please try your request again.'});
+                res.status(e.status).json({error: e.message});
             }
             break;
         default:

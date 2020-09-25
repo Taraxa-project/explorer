@@ -1,13 +1,9 @@
 import Link from 'next/link'
 import {useState} from 'react'
 
-import config from 'config';
-import mongoose from 'mongoose'
-import DAGBlock from '../../models/dag_block'
-import Block from '../../models/block'
-import Tx from '../../models/tx'
+import {getAddress} from '../../lib/db'
 
-import {Form, Container, Row, Col, Pagination, Navbar, Nav, Button, Jumbotron, Card, ListGroup, ListGroupItem, Table} from 'react-bootstrap'
+import {Form, Row, Col, Pagination, Card, Table} from 'react-bootstrap'
 
 import { IoMdCheckmark, IoMdClose } from 'react-icons/io';
 
@@ -21,96 +17,23 @@ export async function getServerSideProps(context) {
     let limit = Number(context.query.limit) || 20;
     let sortOrder = context.query.reverse ? 1 : -1;
 
+    let query = {id, skip, limit, sortOrder}
+
     let props = {
         data: {
             address: '',
             sent: 0,
             received: 0,
+            mined: 0,
             fees: 0,
             balance: 0,
-            transactions: []
+            transactions: [],
+            count: 0
         }
     };
     try {
-        mongoose.connection._readyState || await mongoose.connect(config.mongo.uri, config.mongo.options);
-        const activity = await Promise.all([
-            Tx.aggregate([
-                {$match: {to: id, status: true}},
-                {$group: {_id: id, value: {$sum: '$value'}}}
-            ]),
-            Tx.aggregate([
-                {$match: {from: id, status: true}},
-                {
-                    $group: {
-                        _id: id, 
-                        value: {
-                            $sum: '$value'
-                        }
-                    }
-                }
-            ]),
-            Tx.aggregate([
-                {$match: {from: id}},
-                {
-                    $group: {
-                        _id: id, 
-                        gas: {
-                            $sum: {
-                                $multiply: ['$gasUsed', '$gasPrice']
-                            }
-                        },
-                    }
-                }
-            ]),
-            Block.aggregate([
-                {$match: {miner: id}},
-                {$group: {_id: id, value: {$sum: '$reward'}}}
-            ]),
-            Tx.find({
-                $or: [{from: id}, {to: id}]
-            })
-                .sort({timestamp: sortOrder})
-                .skip(skip)
-                .limit(limit),
-            Tx.countDocuments({
-                $or: [{from: id}, {to: id}]
-            })
-        ]);
-    
-        const received = activity[0];
-        const sent = activity[1];
-        const gas = activity[2];
-        const mined = activity[3];
-        const transactions = activity[4];
-        const count = activity[5];
-
-        let totalSent = 0;
-        let totalRecieved = 0;
-        let totalMined = 0;
-        let totalGas = 0;
-        if (received.length) {
-            totalRecieved = received[0].value;
-        }
-        if (sent.length) {
-            totalSent = sent[0].value;
-        }
-        if (gas.length) {
-            totalGas = gas[0].gas;
-        }
-        if (mined.length) {
-            totalMined = mined[0].value;
-        }
-          
-        props.data = JSON.parse(JSON.stringify({
-            address: context.query.id,
-            sent: totalSent,
-            received: totalRecieved,
-            mined: totalMined,
-            fees: totalGas,
-            balance: totalRecieved + totalMined - totalSent - totalGas,
-            transactions,
-            count
-        }));
+        const address = await getAddress(query)
+        props.data = JSON.parse(JSON.stringify(address));
 
     } catch (e) {
         console.error('Error in Server Props: ' + e.message);
