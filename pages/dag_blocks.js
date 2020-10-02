@@ -2,6 +2,8 @@ import Link from 'next/link'
 import {useState} from 'react'
 
 import {Card, Table, Col, Row, Pagination, Form} from 'react-bootstrap'
+import DAG from '../components/DAG'
+
 
 import useSwr from 'swr'
 
@@ -36,6 +38,7 @@ export default function Index() {
 
   const total = data?.total || 0;
   const blocks = data?.result?.blocks || [];
+  const pbftBlocks = data?.result?.pbftBlocks || [];
   const pages = Math.ceil(total / limit);
   const page = skip / limit + 1;
 
@@ -56,7 +59,12 @@ export default function Index() {
             </Form>
           </Col>
         </Row>
-        <Card style={{margin: 5, marginTop: 0, marginBottom: 10}} bg="dark" text="white">
+        <Row>
+            <Col style={{paddingLeft: 5, paddingRight: 5, paddingTop: 5, paddingBottom: 0, margin: 0, backgroundColor: '#0f1517'}}>
+                <DAG dagBlocks={blocks} reverse={reverse} pbftBlocks={pbftBlocks}/>
+            </Col>
+        </Row>
+        <Card style={{margin: 5, marginTop: 10, marginBottom: 10}} bg="dark" text="white">
               <Table responsive variant="dark">
                 <thead>
                   <tr>

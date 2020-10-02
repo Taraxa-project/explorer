@@ -9,6 +9,7 @@ const mongoose = require('mongoose');
 
 const DagBlock = require('../models/dag_block');
 const Block = require('../models/block');
+const PBFTBlock = require('../models/pbft_block');
 const Tx = require('../models/tx');
 
 const LogNetworkEvent = require('../models/log_network_event');
@@ -115,6 +116,9 @@ function formatPbftBlock(pbftBlock) {
         pbftBlock.period = parseInt(dagPeriod, 16);
     }
 
+    pbftBlock._id = pbftBlock.block_hash;
+    delete pbftBlock.block_hash;
+
     return pbftBlock;
 }
 
@@ -174,12 +178,12 @@ async function realtimeSync() {
                             return dagBlockFinalized;
                         case 'newPbftBlocks':
                             // console.log(subscribed[jsonRpc.params.subscription], JSON.stringify(jsonRpc.params.result, null, 2));
-                            const pbftBlock = formatPbftBlock(jsonRpc.params.result.pbft_block)
-                            
+                            const pbftBlock = new PBFTBlock(formatPbftBlock(jsonRpc.params.result.pbft_block))
+                            await pbftBlock.save();
                             await DagBlock.updateMany({_id: {$in: pbftBlock.schedule.dag_blocks_order}}, {$set: {period: pbftBlock.period}})
                             await new LogNetworkEvent({
                                 log: 'pbft-block',
-                                data: pbftBlock
+                                data: formatPbftBlock(jsonRpc.params.result.pbft_block)
                             }).save();
                             return;
                         case 'newHeads':
@@ -326,7 +330,7 @@ async function historicalSync(subscribed = false) {
             } else {
                 if (!subscribed) { // no need to do this if already getting dag blocks over websocket
                     const scheduleBlockRPC = await rpc.getScheduleBlockByPeriod(block.number);
-                    scheduleBlock = formatPbftBlock(scheduleBlockRPC);
+                    scheduleBlock = new PBFTBlock(formatPbftBlock(scheduleBlockRPC));
                     const getDagPromises = [];
                     for (const dagBlockHash of scheduleBlock.schedule.dag_blocks_order) {
                         getDagPromises.push(rpc.getDagBlockByHash(dagBlockHash))
@@ -369,7 +373,7 @@ async function historicalSync(subscribed = false) {
                             }
                         });
                     }
-
+                    await scheduleBlock.save();
                     notifications.push({
                         insertOne: {
                             document: {
