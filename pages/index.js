@@ -106,7 +106,7 @@ function Index({recentBlocks, recentDagBlocks, recentTxs}) {
                 foundHashes.push(tx);
               }
             })
-            let percentUnique = uniqueCount / uniqueHashes.length * 100
+            let percentUnique = uniqueCount / dagBlock.transactions.length * 100
             console.log('percent unique, period', period, `${dagBlock.level}_${index}`, uniqueHashes.length, uniqueCount, percentUnique)
             percentages.push(percentUnique)
           })
