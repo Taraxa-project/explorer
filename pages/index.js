@@ -79,9 +79,6 @@ function Index({recentBlocks, recentDagBlocks, recentTxs}) {
         dpsData[period].push(block)
       })
       Object.keys(dpsData).forEach(period => {
-        if (period !== 'pending') {
-          newDe = [];
-
           const dagBlocks = dpsData[period];
           const dagStart = new Date(dagBlocks[0].timestamp).valueOf();
           const dagEnd = new Date(dagBlocks[dagBlocks.length - 1].timestamp).valueOf();
@@ -99,6 +96,7 @@ function Index({recentBlocks, recentDagBlocks, recentTxs}) {
           })
           const uniqueHashes = allHashes.filter((v, i, a) => a.indexOf(v) === i);
           const foundHashes = [];
+          const percentages = [];
           // then get % of unique hashes per block
           dpsData[period].forEach((dagBlock, index) => {
             let uniqueCount = 0;
@@ -110,12 +108,18 @@ function Index({recentBlocks, recentDagBlocks, recentTxs}) {
             })
             let percentUnique = uniqueCount / uniqueHashes.length * 100
             console.log('percent unique, period', period, `${dagBlock.level}_${index}`, uniqueHashes.length, uniqueCount, percentUnique)
-            newDe.push({
-              name: `${dagBlock.level}_${index}`,
-              percentUnique
-            })
+            percentages.push(percentUnique)
           })
-        }
+
+          let total = 0;
+          percentages.forEach(percent => {
+            total += percent;
+          })
+          let percent = total / percentages.length
+          newDe.push({
+            period,
+            percent
+          })
       })
     }
     setDps(newDps)
@@ -264,15 +268,17 @@ export const getServerSideProps = wrapper.getServerSideProps(async ({ store }) =
       txs = JSON.parse(JSON.stringify(txs));
 
       if (blocks.length) {
+        blocks.reverse();
         blocks.forEach(block => {
-          store.dispatch(addNewBlock(blocks))
+          store.dispatch(addNewBlock(block))
         })
         
       }
 
       if (dagBlocks.length) {
+        dagBlocks.reverse()
         dagBlocks.forEach(block => {
-          store.dispatch(addNewDagBlock(blocks))
+          store.dispatch(addNewDagBlock(block))
         })
       }
 

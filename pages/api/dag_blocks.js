@@ -1,7 +1,8 @@
 import config from 'config';
 import mongoose from 'mongoose';
 
-import Block from '../../models/dag_block';
+import DagBlock from '../../models/dag_block';
+import PbftBlock from '../../models/pbft_block';
 
 export default async function handler(req, res) {
     try {
@@ -18,19 +19,29 @@ export default async function handler(req, res) {
 
     try {
         let blocks = [];
-        const total = await Block.countDocuments();
+        let periods = [];
+        const total = await DagBlock.countDocuments();
         if (fullTransactions) {
-            blocks = await Block.find().limit(limit).skip(skip).sort({level: reverse ? -1 : 1}).populate('transactions');
+            blocks = await DagBlock.find().limit(limit).skip(skip).sort({level: reverse ? -1 : 1}).populate('transactions');
         } else {
-            blocks = await Block.find().limit(limit).skip(skip).sort({level: reverse ? -1 : 1});
+            blocks = await DagBlock.find().limit(limit).skip(skip).sort({level: reverse ? -1 : 1});
         }
+
+        blocks.forEach(block => {
+            if (block.period && !periods.includes(block.period)) {
+                periods.push(block.period)
+            }
+        });
+        let pbftBlocks = await PbftBlock.find({period: {$in: periods}}).sort({period: reverse ? -1 : 1})
+
         res.json({
             total,
             reverse,
             skip,
             limit,
             result: {
-                blocks
+                blocks,
+                pbftBlocks
             }
         });
     } catch (e) {

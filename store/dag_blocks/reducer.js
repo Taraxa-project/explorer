@@ -3,22 +3,28 @@ import { blockActionTypes } from '../pbft_blocks/action'
 
 const blocksInitialState = {
   level: 0,
+  period: 0,
   recent: [],
 }
 
 export default function reducer(state = blocksInitialState, action) {
   let recent = [].concat(state.recent);
   let updated = [];
+  let period = state.period;
   switch (action.type) {
     case dagBlockActionTypes.NEWDAGBLOCK:
       updated = [action.data];
       for (let block of recent) {
-        if (block.level > (state.level - 14)) {
+        if (!block.period || block.period > (state.period - 9)) {
           updated.push(block);
+        }
+        if (block.period && block.period > state.period) {
+          period = block.period
         }
       }
       return Object.assign({}, state, {
         recent: updated,
+        period,
         level: action.data.level
       })
     case dagBlockActionTypes.RECENTDAGBLOCKS:
@@ -45,7 +51,8 @@ export default function reducer(state = blocksInitialState, action) {
         updated.push(block);
       }
       return Object.assign({}, state, {
-        recent: updated
+        recent: updated,
+        period: action.data.period
       })
     default:
       return state

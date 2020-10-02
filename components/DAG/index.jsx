@@ -7,7 +7,7 @@ import * as dag_draw from "./dag_draw"
 
 let levelNodesPosition = {}
 
-function DAG({dagBlocks, reverse, history, highlight}) {
+function DAG({dagBlocks, pbftBlocks, reverse, history, highlight}) {
     const [data] = useState(null)// Currently requested data
     const [prevData] = useState(null)//Last requested data
 
@@ -42,13 +42,7 @@ function DAG({dagBlocks, reverse, history, highlight}) {
                     level={ele.data('level')}
                     period={ele.data('period') === 0 ? 'Unfinalized' : ele.data('period')}
                     hash={ele.data('id')}
-                /> : <BlockPreview
-                    type={ele.data('type')}
-                    x={x}
-                    y={y}
-                    number={ele.data('number')}
-                    hash={ele.data('id').slice(0, ele.data('id').length - 6)}
-                />
+                /> : ''
 
         }
         )
@@ -108,35 +102,20 @@ function DAG({dagBlocks, reverse, history, highlight}) {
 
     useEffect(() => {
         if (cy) {
-                console.log('loading dag blocks in reverse', reverse, dagBlocks)
-                console.log({
-                    counter,
-                    lastOrderX,
-                    lastDagX,
-                    pauseNextAnimation,
-                    firstLevel,
-
-                    period,
-                    level,
-                    startLevel,
-                    prevPeriodLastHash,
-                    isFirstBlock,
-                    data,
-                    prevData
-                })
                 // reset state on view change
                 level.current = 0;
 
                 cy.remove('node')
                 levelNodesPosition = {}
                 firstLevel.current = 0
-                const history = [].concat(dagBlocks);
+                const dagBlockHistory = [].concat(dagBlocks);
+                const pbftBlockHistory = [].concat(pbftBlocks);
                 if(reverse) {
-                    history.reverse();
+                    dagBlockHistory.reverse();
+                    pbftBlockHistory.reverse();
                 }
                 let previousBlock = {};
-                for (const h of history) {
-                    const block = h;
+                for (const block of dagBlockHistory) {
                     block.hash = block._id;
 
                     if (previousBlock.period && block.period !== previousBlock.period) {
@@ -149,23 +128,23 @@ function DAG({dagBlocks, reverse, history, highlight}) {
                         period: block.period,
                     }
 
-                    if (h.log === 'pbft-block') {
-                        onSchedule(h.data);
-                    }
+                }
+                for (const pbftBlock of pbftBlockHistory) {
+                    onSchedule(pbftBlock);
                 }
         }
             
         // eslint-disable-next-line
-    }, [cy, dagBlocks])
+    }, [cy, dagBlocks, pbftBlocks])
 
     return (
         <div className="dag box wide">
 
             {blockPreview}
 
-            <div className="dag-levels-label">Level</div>
+            <div className="dag-levels-label">DAG Level</div>
             <div id="dag-graph" className="dag-graph"></div>
-            <div className="dag-periods-label">Period</div>
+            <div className="dag-periods-label">PBFT Period</div>
         </div>
     )
 }
