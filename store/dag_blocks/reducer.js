@@ -1,4 +1,5 @@
 import { dagBlockActionTypes } from './action'
+import { blockActionTypes } from '../pbft_blocks/action'
 
 const blocksInitialState = {
   level: 0,
@@ -35,13 +36,16 @@ export default function reducer(state = blocksInitialState, action) {
       return Object.assign({}, state, {
         recent: updated,
       })
-    case dagBlockActionTypes.FINALIZEDDAGBLOCK:
-      const index = state.recent.findIndex(doc => doc.hash === action.data.block);
-      if (index > -1) {
-        recent[index].period = action.data.period
+    case blockActionTypes.NEWPBFTBLOCK:
+      const sched = action.data.schedule;
+      for (let block of recent) {
+        if (sched[block._id] || sched[block._id.replace(/^0x/, '')]) {
+          block.period = action.data.period
+        }
+        updated.push(block);
       }
       return Object.assign({}, state, {
-        recent
+        recent: updated
       })
     default:
       return state

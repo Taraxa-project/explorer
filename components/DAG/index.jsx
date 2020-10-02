@@ -1,17 +1,13 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { connect } from 'react-redux'
 
 import BlockPreview from "./BlockPreview"
-import DagController from "./DagController"
-import DagLegend from "./DagLegend"
 import * as events from "./events"
 import * as dag_events from "./dag_events"
 import * as dag_draw from "./dag_draw"
 
 let levelNodesPosition = {}
 
-function DAG({recentDagBlocks, recentPbftBlocks, history, highlight, recentHistory, newHistory}) {
-    const [historyLoaded, setHistoryLoaded] = useState(false)
+function DAG({dagBlocks, reverse, history, highlight}) {
     const [data] = useState(null)// Currently requested data
     const [prevData] = useState(null)//Last requested data
 
@@ -34,38 +30,6 @@ function DAG({recentDagBlocks, recentPbftBlocks, history, highlight, recentHisto
     const level = useRef(0) // current level
     const prevPeriodLastHash = useRef(null) // last hash of last period
     const isFirstBlock = useRef(true) // record first block to pan graph position
-
-    // DagController event
-    let onLeft = useCallback(() => {
-        cy.panBy({ x: -20 })
-    }, [cy])
-    let onRight = useCallback(() => {
-        cy.panBy({ x: 20 })
-    }, [cy])
-    let onUp = useCallback(() => {
-        cy.panBy({ y: -20 })
-    }, [cy])
-    let onDown = useCallback(() => {
-        cy.panBy({ y: 20 })
-    }, [cy])
-    let onMiddle = useCallback(() => {
-        // cy.pan({ x: cy.width() / 2, y: cy.height() / 2 })
-
-		let adjustment = cy.width()
-
-		if (cy.width() > 1200) {
-			adjustment -= (cy.width() - 1200) / 2
-		} else {
-			adjustment -= 100
-		}
-
-        console.log('PAN 3')
-		cy.pan({
-			x: -lastOrderX.current + adjustment,
-			y: 0
-		})
-
-    }, [cy])
 
     // Mouse event
     let onBlockPreview = useCallback((ele, x, y) => {
@@ -144,76 +108,66 @@ function DAG({recentDagBlocks, recentPbftBlocks, history, highlight, recentHisto
 
     useEffect(() => {
         if (cy) {
-            if (!historyLoaded) {
-                // console.log('loading history', recentHistory)
+                console.log('loading dag blocks in reverse', reverse, dagBlocks)
+                console.log({
+                    counter,
+                    lastOrderX,
+                    lastDagX,
+                    pauseNextAnimation,
+                    firstLevel,
+
+                    period,
+                    level,
+                    startLevel,
+                    prevPeriodLastHash,
+                    isFirstBlock,
+                    data,
+                    prevData
+                })
+                // reset state on view change
+                level.current = 0;
+
                 cy.remove('node')
                 levelNodesPosition = {}
                 firstLevel.current = 0
-                const history = [].concat(recentHistory);
-                history.reverse();
+                const history = [].concat(dagBlocks);
+                if(reverse) {
+                    history.reverse();
+                }
+                let previousBlock = {};
                 for (const h of history) {
-                    if (h.log === 'dag-block') {
-                        const block = h.data;
-                        block.hash = block._id;
-                        onBlock(block)
-                    } else if (h.log === 'dag-block-finalized') {
-                        onFinalized(h.data);
-                    } else if (h.log === 'pbft-block') {
+                    const block = h;
+                    block.hash = block._id;
+
+                    if (previousBlock.period && block.period !== previousBlock.period) {
+                        onFinalized(previousBlock);
+                    }
+                    onBlock(block)
+
+                    previousBlock = {
+                        block: block.hash,
+                        period: block.period,
+                    }
+
+                    if (h.log === 'pbft-block') {
                         onSchedule(h.data);
                     }
                 }
-                setHistoryLoaded(true);
-            } else {
-                // console.log('loading new data', newHistory)
-                if (newHistory.log === 'dag-block') {
-                    const block = newHistory.data;
-                    block.hash = block._id;
-                    onBlock(block)
-                } else if (newHistory.log === 'dag-block-finalized') {
-                    onFinalized(newHistory.data);
-                } else if (newHistory.log === 'pbft-block') {
-                    onSchedule(newHistory.data);
-                }
-            }
         }
             
         // eslint-disable-next-line
-    }, [cy, newHistory])
+    }, [cy, dagBlocks])
 
     return (
         <div className="dag box wide">
 
-            {/* <DagController
-                onLeft={onLeft}
-                onRight={onRight}
-                onMiddle={onMiddle}
-                onUp={onUp}
-                onDown={onDown}
-            /> */}
-
             {blockPreview}
 
-            {/* <DagLegend /> */}
-
-            <div className="dag-levels-label">Dag Levels</div>
+            <div className="dag-levels-label">Level</div>
             <div id="dag-graph" className="dag-graph"></div>
-            <div className="dag-periods-label">DAG Periods</div>
-
-            
-
+            <div className="dag-periods-label">Period</div>
         </div>
     )
-
 }
 
-const mapStateToProps = (state) => {
-    return {
-      recentBlocks: state.blocks.recent,
-      recentDagBlocks: state.dagBlocks.recent,
-      recentPbftBlocks: state.pbftBlocks.recent,
-      recentHistory: state.history.recent,
-      newHistory: state.history.recent[0]
-    }
-  }
-  
-  export default connect(mapStateToProps)(DAG)
+export default DAG
