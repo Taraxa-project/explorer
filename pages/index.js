@@ -130,19 +130,19 @@ function Index({recentBlocks, recentDagBlocks, recentTxs}) {
       <>
         <Container fluid>
           <Row>
-            <Col xs={12} md={6} lg={3} style={{paddingLeft: 0, paddingRight: 0, paddingTop: 5, paddingBottom: 5, margin: 0, backgroundColor: '#0f1517'}}>
+            <Col xs={12} md={6} lg={3} style={{paddingLeft: 0, paddingRight: 0, paddingTop: 0, paddingBottom: 2, margin: 0, backgroundColor: '#0f1517'}}>
               <Card style={{margin: 5}} bg="dark" text="white">
               <Card.Header>Transactions Per Second</Card.Header>
               <ListGroup variant="flush">
-                <ListGroupItem variant="dark">
-                <ResponsiveContainer width="100%" height={200}>
-                    <BarChart data={tpsData} margin={{top: 20, right: 20}}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="block" />
-                      <YAxis />
+                <ListGroupItem variant="dark" style={{padding: 0}}>
+                <ResponsiveContainer width="100%" height={150}>
+                    <BarChart data={tpsData} margin={{top: 15, right: 15, left: 0, bottom: 0}}>
+                      <CartesianGrid strokeDasharray="3 3" stroke={'#aaa'}/>
+                      <XAxis dataKey="block" fontSize={'12'} height={25}/>
+                      <YAxis fontSize={'12'} tickFormatter={function (d) {return `${d.toLocaleString()}/s`}} width={50}/>
                       {/* <Tooltip /> */}
                       {/* <Legend /> */}
-                      <Bar dataKey="tps" fill="#82ca9d" animationDuration={0} />
+                      <Bar dataKey="tps" fill="#82ca9d" animationDuration={0} opacity={0.7}/>
                       {/* <Bar dataKey="uv" fill="#82ca9d" /> */}
                     </BarChart>
                   </ResponsiveContainer>
@@ -150,19 +150,19 @@ function Index({recentBlocks, recentDagBlocks, recentTxs}) {
               </ListGroup>
               </Card>
             </Col>
-            <Col xs={12} md={6} lg={3} style={{paddingLeft: 0, paddingRight: 0, paddingTop: 5, paddingBottom: 5, margin: 0, backgroundColor: '#0f1517'}}>
+            <Col xs={12} md={6} lg={3} style={{paddingLeft: 0, paddingRight: 0, paddingTop: 0, paddingBottom: 2, margin: 0, backgroundColor: '#0f1517'}}>
               <Card style={{margin: 5}} bg="dark" text="white">
-                <Card.Header>Block Time (Seconds)</Card.Header>
+                <Card.Header>Block Time</Card.Header>
                 <ListGroup variant="flush">
-                  <ListGroupItem variant="dark">
-                  <ResponsiveContainer width="100%" height={200}>
-                      <BarChart data={tpsData} margin={{top: 20, right: 20}}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="block" />
-                        <YAxis />
+                  <ListGroupItem variant="dark" style={{padding: 0}}>
+                  <ResponsiveContainer width="100%" height={150}>
+                      <BarChart data={tpsData} margin={{top: 15, right: 15, left: 0, bottom: 0}}>
+                        <CartesianGrid strokeDasharray="3 3" stroke={'#aaa'}/>
+                        <XAxis dataKey="block" fontSize={'12'} height={25}/>
+                        <YAxis fontSize={'12'} tickFormatter={function (d) {return `${d.toLocaleString()}s`}} width={50}/>
                         {/* <Tooltip /> */}
                         {/* <Legend /> */}
-                        <Bar dataKey="elapsedSeconds" fill="#82ca9d" animationDuration={0}/>
+                        <Bar dataKey="elapsedSeconds" fill="#82ca9d" animationDuration={0} opacity={0.7}/>
                         {/* <Bar dataKey="uv" fill="#82ca9d" /> */}
                       </BarChart>
                     </ResponsiveContainer>
@@ -170,19 +170,19 @@ function Index({recentBlocks, recentDagBlocks, recentTxs}) {
                 </ListGroup>
               </Card>
             </Col>
-            <Col xs={12} md={6} lg={3} style={{paddingLeft: 0, paddingRight: 0, paddingTop: 5, paddingBottom: 5, margin: 0, backgroundColor: '#0f1517'}}>
+            <Col xs={12} md={6} lg={3} style={{paddingLeft: 0, paddingRight: 0, paddingTop: 0, paddingBottom: 2, margin: 0, backgroundColor: '#0f1517'}}>
               <Card style={{margin: 5}} bg="dark" text="white">
               <Card.Header>DAG Block Per Second</Card.Header>
                 <ListGroup variant="flush">
-                  <ListGroupItem variant="dark">
-                  <ResponsiveContainer width="100%" height={200}>
-                      <BarChart data={dps} margin={{top: 20, right: 20}}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="period" />
-                        <YAxis />
+                  <ListGroupItem variant="dark" style={{padding: 0}}>
+                  <ResponsiveContainer width="100%" height={150}>
+                      <BarChart data={dps} margin={{top: 15, right: 15, left: 0, bottom: 0}}>
+                        <CartesianGrid strokeDasharray="3 3" stroke={'#aaa'}/>
+                        <XAxis dataKey="period" fontSize={'12'} height={25}/>
+                        <YAxis fontSize={'12'} tickFormatter={function (d) {return `${d.toLocaleString()}/s`}} width={50}/>
                         {/* <Tooltip /> */}
                         {/* <Legend /> */}
-                        <Bar dataKey="blocksPerSecond" fill="#82ca9d" animationDuration={0}/>
+                        <Bar dataKey="blocksPerSecond" fill="#82ca9d" animationDuration={0} opacity={0.7}/>
                         {/* <Bar dataKey="uv" fill="#82ca9d" /> */}
                       </BarChart>
                     </ResponsiveContainer>
@@ -190,19 +190,19 @@ function Index({recentBlocks, recentDagBlocks, recentTxs}) {
                 </ListGroup>
               </Card>
             </Col>
-            <Col xs={12} md={6} lg={3} style={{paddingLeft: 0, paddingRight: 0, paddingTop: 5, paddingBottom: 5, margin: 0, backgroundColor: '#0f1517'}}>
+            <Col xs={12} md={6} lg={3} style={{paddingLeft: 0, paddingRight: 0, paddingTop: 0, paddingBottom: 2, margin: 0, backgroundColor: '#0f1517'}}>
               <Card style={{margin: 5}} bg="dark" text="white">
                 <Card.Header>DAG Efficiency</Card.Header>
                 <ListGroup variant="flush">
-                  <ListGroupItem variant="dark">
-                  <ResponsiveContainer width="100%" height={200}>
-                      <BarChart data={de} margin={{top: 20, right: 20}}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="period" />
-                        <YAxis />
+                  <ListGroupItem variant="dark" style={{padding: 0}}>
+                  <ResponsiveContainer width="100%" height={150}>
+                      <BarChart data={de} margin={{top: 15, right: 15, left: 0, bottom: 0}}>
+                        <CartesianGrid strokeDasharray="3 3" stroke={'#aaa'}/>
+                        <XAxis dataKey="period" fontSize={'12'} height={25}/>
+                        <YAxis fontSize={'12'} tickFormatter={function (d) {return `${d}%`}} width={50}/>
                         {/* <Tooltip /> */}
                         {/* <Legend /> */}
-                        <Bar dataKey="percent" fill="#82ca9d" animationDuration={0}/>
+                        <Bar dataKey="percent" fill="#82ca9d" animationDuration={0} opacity={0.7}/>
                         {/* <Bar dataKey="uv" fill="#82ca9d" /> */}
                       </BarChart>
                     </ResponsiveContainer>
