@@ -41,7 +41,7 @@ function Index({recentBlocks, recentDagBlocks, recentTxs}) {
   useEffect(() => {
     const timer = setInterval(() => {
       newTick(new Date().valueOf())
-    })
+    }, 1000)
     return function cleanup() {
       clearInterval(timer);
     }
@@ -63,6 +63,7 @@ function Index({recentBlocks, recentDagBlocks, recentTxs}) {
         })
       }
     })
+    console.log(new Date().toISOString(), 'updating block/tx data because recent blocks changed...')
     setTpsData(newTpsData);
   }, [recentBlocks])
 
@@ -107,7 +108,6 @@ function Index({recentBlocks, recentDagBlocks, recentTxs}) {
               }
             })
             let percentUnique = uniqueCount / dagBlock.transactions.length * 100
-            console.log('percent unique, period', period, `${dagBlock.level}_${index}`, uniqueHashes.length, uniqueCount, percentUnique)
             percentages.push(percentUnique)
           })
 
@@ -122,9 +122,12 @@ function Index({recentBlocks, recentDagBlocks, recentTxs}) {
           })
       })
     }
+    console.log(new Date().toISOString(), 'updating dag chart data because recent dag blocks changed...')
     setDps(newDps)
     setDe(newDe)
   }, [recentDagBlocks]);
+
+  console.log(new Date().toISOString(), 'updating view')
 
   return (
       <>
