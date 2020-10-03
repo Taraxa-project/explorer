@@ -90,15 +90,9 @@ function Index({recentBlocks, recentDagBlocks, recentTxs}) {
               blocksPerSecond: Number(dagBlocks.length / durationSeconds).toFixed(1)
             })
           }
-          // get all unique tx hashes for period
-          let allHashes = [];
-          dpsData[period].forEach(dagBlock => {
-            allHashes = allHashes.concat(dagBlock.transactions)
-          })
-          const uniqueHashes = allHashes.filter((v, i, a) => a.indexOf(v) === i);
+          // get % of unique hashes per block
           const foundHashes = [];
           const percentages = [];
-          // then get % of unique hashes per block
           dpsData[period].forEach((dagBlock, index) => {
             let uniqueCount = 0;
             dagBlock.transactions.forEach(tx => {
