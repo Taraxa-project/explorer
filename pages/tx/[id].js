@@ -39,7 +39,7 @@ export default function TxPage({tx, dags}) {
                 </Card.Title>
                 <ul>
                     {tx.from ? (<li>From{' '}
-                        <Link href="/address/[id]" as={`/address/${tx.to}`}>
+                        <Link href="/address/[id]" as={`/address/${tx.from}`}>
                             <a>{`${tx.from}`}</a>
                         </Link>
                     </li>) : ''}

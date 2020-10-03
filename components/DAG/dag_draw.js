@@ -62,7 +62,7 @@ export let draw = (level, data, prevData, cyChange, setCyChange, setCy, dagCy, c
         userZoomingEnabled: false
     });
     // dagCy.current.reset()
-    dagCy.current.zoom(1)
+    // dagCy.current.zoom(2)
 	dagCy.current.pan({ x: dagCy.current.width() - 80, y: 70 });
 	// dagCy.current.pan({ x: 0, y: 70 });
 	dagCy.current.nodes('[label = "' + level.current.toString() + '"]').style('background-color', color.SelectColor)
@@ -73,7 +73,7 @@ export let draw = (level, data, prevData, cyChange, setCyChange, setCy, dagCy, c
 
 	canvas.current = dagCy.current.cyCanvas({
 		zIndex: 0,
-		pixelRatio: "auto",
+		pixelRatio: window.devicePixelRatio || 1,
 	})
 
 	document.getElementById('dag-graph').children[0].style['z-index'] = '1'
