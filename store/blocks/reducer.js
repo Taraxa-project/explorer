@@ -16,10 +16,6 @@ export default function reducer(state = blocksInitialState, action) {
       return Object.assign({}, state, {
         recent,
       })
-    case blockActionTypes.RECENTBLOCKS:
-      return Object.assign({}, state, {
-        recent: action.data,
-      })
     default:
       return state
   }

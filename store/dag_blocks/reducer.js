@@ -27,20 +27,16 @@ export default function reducer(state = blocksInitialState, action) {
         period,
         level: action.data.level
       })
-    case dagBlockActionTypes.RECENTDAGBLOCKS:
-      let maxLevel = 0;
-      for (let block of action.data) {
-        if (block.level > maxLevel) {
-          maxLevel = block.level;
+    case blockActionTypes.FINALIZEDDAGBLOCK:
+      for (let block of recent) {
+        if (!block.period && block._id === action.data.block) {
+          block.period = action.data.period
         }
-      }
-      for (let block of action.data) {
-        if (block.level > maxLevel - 15) {
-          updated.push(block);
-        }
+        updated.push(block);
       }
       return Object.assign({}, state, {
         recent: updated,
+        period: action.data.period,
       })
     case blockActionTypes.NEWPBFTBLOCK:
       const sched = action.data.schedule;

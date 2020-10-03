@@ -5,7 +5,6 @@ import { wrapper } from '../store/store'
 
 import { addNewBlock } from '../store/blocks/action'
 import { addNewDagBlock } from '../store/dag_blocks/action'
-import { setRecentHistory } from '../store/history/action'
 import { setRecentTxs } from '../store/txs/action'
 
 import {
@@ -21,7 +20,6 @@ import mongoose from 'mongoose'
 import Block from '../models/block'
 import DagBlock from '../models/dag_block'
 import Tx from '../models/tx'
-import LogNetworkEvent from '../models/log_network_event'
 
 import moment from 'moment';
 
@@ -74,8 +72,14 @@ function Index({recentBlocks, recentDagBlocks, recentTxs}) {
     const reversedDagBlocks = reverse(recentDagBlocks);
 
     if (reversedDagBlocks.length) {
+      let lastPeriod = 0;
       reversedDagBlocks.forEach((block, index) => {
-        const period = block.period || 'pending';
+        let period = block.period;
+        if (!period) {
+          period = lastPeriod + 1 + '*'
+        } else {
+          lastPeriod = period;
+        }
         dpsData[period] = dpsData[period] || [];
         dpsData[period].push(block)
       })

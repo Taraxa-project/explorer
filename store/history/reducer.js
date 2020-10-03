@@ -16,10 +16,6 @@ export default function reducer(state = historyInitialState, action) {
       return Object.assign({}, state, {
         recent,
       })
-    case historyActionTypes.RECENTHISTORY:
-      return Object.assign({}, state, {
-        recent: action.data,
-      })
     default:
       return state
   }
