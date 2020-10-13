@@ -32,8 +32,7 @@ export default function Index() {
     setReverse(val);
   }
 
-  function updateQuerySkip(e) {
-    const val = e.target.value
+  function updateQuerySkip(val) {
     setSkip(Number(val))
   }
 
