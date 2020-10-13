@@ -63,6 +63,7 @@ services:
         restart: always
         environment:
             - MONGO_URI=mongodb://mongodb:27017/explorer-dev
+            - NEXT_PUBLIC_EXPLORER_WS=http://localhost:3001
         depends_on:
             - mongodb
         ports:

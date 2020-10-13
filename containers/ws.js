@@ -11,7 +11,8 @@ function WebsocketContainer({addNewBlock, addNewDagBlock, finalizeDagBlock, addN
 
   useEffect(() => {
     if (!window.ws) {
-      window.ws = new WebSocket(`ws${window.location.protocol === 'https:' ? 's' : ''}://${window.location.hostname}:${Number(window.location.port)+1}`)
+      const wsUrl = process.env.NEXT_PUBLIC_EXPLORER_WS || 'ws://localhost:3001';
+      window.ws = new WebSocket(wsUrl)
       window.ws.onopen = () => {
           console.log('socket connected')
       }
