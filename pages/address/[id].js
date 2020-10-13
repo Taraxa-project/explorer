@@ -1,6 +1,8 @@
 import Link from 'next/link'
 import {useState} from 'react'
 
+import utils from 'web3-utils'
+
 import {getAddress} from '../../lib/db'
 
 import {Form, Row, Col, Pagination, Card, Table} from 'react-bootstrap'
@@ -139,7 +141,7 @@ export default function AddressPage({data}) {
                             <a className="long-hash">{`${tx._id}`}</a>
                         </Link>
                     </td>
-                    <td>{tx.value.toLocaleString()}</td>
+                    <td>{utils.fromWei(tx.value, 'ether')} TARA</td>
                     <td>{tx.gasUsed * tx.gasPrice}</td>
                     </tr>
                 ))}

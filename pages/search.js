@@ -1,6 +1,8 @@
 import Link from 'next/link'
 import useSwr from 'swr'
 
+import utils from 'web3-utils';
+
 import {Card, Table, Col, Row, Pagination, Form} from 'react-bootstrap'
 
 const fetcher = (url) => fetch(url).then((res) => res.json())
@@ -99,7 +101,7 @@ export default function Search() {
                             <a className="long-hash">{`${tx._id}`}</a>
                         </Link>
                         </td>
-                        <td>{tx.value.toLocaleString()}</td>
+                        <td>{utils.fromWei(tx.value, 'ether')} TARA</td>
                     </tr>
                     ))}
                 </tbody>

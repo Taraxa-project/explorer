@@ -1,5 +1,7 @@
 import Link from 'next/link'
 
+import utils from 'web3-utils'
+
 import config from 'config';
 import mongoose from 'mongoose'
 import Tx from '../../models/tx'
@@ -78,7 +80,7 @@ export default function TxPage({tx, dags}) {
                     </li>
 
                     <li>
-                        {`Value ${tx.value.toLocaleString()}`}
+                        Value {utils.fromWei(tx.value, 'ether')} TARA
                     </li>
 
                     {tx.contractAddress ? (
