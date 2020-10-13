@@ -1,8 +1,6 @@
 import Link from 'next/link'
 import useSwr from 'swr'
 
-import utils from 'web3-utils';
-
 import {Card, Table, Col, Row, Pagination, Form} from 'react-bootstrap'
 
 const fetcher = (url) => fetch(url).then((res) => res.json())
@@ -101,7 +99,7 @@ export default function Search() {
                             <a className="long-hash">{`${tx._id}`}</a>
                         </Link>
                         </td>
-                        <td>{utils.fromWei(`${tx.value}`, 'ether')} TARA</td>
+                        <td>{(tx.value / 1e18).toFixed(6)} TARA</td>
                     </tr>
                     ))}
                 </tbody>
