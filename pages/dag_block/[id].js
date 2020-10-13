@@ -118,7 +118,7 @@ export default function DagBlockPage({data}) {
                                     <a className="long-hash">{`${tx._id}`}</a>
                                 </Link>
                             </td>
-                            <td>{tx.value.toLocaleString()}</td>
+                            <td>{(tx.value / 1e18).toFixed(6)} TARA</td>
                             </tr>
                         ))}
                     </tbody>

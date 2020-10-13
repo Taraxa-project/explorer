@@ -46,7 +46,7 @@ export default function BlockPage({data}) {
 
                     <li>Gas Limit: {data.gasLimit}</li>
                     <li>Gas Used: {data.gasUsed}</li>
-                    <li>Block Reward: {data.reward}</li>
+                    <li>Block Reward: {(data.reward / 1e18).toFixed(6)} TARA</li>
                     <li>Miner: <Link href="/address/[id]" as={`/address/${data.miner}`}>
                                     <a>{`${data.miner}`}</a>
                                 </Link></li>
@@ -115,8 +115,8 @@ export default function BlockPage({data}) {
                                 <a className="long-hash">{`${tx.from}`}</a>
                             </Link>
                         </td>
-                        <td>{tx.value.toLocaleString()}</td>
-                        <td>{tx.gasUsed * tx.gasPrice}</td>
+                        <td>{(tx.value / 1e18).toFixed(6)} TARA</td>
+                        <td>{(tx.gasUsed * tx.gasPrice / 1e18).toFixed(6)} TARA</td>
                     </tr>
                 ))}
                 </tbody>

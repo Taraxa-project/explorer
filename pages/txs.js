@@ -1,6 +1,8 @@
 import Link from 'next/link'
 import {useState} from 'react'
 
+import utils from 'web3-utils'
+
 import {Card, Table, Row, Col, Form, Pagination} from 'react-bootstrap'
 
 import { IoMdCheckmark, IoMdClose } from 'react-icons/io';
@@ -33,7 +35,8 @@ export default function Index() {
   }
 
   function updateQuerySkip(e) {
-    setSkip(Number(e))
+    const val = e.target.value
+    setSkip(Number(val))
   }
 
   const total = data?.total || 0;
@@ -80,7 +83,7 @@ export default function Index() {
                         <a className="long-hash">{`${tx._id}`}</a>
                     </Link>
                   </td>
-                  <td>{tx.value.toLocaleString()}</td>
+                  <td>{utils.fromWei(`${tx.value}`, 'ether')} TARA</td>
                 </tr>
               )) : ''}
               </tbody>

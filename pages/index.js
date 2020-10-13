@@ -242,7 +242,7 @@ function Index({recentBlocks, recentDagBlocks, recentTxs}) {
                         <a>{`${tx._id}`}</a>
                     </Link>
                     </div> 
-                    Value: {tx.value.toLocaleString()} - {moment(new Date(tx.timestamp)).fromNow()}
+                    Value: {(tx.value / 1e18).toFixed(6)} TARA - {moment(new Date(tx.timestamp)).fromNow()}
                   </ListGroupItem>
                 ))}
               </ListGroup>

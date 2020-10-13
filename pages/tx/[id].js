@@ -70,7 +70,7 @@ export default function TxPage({tx, dags}) {
                     </li>
 
                     <li>
-                        {`Gas Price ${tx.gasPrice}`}
+                        Gas Price {(tx.gasPrice / 1e18).toFixed(6)} TARA
                     </li>
 
                     <li>
@@ -78,7 +78,7 @@ export default function TxPage({tx, dags}) {
                     </li>
 
                     <li>
-                        {`Value ${tx.value.toLocaleString()}`}
+                        Value {(tx.value / 1e18).toFixed(6)} TARA
                     </li>
 
                     {tx.contractAddress ? (
