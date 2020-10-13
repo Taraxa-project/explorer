@@ -1,7 +1,5 @@
 import Link from 'next/link'
 
-import utils from 'web3-utils'
-
 import config from 'config';
 import mongoose from 'mongoose'
 import DAGBlock from '../../models/dag_block'
@@ -120,7 +118,7 @@ export default function DagBlockPage({data}) {
                                     <a className="long-hash">{`${tx._id}`}</a>
                                 </Link>
                             </td>
-                            <td>{utils.fromWei(tx.value, 'ether')} TARA</td>
+                            <td>{(tx.value / 1e18).toFixed(6)} TARA</td>
                             </tr>
                         ))}
                     </tbody>

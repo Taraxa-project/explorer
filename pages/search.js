@@ -101,7 +101,7 @@ export default function Search() {
                             <a className="long-hash">{`${tx._id}`}</a>
                         </Link>
                         </td>
-                        <td>{utils.fromWei(tx.value, 'ether')} TARA</td>
+                        <td>{utils.fromWei(`${tx.value}`, 'ether')} TARA</td>
                     </tr>
                     ))}
                 </tbody>

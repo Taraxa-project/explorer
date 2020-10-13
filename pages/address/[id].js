@@ -1,8 +1,6 @@
 import Link from 'next/link'
 import {useState} from 'react'
 
-import utils from 'web3-utils'
-
 import {getAddress} from '../../lib/db'
 
 import {Form, Row, Col, Pagination, Card, Table} from 'react-bootstrap'
@@ -108,10 +106,10 @@ export default function AddressPage({data}) {
                     Balance: {data.balance.toLocaleString()}
                 </Card.Title>
                 <ul>
-                    <li>Received: {data.received?.toLocaleString()}</li>
-                    <li>Sent: {data.sent?.toLocaleString()}</li>
-                    <li>Mined: {data.mined?.toLocaleString()}</li>
-                    <li>Fees: {data.fees?.toLocaleString()}</li>
+                    <li>Received: {(data.received / 1e18).toFixed(6)} TARA</li>
+                    <li>Sent: {(data.sent / 1e18).toFixed(6)} TARA</li>
+                    <li>Mined: {(data.mined / 1e18).toFixed(6)} TARA</li>
+                    <li>Fees: {(data.fees / 1e18).toFixed(6)} TARA</li>
                 </ul>
             </Card.Body>
             <Card.Body>
@@ -141,8 +139,8 @@ export default function AddressPage({data}) {
                             <a className="long-hash">{`${tx._id}`}</a>
                         </Link>
                     </td>
-                    <td>{utils.fromWei(tx.value, 'ether')} TARA</td>
-                    <td>{tx.gasUsed * tx.gasPrice}</td>
+                    <td>{(tx.value / 1e18).toFixed(6)} TARA</td>
+                    <td>{(tx.gasUsed * tx.gasPrice / 1e18).toFixed(6)} TARA</td>
                     </tr>
                 ))}
                 </tbody>

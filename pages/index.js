@@ -7,8 +7,6 @@ import { addNewBlock } from '../store/blocks/action'
 import { addNewDagBlock } from '../store/dag_blocks/action'
 import { setRecentTxs } from '../store/txs/action'
 
-import utils from 'web3-utils';
-
 import {
   BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis
 } from 'recharts';
@@ -244,7 +242,7 @@ function Index({recentBlocks, recentDagBlocks, recentTxs}) {
                         <a>{`${tx._id}`}</a>
                     </Link>
                     </div> 
-                    Value: {utils.fromWei(tx.value, 'ether')} TARA - {moment(new Date(tx.timestamp)).fromNow()}
+                    Value: {(tx.value / 1e18).toFixed(6)} TARA - {moment(new Date(tx.timestamp)).fromNow()}
                   </ListGroupItem>
                 ))}
               </ListGroup>
