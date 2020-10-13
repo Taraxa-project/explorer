@@ -13,7 +13,7 @@ services:
                 taraxa config -d /var/taraxa -g 0xe414bd813ca44201b5e109d8e8f1aab5db4000d9"
     taraxa-node:
         container_name: taraxa-node
-        image: taraxa/taraxa-node:25
+        image: taraxa/taraxa-node:20201012_23h52m52s-066d8df3faf068dfd9d2513f59502b52b2a413b8
         restart: always
         ports:
             - "10002:10002"
