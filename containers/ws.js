@@ -2,16 +2,20 @@ import { bindActionCreators } from 'redux'
 import { connect } from 'react-redux'
 import { useEffect } from 'react';
 
+import getConfig from 'next/config'
+
 import { addNewBlock } from '../store/blocks/action'
 import { addNewDagBlock,  finalizeDagBlock } from '../store/dag_blocks/action';
 import { addNewPbftBlock } from '../store/pbft_blocks/action'
 import { addNewHistory } from '../store/history/action'
 
-function WebsocketContainer({wsUrl, addNewBlock, addNewDagBlock, finalizeDagBlock, addNewPbftBlock, addNewHistory}) {
+const { publicRuntimeConfig } = getConfig()
+
+function WebsocketContainer({addNewBlock, addNewDagBlock, finalizeDagBlock, addNewPbftBlock, addNewHistory}) {
 
   useEffect(() => {
     if (!window.ws) {
-      window.ws = new WebSocket(wsUrl)
+      window.ws = new WebSocket(publicRuntimeConfig.NEXT_PUBLIC_EXPLORER_WS)
       window.ws.onopen = () => {
           console.log('socket connected')
       }
