@@ -103,7 +103,7 @@ export default function AddressPage({data}) {
         <Card style={{margin: 5, marginTop: 0, marginBottom: 10}} bg="dark" text="white">
             <Card.Body>
                 <Card.Title>
-                    Balance: {data.balance.toLocaleString()}
+                    Balance: {(data.balance / 1e18).toFixed(6)} TARA
                 </Card.Title>
                 <ul>
                     <li>Received: {(data.received / 1e18).toFixed(6)} TARA</li>

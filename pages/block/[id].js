@@ -106,14 +106,14 @@ export default function BlockPage({data}) {
                             </Link>
                         </td>
                         <td className="table-cell-overflow">
-                            <Link href="/address/[id]" as={`/address/${tx.to}`}>
+                            {tx.to ? (<Link href="/address/[id]" as={`/address/${tx.to}`}>
                                 <a className="long-hash">{`${tx.to}`}</a>
-                            </Link>
+                            </Link>) : ''}
                         </td>
                         <td className="table-cell-overflow">
-                        <Link href="/address/[id]" as={`/address/${tx.from}`}>
+                            {tx.from ? (<Link href="/address/[id]" as={`/address/${tx.from}`}>
                                 <a className="long-hash">{`${tx.from}`}</a>
-                            </Link>
+                            </Link>) : ''}
                         </td>
                         <td>{(tx.value / 1e18).toFixed(6)} TARA</td>
                         <td>{(tx.gasUsed * tx.gasPrice / 1e18).toFixed(6)} TARA</td>
