@@ -7,11 +7,10 @@ import { addNewDagBlock,  finalizeDagBlock } from '../store/dag_blocks/action';
 import { addNewPbftBlock } from '../store/pbft_blocks/action'
 import { addNewHistory } from '../store/history/action'
 
-function WebsocketContainer({addNewBlock, addNewDagBlock, finalizeDagBlock, addNewPbftBlock, addNewHistory}) {
+function WebsocketContainer({wsUrl, addNewBlock, addNewDagBlock, finalizeDagBlock, addNewPbftBlock, addNewHistory}) {
 
   useEffect(() => {
     if (!window.ws) {
-      const wsUrl = process.env.NEXT_PUBLIC_EXPLORER_WS || 'ws://localhost:3001';
       window.ws = new WebSocket(wsUrl)
       window.ws.onopen = () => {
           console.log('socket connected')

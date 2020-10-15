@@ -41,7 +41,7 @@ function ReduxApp({Component, pageProps}) {
             <meta name="viewport" content="width=device-width, initial-scale=1"/>
         </Head>
 
-        <WebsocketContainer/>
+        <WebsocketContainer wsUrl={process.env.NEXT_PUBLIC_EXPLORER_WS}/>
             <Navbar collapseOnSelect expand="lg" bg="dark" variant="dark">
                 <Link href="/" as={`/`}>
                     <Navbar.Brand href="/">
