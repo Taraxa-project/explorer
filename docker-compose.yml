@@ -3,17 +3,9 @@ volumes:
     taraxa_data:
     mongodb_data:
 services:
-    taraxa-config:
-        container_name: taraxa-config
-        image: node:latest
-        volumes:
-            - taraxa_data:/var/taraxa
-        command: >
-            sh -c "npm i -g taraxa-cli &&
-                taraxa config -d /var/taraxa -g 0xe414bd813ca44201b5e109d8e8f1aab5db4000d9"
     taraxa-node:
         container_name: taraxa-node
-        image: taraxa/taraxa-node:20201012_23h52m52s-066d8df3faf068dfd9d2513f59502b52b2a413b8
+        image: taraxa/taraxa:1.4.2-26
         restart: always
         ports:
             - "10002:10002"
@@ -24,11 +16,13 @@ services:
             - "10002"
             - "7777"
             - "8777"
-        command: ["--conf_taraxa", "/var/taraxa/conf/private.json", "--boot_node"]
+        entrypoint:
+            /usr/bin/sh
+        command: >
+            -c "taraxa config -d /var/taraxa -g 0xe414bd813ca44201b5e109d8e8f1aab5db4000d9 &&
+                ./docker-entrypoint.sh --conf_taraxa /var/taraxa/conf/private.json --boot_node"
         volumes:
             - taraxa_data:/var/taraxa
-        depends_on:
-            - taraxa-config
     mongodb:
         container_name: mongodb
         image: mongo:latest
