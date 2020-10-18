@@ -334,7 +334,7 @@ async function historicalSync(subscribed = false) {
             } else {
                 if (!subscribed) { // no need to do this if already getting dag blocks over websocket
                     const scheduleBlockRPC = await rpc.getScheduleBlockByPeriod(block.number);
-                    scheduleBlock = new PBFTBlock(formatPbftBlock(scheduleBlockRPC));
+                    scheduleBlock = formatPbftBlock(scheduleBlockRPC);
                     const getDagPromises = [];
                     for (const dagBlockHash of scheduleBlock.schedule.dag_blocks_order) {
                         getDagPromises.push(rpc.getDagBlockByHash(dagBlockHash))
@@ -377,7 +377,11 @@ async function historicalSync(subscribed = false) {
                             }
                         });
                     }
-                    await scheduleBlock.save();
+                    await PBFTBlock.findOneAndUpdate(
+                        {_id: scheduleBlock._id},
+                        scheduleBlock,
+                        {new: true, upsert: true}
+                    )
                     notifications.push({
                         insertOne: {
                             document: {
