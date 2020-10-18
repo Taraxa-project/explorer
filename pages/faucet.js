@@ -11,7 +11,11 @@ export default function Faucet() {
     const [response, setResponse] = useState('')
 
     useEffect(() => {
-        setUrl(`${window.location.protocol}://${window.location.hostname}:${Number(window.location.port)}`)
+        let url = `${window.location.protocol}//${window.location.hostname}`
+        if (window.location.port) {
+            url += `:${Number(window.location.port)}`
+        }
+        setUrl(url)
     })
 
     function validateAddress(e) {
@@ -64,7 +68,7 @@ export default function Faucet() {
                 <Card.Body>
                     This faucet drips once every 5 seconds. You can register your account in our queue.<br/>
 
-                    API Example: curl {url}/faucet/[your wallet address]
+                    API Example: curl {url}/api/faucet/[your wallet address]
                 </Card.Body>
             </Card>
         </>
