@@ -18,7 +18,7 @@ async function drip() {
         const tx = {
             from: account.address,
             to: cup.address,
-            value: 1 * 1e18,
+            value: 1 * 1e17,
             gas: 21000,
             gasPrice: 1 * 1e9,
             nonce: fn.nonce - 1
@@ -39,7 +39,9 @@ async function drip() {
         });
     }
     await new Promise(resolve => {
-        setTimeout(resolve, 5000);
+        const random = Math.random();
+        const delay = Math.floor((random * 3000))
+        setTimeout(resolve, delay);
     })
     await drip();
 }
