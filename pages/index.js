@@ -218,7 +218,7 @@ function Index({recentBlocks, recentDagBlocks}) {
             <Card style={{margin: 5, marginTop: 5, marginBottom: 10}} bg="dark" text="white">
               <Card.Header>DAG Blocks</Card.Header>
               <ListGroup className="list-group-recent-blocks" variant="flush">
-                {recentDagBlocks && recentDagBlocks.map((block) => (
+                {recentDagBlocks && recentDagBlocks.slice(0, 10).map((block) => (
                   <ListGroupItem key={block._id} variant="dark">
                     <div style={{whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}}>
                       Level: {block.level} <Link href="/dag_block/[id]" as={`/dag_block/${block._id}`}>

@@ -13,17 +13,17 @@ export default function reducer(state = blocksInitialState, action) {
   let period = state.period;
   switch (action.type) {
     case dagBlockActionTypes.NEWDAGBLOCK:
-      if (state.recent.length >= 10) {
-        recent.pop();
-      }
-      recent.unshift(action.data);
+      updated = [action.data];
       for (let block of recent) {
+        if (!block.period || block.period > (state.period - 9)) {
+          updated.push(block);
+        }
         if (block.period && block.period > state.period) {
           period = block.period
         }
       }
       return Object.assign({}, state, {
-        recent,
+        recent: updated,
         period,
         level: action.data.level
       })
