@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const DAGBlock = new mongoose.Schema({
     _id: {type: String}, // dag block hash
     level: {type: Number, index: true},
-    period: {type: Number},
+    period: {type: Number, index: true},
     pivot: {type: String},
     sender: {type: String, index: true},
     sig: {type: String},

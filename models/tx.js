@@ -14,7 +14,7 @@ const Tx = new mongoose.Schema({
     value: {type: Number, default: 0},
 
     //not in rpc
-    timestamp: {type: Date, default: Date.now},
+    timestamp: {type: Date, default: Date.now, index: true},
 
     //from receipt
     contractAddress: {type: String,},
