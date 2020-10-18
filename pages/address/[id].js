@@ -92,8 +92,8 @@ export default function AddressPage({data}) {
             <Form>
               <Form.Group>
                 <Form.Control id="sortControl" size="sm" as="select" onChange={updateQueryReverse}>
-                  <option value="false">Newest</option>
-                  <option value="true">Oldest</option>
+                  <option value="false">Newest first</option>
+                  <option value="true">Oldest first</option>
                 </Form.Control>
               </Form.Group>
             </Form>

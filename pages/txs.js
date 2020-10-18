@@ -51,8 +51,8 @@ export default function Index() {
             <Form>
               <Form.Group>
                 <Form.Control id="sortControl" size="sm" as="select" onChange={updateQueryReverse}>
-                  <option value="true">Newest</option>
-                  <option value="false">Oldest</option>
+                  <option value="true">Newest first</option>
+                  <option value="false">Oldest first</option>
                 </Form.Control>
               </Form.Group>
             </Form>

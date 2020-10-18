@@ -13,6 +13,7 @@ export default function Index() {
   const [limit, setLimit] = useState(20);
   const [skip, setSkip] = useState(0);
   const [reverse, setReverse] = useState(true);
+  const [diagram, setDiagram] = useState(true);
 
   let query = `/api/dag_blocks?limit=${limit}`;
   if (reverse) {
@@ -32,8 +33,21 @@ export default function Index() {
     setReverse(val);
   }
 
-  function updateQuerySkip(e) {
-    setSkip(Number(e))
+  function updateDiagram(e) {
+    let val = true;
+    if (e.target.value === "false") {
+      val = false;
+    }
+    setDiagram(val);
+  }
+
+  function updateQuerySkip(num) {
+    setSkip(Number(num))
+  }
+
+  function updateLimit(e) {
+    const num = e.target.value;
+    setLimit(Number(num))
   }
 
   const total = data?.total || 0;
@@ -45,26 +59,49 @@ export default function Index() {
   return (
       <>
       <Row>
-          <Col sm="8" md="10">
+          <Col xs="12" md="9">
             <h1>DAG Blocks</h1>
           </Col>
           <Col>
             <Form>
               <Form.Group>
-                <Form.Control id="sortControl" size="sm" as="select" onChange={updateQueryReverse}>
-                  <option value="true">Newest</option>
-                  <option value="false">Oldest</option>
+                <Form.Control id="sortControl" size="sm" as="select" onChange={updateDiagram} value={diagram}>
+                  <option value={'true'}>Show diagram</option>
+                  <option value={'false'}>Hide diagram</option>
+                </Form.Control>
+              </Form.Group>
+            </Form>
+          </Col>
+          <Col style={{paddingRight: 0, paddingLeft: 0}}>
+            <Form>
+              <Form.Group>
+                <Form.Control id="limitControl" size="sm" as="select" onChange={updateLimit} value={limit}>
+                <option value={10}>10 per page</option>
+                  <option value={20}>20 per page</option>
+                  <option value={50}>50 per page</option>
+                  <option value={100}>100 per page</option>
+                  <option value={150}>150 per page</option>
+                </Form.Control>
+              </Form.Group>
+            </Form>
+          </Col>
+          <Col>
+            <Form>
+              <Form.Group>
+                <Form.Control id="sortControl" size="sm" as="select" onChange={updateQueryReverse} value={reverse}>
+                  <option value={'true'}>Newest first</option>
+                  <option value={'false'}>Oldest first</option>
                 </Form.Control>
               </Form.Group>
             </Form>
           </Col>
         </Row>
-        <Row>
+        {diagram ? (<Row>
             <Col style={{paddingLeft: 5, paddingRight: 5, paddingTop: 5, paddingBottom: 0, margin: 0, backgroundColor: '#0f1517'}}>
                 <DAG dagBlocks={blocks} reverse={reverse} pbftBlocks={pbftBlocks}/>
             </Col>
-        </Row>
-        <Card style={{margin: 5, marginTop: 10, marginBottom: 10}} bg="dark" text="white">
+        </Row>) : ''}
+        <Card style={{margin: 5, marginTop: diagram ? 10 : 0, marginBottom: 10}} bg="dark" text="white">
               <Table responsive variant="dark">
                 <thead>
                   <tr>
