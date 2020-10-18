@@ -1,6 +1,6 @@
 {
   "name": "taraxa-explorer",
-  "version": "1.1.22",
+  "version": "1.1.23",
   "description": "Taraxa Block Explorer",
   "scripts": {
     "dev": "next",

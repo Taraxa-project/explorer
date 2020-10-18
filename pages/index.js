@@ -23,7 +23,7 @@ import Tx from '../models/tx'
 
 import moment from 'moment';
 
-function Index({recentBlocks, recentDagBlocks, recentTxs}) {
+function Index({recentBlocks, recentDagBlocks}) {
 
   moment.relativeTimeThreshold('s', 60);
   moment.relativeTimeThreshold('ss', 1);
@@ -216,12 +216,12 @@ function Index({recentBlocks, recentDagBlocks, recentTxs}) {
           <Row>
             <Col style={{padding: 0}} xs={12} sm={6}>
             <Card style={{margin: 5, marginTop: 5, marginBottom: 10}} bg="dark" text="white">
-              <Card.Header>Latest Blocks</Card.Header>
+              <Card.Header>DAG Blocks</Card.Header>
               <ListGroup className="list-group-recent-blocks" variant="flush">
-                {recentBlocks && recentBlocks.map((block) => (
+                {recentDagBlocks && recentDagBlocks.map((block) => (
                   <ListGroupItem key={block._id} variant="dark">
                     <div style={{whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}}>
-                      #{block.number} <Link href="/block/[id]" as={`/block/${block._id}`}>
+                      Level: {block.level} <Link href="/dag_block/[id]" as={`/dag_block/${block._id}`}>
                         <a>{`${block._id}`}</a>
                     </Link>
                     </div>  
@@ -232,17 +232,17 @@ function Index({recentBlocks, recentDagBlocks, recentTxs}) {
             </Card>
             </Col>
             <Col style={{padding: 0}} xs={12} sm={6}>
-            <Card style={{margin: 5, marginTop: 5, marginBottom: 0}} bg="dark" text="white">
-              <Card.Header>Recent Transactions</Card.Header>
-              <ListGroup className="list-group-recent-tx" variant="flush">
-                {recentTxs && recentTxs.map((tx) => (
-                  <ListGroupItem key={tx._id} variant="dark">
+            <Card style={{margin: 5, marginTop: 5, marginBottom: 10}} bg="dark" text="white">
+              <Card.Header>PBFT Blocks</Card.Header>
+              <ListGroup className="list-group-recent-blocks" variant="flush">
+                {recentBlocks && recentBlocks.map((block) => (
+                  <ListGroupItem key={block._id} variant="dark">
                     <div style={{whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}}>
-                    <Link href="/tx/[id]" as={`/tx/${tx._id}`}>
-                        <a>{`${tx._id}`}</a>
+                      #{block.number} <Link href="/block/[id]" as={`/block/${block._id}`}>
+                        <a>{`${block._id}`}</a>
                     </Link>
-                    </div> 
-                    Value: {(tx.value / 1e18).toFixed(6)} TARA - {moment(new Date(tx.timestamp)).fromNow()}
+                    </div>  
+                    {block.transactions.length} transaction{block.transactions.length === 1 ? '' : 's'} - {moment(new Date(block.timestamp)).fromNow()}
                   </ListGroupItem>
                 ))}
               </ListGroup>
@@ -260,13 +260,11 @@ export const getServerSideProps = wrapper.getServerSideProps(async ({ store }) =
 
       let [blocks, dagBlocks, txs] = await Promise.all([
         Block.find().limit(10).sort({timestamp: -1}).lean(),
-        DagBlock.find().limit(50).sort({timestamp: -1}).lean(),
-        Tx.find().limit(10).sort({timestamp: -1}).lean()
+        DagBlock.find().limit(10).sort({timestamp: -1}).lean(),
       ])
 
       blocks = JSON.parse(JSON.stringify(blocks));
       dagBlocks = JSON.parse(JSON.stringify(dagBlocks));
-      txs = JSON.parse(JSON.stringify(txs));
 
       if (blocks.length) {
         blocks.reverse();
@@ -283,9 +281,7 @@ export const getServerSideProps = wrapper.getServerSideProps(async ({ store }) =
         })
       }
 
-      if (txs.length) {
-        store.dispatch(setRecentTxs(txs))
-      }
+
 
   } catch (e) {
       console.error('Error fetching data for index page: ' + e.message);
@@ -296,7 +292,6 @@ const mapStateToProps = (state) => {
   return {
     recentBlocks: state.blocks.recent,
     recentDagBlocks: state.dagBlocks.recent,
-    recentTxs: state.txs.recent,
   }
 }
 
