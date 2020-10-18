@@ -214,7 +214,7 @@ export let onFinalized = (isHistory, data, lastOrderX, lastDagX, period, level, 
 	}
 
     //change period dag block label
-    ele.data('label', 'P')
+    // ele.data('label', 'P')
 
     let leftShift = lastOrderX.current - lastDagX.current
 
