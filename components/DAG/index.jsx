@@ -117,12 +117,15 @@ function DAG({dagBlocks, pbftBlocks, reverse, history, highlight}) {
                 for (const block of dagBlockHistory) {
                     block.hash = block._id;
                     onBlock(block)
+
+                    if (block.period) {
+                        onFinalized({
+                            block: block._id,
+                            period: block.period,
+                        });
+                    }
                 }
                 for (const pbftBlock of pbftBlockHistory) {
-                    onFinalized({
-                        block: pbftBlock.dag_block_hash_as_pivot,
-                        period: pbftBlock.period,
-                    });
                     onSchedule(pbftBlock);
                 }
         }
