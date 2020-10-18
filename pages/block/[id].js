@@ -47,8 +47,8 @@ export default function BlockPage({data}) {
                     <li>Gas Limit: {data.gasLimit}</li>
                     <li>Gas Used: {data.gasUsed}</li>
                     <li>Block Reward: {(data.reward / 1e18).toFixed(6)} TARA</li>
-                    <li>Miner: <Link href="/address/[id]" as={`/address/${data.miner}`}>
-                                    <a>{`${data.miner}`}</a>
+                    <li>Author: <Link href="/address/[id]" as={`/address/${data.author}`}>
+                                    <a>{`${data.author}`}</a>
                                 </Link></li>
                     <li>Nonce: {data.nonce}</li>
                     <li>Parent: <Link href="/block/[id]" as={`/block/${data.parentHash}`}>
@@ -63,7 +63,6 @@ export default function BlockPage({data}) {
                 </ul>
                 <Accordion.Collapse eventKey="0">
                     <ul>
-                        <li>Author: {data.author}</li>
                         <li>Extra Data: {data.extraData}</li>
                         <li>Logs Bloom: {data.logsBloom}</li>
                         <li>Mix Hash: {data.mixHash}</li>

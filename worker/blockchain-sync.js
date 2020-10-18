@@ -178,8 +178,12 @@ async function realtimeSync() {
                             return dagBlockFinalized;
                         case 'newPbftBlocks':
                             // console.log(subscribed[jsonRpc.params.subscription], JSON.stringify(jsonRpc.params.result, null, 2));
-                            const pbftBlock = new PBFTBlock(formatPbftBlock(jsonRpc.params.result.pbft_block))
-                            await pbftBlock.save();
+                            const pbftBlock = formatPbftBlock(jsonRpc.params.result.pbft_block)
+                            await PBFTBlock.findOneAndUpdate(
+                                {_id: pbftBlock._id},
+                                pbftBlock,
+                                {new: true, upsert: true}
+                            )
                             await DagBlock.updateMany({_id: {$in: pbftBlock.schedule.dag_blocks_order}}, {$set: {period: pbftBlock.period}})
                             await new LogNetworkEvent({
                                 log: 'pbft-block',
