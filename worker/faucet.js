@@ -43,14 +43,16 @@ async function drip() {
         const delay = Math.floor((random * 3000))
         setTimeout(resolve, delay);
     })
-    await drip();
 }
 
 (async () => {
     try {
         await mongoose.connect(config.mongo.uri, config.mongo.options);
         console.log('Faucet started')
-        await drip();
+        while(true) {
+            await drip();
+        }
+        
     } catch (e) {
         console.error(e);
         process.exit(1);
