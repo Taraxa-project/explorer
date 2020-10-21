@@ -5,7 +5,7 @@ volumes:
 services:
     taraxa-node:
         container_name: taraxa-node
-        image: taraxa/taraxa:1.4.2-26
+        image: taraxa/taraxa:1.5.15-45
         restart: always
         ports:
             - "10002:10002"
@@ -19,8 +19,8 @@ services:
         entrypoint:
             /usr/bin/sh
         command: >
-            -c "taraxa config -d /var/taraxa -g 0xe414bd813ca44201b5e109d8e8f1aab5db4000d9 &&
-                ./docker-entrypoint.sh --conf_taraxa /var/taraxa/conf/private.json --boot_node"
+            -c "taraxa config --as-boot-node -d /var/taraxa -g 0xe414bd813ca44201b5e109d8e8f1aab5db4000d9 &&
+                ./docker-entrypoint.sh --conf_taraxa /var/taraxa/conf/private.json"
         volumes:
             - taraxa_data:/var/taraxa
     mongodb:
@@ -35,8 +35,8 @@ services:
         volumes: 
             - mongodb_data:/data/db
 
-    taraxa-explorer-sync:
-        container_name: taraxa-explorer-sync
+    explorer-sync:
+        container_name: explorer-sync
         build: 
             context: .
         restart: always
@@ -50,8 +50,8 @@ services:
         command: ["node", "./worker/blockchain-sync", "-c", "/var/taraxa/conf/private.json"]
         volumes:
             - taraxa_data:/var/taraxa
-    taraxa-explorer:
-        container_name: taraxa-explorer
+    explorer:
+        container_name: explorer
         build: 
             context: .
         restart: always
@@ -63,8 +63,8 @@ services:
         ports:
             - "3000:3000"
         command: ["npm", "start"]
-    taraxa-explorer-wsserver:
-        container_name: taraxa-explorer-wsserver
+    explorer-ws:
+        container_name: explorer-ws
         build: 
             context: .
         restart: always
@@ -75,8 +75,8 @@ services:
         depends_on:
             - mongodb
         command: ["node", "./ws-server"]
-    taraxa-faucet:
-        container_name: taraxa-faucet
+    faucet:
+        container_name: faucet
         build: 
             context: .
         restart: always

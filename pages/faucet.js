@@ -66,7 +66,7 @@ export default function Faucet() {
                     
                 </Card.Body>
                 <Card.Body>
-                    This faucet drips once every 5 seconds. You can register your account in our queue.<br/>
+                    This faucet drips at least once every 3 seconds. You can register your account in our queue.<br/>
 
                     API Example: curl {url}/api/faucet/[your wallet address]
                 </Card.Body>
