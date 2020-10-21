@@ -84,10 +84,6 @@ function ReduxApp({Component, pageProps}) {
                         <Nav.Link href="/txs">Transactions</Nav.Link>
                     </Link>
 
-                    <Link href="/accounts" as={`/accounts`}>
-                        <Nav.Link href="/accounts">Accounts</Nav.Link>
-                    </Link>
-
                     <Link href="/faucet" as={`/faucet`}>
                         <Nav.Link href="/faucet">Faucet</Nav.Link>
                     </Link>
@@ -110,10 +106,6 @@ function ReduxApp({Component, pageProps}) {
                     {' / '}
                     <Link href="/txs" as={`/txs`}>
                         <a href="/txs">Transactions</a>
-                    </Link>
-                    {' / '}
-                    <Link href="/accounts" as={`/accounts`}>
-                        <a href="/accounts">Accounts</a>
                     </Link>
                     {' / '}
                     <Link href="/faucet" as={`/faucet`}>
