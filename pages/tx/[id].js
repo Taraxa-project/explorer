@@ -43,7 +43,7 @@ export default function TxPage({tx, dags}) {
                             <a>{`${tx.from}`}</a>
                         </Link>
                     </li>) : ''}
-                    <li>To{' '}
+                    <li>{tx.input ? 'Contract ' : 'To '}
                         <Link href="/address/[id]" as={`/address/${tx.to}`}>
                             <a>{`${tx.to}`}</a>
                         </Link>
@@ -84,6 +84,13 @@ export default function TxPage({tx, dags}) {
                     {tx.contractAddress ? (
                         <li>
                             {`Deployed Contract ${tx.contractAddress}`}
+                        </li>
+
+                    ) : ''}
+
+                    {tx.input ? (
+                        <li>
+                            {`Contract Input: ${tx.input}`}
                         </li>
 
                     ) : ''}
