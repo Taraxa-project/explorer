@@ -28,6 +28,7 @@ export default function reducer(state = blocksInitialState, action) {
         level: action.data.level
       })
     case blockActionTypes.FINALIZEDDAGBLOCK:
+      console.log('Finalize dag block reducer', action.data)
       for (let block of recent) {
         if (!block.period && block._id === action.data.block) {
           block.period = action.data.period
@@ -39,9 +40,9 @@ export default function reducer(state = blocksInitialState, action) {
         period: action.data.period,
       })
     case blockActionTypes.NEWPBFTBLOCK:
-      const sched = action.data.schedule;
+      const sched = action.data.schedule.dag_blocks_order;
       for (let block of recent) {
-        if (sched[block._id] || sched[block._id.replace(/^0x/, '')]) {
+        if (sched.includes(block._id) || sched.includes(block._id.replace(/^0x/, ''))) {
           block.period = action.data.period
         }
         updated.push(block);
