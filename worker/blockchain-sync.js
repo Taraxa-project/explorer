@@ -134,6 +134,12 @@ async function realtimeSync() {
     let subscribed = {};
     const ws = new WebSocket(config.taraxa.node.ws);
     const blockchainEvent$ = fromEvent(ws, 'message');
+    const blockchainError$ = fromEvent(ws, 'error');
+
+    blockchainError$
+    .subscribe((error) => {
+        console.error(error);
+    })
 
     blockchainEvent$
     .pipe(
