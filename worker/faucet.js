@@ -14,7 +14,7 @@ const account = taraxa.accounts.privateKeyToAccount(config.faucet.privateKey);
 let unconfirmed = 0;
 
 async function drip() {
-    if (unconfirmed <= config.faucet.maxUnconfirmed) {
+    if (unconfirmed < config.faucet.maxUnconfirmed) {
         const cups = await Faucet.find().sort({created: -1}).limit(config.faucet.maxUnconfirmed - unconfirmed);
         for(let cup of cups) {
             const fn = await FaucetNonce.findOneAndUpdate({}, { $inc: { nonce: 1 }}, {upsert: true, new: true});
