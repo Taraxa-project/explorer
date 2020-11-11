@@ -1,5 +1,6 @@
 module.exports = {
     faucet: {
+        maxUnconfirmed: Number(process.env.MAX_UNCONFIRMED) || 5000,
         //default address 0xe414bd813ca44201b5e109d8e8f1aab5db4000d9
         privateKey: process.env.FAUCET_PRIV_KEY || '0xe5fd43923a0e926f33e67833462422eb7d4e77da296797127c4ad6db3ef544d0'
     },
