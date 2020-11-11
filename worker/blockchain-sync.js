@@ -23,6 +23,8 @@ const rpc = require('../lib/rpc');
 
 let taraxaConfig;
 
+let historicalSyncRunning = false;
+
 async function getChainState() {
     const state = await Promise.all([
         rpc.blockNumber(),
@@ -249,6 +251,10 @@ async function getTransactionReceipts(hashes, limit) {
 }
 
 async function historicalSync(subscribed = false) {
+    if (historicalSyncRunning) {
+        return;
+    }
+    historicalSyncRunning = true;
     const state = await Promise.all([
         getChainState(),
         getSyncState()
@@ -497,6 +503,8 @@ async function historicalSync(subscribed = false) {
 
         }
     }
+
+    historicalSyncRunning = false;
 }
 
 program.version(pkg.version);
