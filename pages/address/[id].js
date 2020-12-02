@@ -24,7 +24,6 @@ export async function getServerSideProps(context) {
             address: '',
             sent: 0,
             received: 0,
-            mined: 0,
             fees: 0,
             balance: 0,
             transactions: [],
@@ -108,7 +107,6 @@ export default function AddressPage({data}) {
                 <ul>
                     <li>Received: {(data.received / 1e18).toFixed(6)} TARA</li>
                     <li>Sent: {(data.sent / 1e18).toFixed(6)} TARA</li>
-                    <li>Mined: {(data.mined / 1e18).toFixed(6)} TARA</li>
                     <li>Fees: {(data.fees / 1e18).toFixed(6)} TARA</li>
                 </ul>
             </Card.Body>
