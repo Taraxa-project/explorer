@@ -2,15 +2,14 @@ const mongoose = require('mongoose');
 
 const Block = new mongoose.Schema({
     _id: {type: String}, // block hash
-    author: {type: String},
+    author: {type: String, index: true},
     extraData: {type: String},
     gasLimit: {type: Number},
     gasUsed: {type: Number},
     logsBloom: {type: String},
-    miner: {type: String, index: true},
     mixHash: {type: String},
     nonce: {type: Number},
-    number: {type: Number, index: true},
+    number: {type: Number, unique: true},
     parentHash: {type: String},
     receiptsRoot: {type: String},
     reward: {type: Number, default: 0},

@@ -25,6 +25,14 @@ let taraxaConfig;
 
 let historicalSyncRunning = false;
 
+let chainState = {
+    number: 0,
+    hash: '',
+    genesis: '',
+    dagBlockLevel: 0,
+    dagBlockPeriod: 0,
+};
+
 async function getChainState() {
     const state = await Promise.all([
         rpc.blockNumber(),
@@ -43,13 +51,15 @@ async function getChainState() {
     const genesis = blocks[0];
     const block = blocks[1];
 
-    return {
+    chainState = {
         number: block.number,
         hash: block.hash,
         genesis: genesis.hash,
         dagBlockLevel,
         dagBlockPeriod
     };
+
+    return chainState;
 }
 
 async function getSyncState() {
@@ -200,6 +210,9 @@ async function realtimeSync() {
                             return;
                         case 'newHeads':
                             // console.log(subscribed[jsonRpc.params.subscription], JSON.stringify(jsonRpc.params.result, null, 2));
+                            const blockNumber = parseInt(jsonRpc.params.result.number, 16);
+                            chainState.number = blockNumber;
+                            chainState.hash = jsonRpc.params.result.hash;
                             await historicalSync(true);
                             return;
                         default:
@@ -256,10 +269,9 @@ async function historicalSync(subscribed = false) {
     }
     historicalSyncRunning = true;
     const state = await Promise.all([
-        getChainState(),
+        getChainState(), // updates global var
         getSyncState()
     ]);
-    const chainState = state[0];
     let syncState = state[1];
     let verifiedTip = false;
 
