@@ -5,7 +5,15 @@ import mongoose from 'mongoose'
 import Tx from '../../models/tx'
 import DagBlock from '../../models/dag_block'
 
-import {Container, Row, Col, Navbar, Nav, Button, Jumbotron, Card, ListGroup, ListGroupItem, Table} from 'react-bootstrap'
+import {Card, Table} from 'react-bootstrap'
+
+import abiDecoder from 'abi-decoder'
+
+import RepresentationABI from './contracts/Representation.abi.json'
+import RecordsRepositoryABI from './contracts/RecordsRepository.abi.json'
+
+abiDecoder.addABI(RecordsRepositoryABI);
+abiDecoder.addABI(RepresentationABI);
 
 export async function getServerSideProps(context) {
     let props = {
@@ -30,6 +38,15 @@ export async function getServerSideProps(context) {
 }  
 
 export default function TxPage({tx, dags}) {
+  let decodedData = {};
+  if (tx.input){
+      try {
+        decodedData = abiDecoder.decodeMethod(tx.input);
+      } catch (e) {
+        console.error(e);
+      }
+  }
+
   return <>
     <h1>Tx {tx._id}</h1>
             <Card style={{margin: 5, marginTop: 0, marginBottom: 10}} bg="dark" text="white">
@@ -93,6 +110,21 @@ export default function TxPage({tx, dags}) {
                             {`Contract Input: ${tx.input}`}
                         </li>
 
+                    ) : ''}
+                    {decodedData.name ? (
+                        <>
+                            <li>
+                                Contract Function: {decodedData.name}
+                                <ul>
+                                    {decodedData.params.map(p => (
+                                    <li>
+                                        {p.name}: {p.value} ({p.type})
+                                    </li>
+                                ))}
+                                </ul>
+                            </li>
+                            
+                        </>
                     ) : ''}
                 </ul>
             </Card.Body>
