@@ -9,8 +9,8 @@ import {Card, Table} from 'react-bootstrap'
 
 import abiDecoder from 'abi-decoder'
 
-import RepresentationABI from './contracts/Representation.abi.json'
-import RecordsRepositoryABI from './contracts/RecordsRepository.abi.json'
+import RepresentationABI from '../../contracts/Representation.abi.json'
+import RecordsRepositoryABI from '../../contracts/RecordsRepository.abi.json'
 
 abiDecoder.addABI(RecordsRepositoryABI);
 abiDecoder.addABI(RepresentationABI);
