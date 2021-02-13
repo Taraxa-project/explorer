@@ -55,6 +55,7 @@ async function drip() {
                             unconfirmed--;
                         })
                         .once('error', error => {
+                            unconfirmed--;
                             console.error(error);
                             reject(error);
                         })
