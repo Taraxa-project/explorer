@@ -30,6 +30,8 @@ DAGBlock.statics.fromRPC = function fromRPC(json) {
         }
     });
 
+    json.vdf = parseInt(json.vdf.difficulty, 16);
+
     return new this(json);
 };
 

@@ -1,8 +1,8 @@
 module.exports = {
     faucet: {
         maxUnconfirmed: Number(process.env.MAX_UNCONFIRMED) || 5000,
-        //default address 0xe414bd813ca44201b5e109d8e8f1aab5db4000d9
-        privateKey: process.env.FAUCET_PRIV_KEY || '0xe5fd43923a0e926f33e67833462422eb7d4e77da296797127c4ad6db3ef544d0'
+        //default address 0xde2b1203d72d3549EE2f733b00b2789414C7Cea5
+        privateKey: process.env.FAUCET_PRIV_KEY || '0x3800b2875669d9b2053c1aff9224ecfdc411423aac5b5a73d7a45ced1c3b9dcd'
     },
     mongo: {
         uri: process.env.MONGO_URI || 'mongodb://localhost:27017/explorer-dev',
