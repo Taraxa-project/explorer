@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const Block = new mongoose.Schema({
     _id: {type: String}, // block hash
     author: {type: String, index: true},
+    miner: {type: String, index: true},
     extraData: {type: String},
     gasLimit: {type: Number},
     gasUsed: {type: Number},

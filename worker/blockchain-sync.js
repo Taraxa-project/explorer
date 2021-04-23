@@ -11,6 +11,7 @@ const DagBlock = require("../models/dag_block");
 const Block = require("../models/block");
 const PBFTBlock = require("../models/pbft_block");
 const Tx = require("../models/tx");
+const Node = require("../models/node");
 
 const LogNetworkEvent = require("../models/log_network_event");
 
@@ -110,6 +111,7 @@ async function dropChainData() {
     DagBlock.deleteMany(),
     Block.deleteMany(),
     Tx.deleteMany(),
+    Node.deleteMany(),
   ]);
 }
 
@@ -165,7 +167,10 @@ async function realtimeSync() {
             subscribed[jsonRpc.result] = subscriptionRequests[jsonRpc.id].topic;
             // handle subscription data
           } else if (subscribed[jsonRpc.params?.subscription]) {
-            console.log(subscribed[jsonRpc.params.subscription], JSON.stringify(jsonRpc.params.result, null, 2));
+            console.log(
+              subscribed[jsonRpc.params.subscription],
+              JSON.stringify(jsonRpc.params.result, null, 2)
+            );
             switch (subscribed[jsonRpc.params.subscription]) {
               case "newDagBlocks":
                 const dagBlock = DagBlock.fromRPC(
@@ -283,6 +288,7 @@ async function historicalSync(subscribed = false) {
     getChainState(), // updates global var
     getSyncState(),
   ]);
+
   let syncState = state[1];
   let verifiedTip = false;
 
@@ -328,189 +334,194 @@ async function historicalSync(subscribed = false) {
 
     const block = await rpc.getBlockByNumber(syncState.number + 1, true);
 
-    if (block.hash) {
-      const started = new Date();
-      const bulkTx = [];
-      const txHashes = [];
-      let blockReward = 0;
+    if (!block.hash) {
+      continue;
+    }
 
-      const minBlock = Object.assign({}, block);
-      let scheduleBlock = {
-        schedule: {
-          dag_blocks_order: [],
-        },
-      };
+    const started = new Date();
+    const bulkTx = [];
+    const txHashes = [];
+    let blockReward = 0;
 
-      // SPECIAL CASE GENESIS BLOCK
-      if (block.number === "0x0") {
-        let genesis =
-          taraxaConfig?.chain_config?.final_chain?.state?.genesis_balances ||
-          {};
-        Object.keys(genesis).forEach((address, index) => {
-          const fakeTx = new Tx({
-            // _id: '0x0000000000000000000000000000000000000000000000000000000000000000',
-            _id: "GENESIS_" + index,
-            blockHash: block.hash,
-            blockNumber: block.number,
-            to: `0x${address}`,
-            value: genesis[address],
-            timestamp: new Date(0x5d422b80 * 1000),
+    const minBlock = Object.assign({}, block);
+    let scheduleBlock = {
+      schedule: {
+        dag_blocks_order: [],
+      },
+    };
 
-            status: true,
-            gasUsed: 0,
-            cumulativeGasUsed: 0,
-          });
-          txHashes.push(fakeTx._id);
-          bulkTx.push({
-            updateOne: {
-              filter: { _id: fakeTx._id },
-              update: fakeTx.toJSON(),
-              upsert: true,
-            },
-          });
+    // SPECIAL CASE GENESIS BLOCK
+    if (block.number === "0x0") {
+      let genesis =
+        taraxaConfig?.chain_config?.final_chain?.state?.genesis_balances || {};
+      Object.keys(genesis).forEach((address, index) => {
+        const fakeTx = new Tx({
+          // _id: '0x0000000000000000000000000000000000000000000000000000000000000000',
+          _id: "GENESIS_" + index,
+          blockHash: block.hash,
+          blockNumber: block.number,
+          to: `0x${address}`,
+          value: genesis[address],
+          timestamp: new Date(0x5d422b80 * 1000),
+
+          status: true,
+          gasUsed: 0,
+          cumulativeGasUsed: 0,
         });
-      } else {
-        if (!subscribed) {
-          // no need to do this if already getting dag blocks over websocket
-          const scheduleBlockRPC = await rpc.getScheduleBlockByPeriod(
-            block.number
-          );
-          scheduleBlock = formatPbftBlock(scheduleBlockRPC);
-          const getDagPromises = [];
-          for (const dagBlockHash of scheduleBlock.schedule.dag_blocks_order) {
-            getDagPromises.push(rpc.getDagBlockByHash(dagBlockHash));
-          }
-          const dagBlocks = await Promise.all(getDagPromises);
-          for (const dagBlockRPC of dagBlocks) {
-            const dagBlock = DagBlock.fromRPC(dagBlockRPC);
-            const d = dagBlock.toJSON();
-            const existingDagBlock = await DagBlock.findOneAndUpdate(
-              { _id: dagBlock._id },
-              d,
-              { upsert: true }
-            );
-            if (!existingDagBlock) {
-              notifications.push({
-                insertOne: {
-                  document: {
-                    log: "dag-block",
-                    data: d,
-                  },
-                },
-              });
-            }
-
-            syncState.dagBlockLevel = dagBlock.level - 1;
-          }
-          if (dagBlocks.length) {
-            // send for last dag block in schedule
-            const dagBlockRPC = dagBlocks[dagBlocks.length - 1];
-            const dagBlock = DagBlock.fromRPC(dagBlockRPC);
-            notifications.push({
-              insertOne: {
-                document: {
-                  log: "dag-block-finalized",
-                  data: {
-                    block: dagBlock._id,
-                    period: dagBlock.period,
-                  },
-                },
-              },
-            });
-          }
-          await PBFTBlock.findOneAndUpdate(
-            { _id: scheduleBlock._id },
-            scheduleBlock,
-            { new: true, upsert: true }
-          );
-          notifications.push({
-            insertOne: {
-              document: {
-                log: "pbft-block",
-                data: scheduleBlock,
-              },
-            },
-          });
-
-          syncState.dagBlockPeriod = block.number;
-        }
-      }
-
-      const txReceipts = await getTransactionReceipts(
-        block.transactions.map((tx) => tx.hash),
-        20
-      );
-
-      block.transactions.forEach((tx, idx) => {
-        txHashes.push(tx.hash);
-        const receipt = txReceipts[idx];
-        blockReward =
-          blockReward + Number(receipt.gasUsed) * Number(tx.gasPrice);
-      });
-
-      minBlock.reward = blockReward;
-      minBlock.transactions = txHashes;
-
-      notifications.push({
-        insertOne: {
-          document: {
-            log: "block",
-            data: Block.fromRPC(minBlock).toJSON(),
-          },
-        },
-      });
-
-      block.transactions.forEach((tx, idx) => {
-        const receipt = txReceipts[idx];
-        tx.timestamp = block.timestamp;
-
-        const t = Tx.fromRPC(tx).toJSON();
-        t.status = receipt.status === "0" ? false : true;
-        t.gasUsed = parseInt(receipt.gasUsed, 16);
-        t.cumulativeGasUsed = parseInt(receipt.cumulativeGasUsed, 16);
-        t.contractAddress =
-          receipt.contractAddress ===
-          "0x0000000000000000000000000000000000000000"
-            ? undefined
-            : receipt.contractAddress;
-
+        txHashes.push(fakeTx._id);
         bulkTx.push({
           updateOne: {
-            filter: { _id: tx.hash },
-            update: t,
+            filter: { _id: fakeTx._id },
+            update: fakeTx.toJSON(),
             upsert: true,
           },
         });
       });
-
-      await Tx.bulkWrite(bulkTx, { ordered: true });
-      await Block.findOneAndUpdate(
-        { _id: block.hash },
-        Block.fromRPC(minBlock).toJSON(),
-        {
-          upsert: true,
+    } else {
+      if (!subscribed) {
+        // no need to do this if already getting dag blocks over websocket
+        const scheduleBlockRPC = await rpc.getScheduleBlockByPeriod(
+          block.number
+        );
+        scheduleBlock = formatPbftBlock(scheduleBlockRPC);
+        const getDagPromises = [];
+        for (const dagBlockHash of scheduleBlock.schedule.dag_blocks_order) {
+          getDagPromises.push(rpc.getDagBlockByHash(dagBlockHash));
         }
-      );
+        const dagBlocks = await Promise.all(getDagPromises);
+        for (const dagBlockRPC of dagBlocks) {
+          const dagBlock = DagBlock.fromRPC(dagBlockRPC);
+          const d = dagBlock.toJSON();
+          const existingDagBlock = await DagBlock.findOneAndUpdate(
+            { _id: dagBlock._id },
+            d,
+            { upsert: true }
+          );
+          if (!existingDagBlock) {
+            notifications.push({
+              insertOne: {
+                document: {
+                  log: "dag-block",
+                  data: d,
+                },
+              },
+            });
+          }
 
-      await LogNetworkEvent.bulkWrite(notifications, { ordered: true });
+          syncState.dagBlockLevel = dagBlock.level - 1;
+        }
+        if (dagBlocks.length) {
+          // send for last dag block in schedule
+          const dagBlockRPC = dagBlocks[dagBlocks.length - 1];
+          const dagBlock = DagBlock.fromRPC(dagBlockRPC);
+          notifications.push({
+            insertOne: {
+              document: {
+                log: "dag-block-finalized",
+                data: {
+                  block: dagBlock._id,
+                  period: dagBlock.period,
+                },
+              },
+            },
+          });
+        }
+        await PBFTBlock.findOneAndUpdate(
+          { _id: scheduleBlock._id },
+          scheduleBlock,
+          { new: true, upsert: true }
+        );
+        notifications.push({
+          insertOne: {
+            document: {
+              log: "pbft-block",
+              data: scheduleBlock,
+            },
+          },
+        });
 
-      // update sync state
-      syncState.number = parseInt(block.number, 16);
-      syncState.genesis = chainState.genesis;
-      syncState.hash = block.hash;
-
-      const completed = new Date();
-      console.log(
-        "Sync'd block",
-        syncState.number,
-        syncState.hash,
-        "with",
-        txHashes.length,
-        "transactions, in",
-        completed - started,
-        "ms"
-      );
+        syncState.dagBlockPeriod = block.number;
+      }
     }
+
+    const txReceipts = await getTransactionReceipts(
+      block.transactions.map((tx) => tx.hash),
+      20
+    );
+
+    block.transactions.forEach((tx, idx) => {
+      txHashes.push(tx.hash);
+      const receipt = txReceipts[idx];
+      blockReward = blockReward + Number(receipt.gasUsed) * Number(tx.gasPrice);
+    });
+
+    minBlock.reward = blockReward;
+    minBlock.transactions = txHashes;
+
+    notifications.push({
+      insertOne: {
+        document: {
+          log: "block",
+          data: Block.fromRPC(minBlock).toJSON(),
+        },
+      },
+    });
+
+    block.transactions.forEach((tx, idx) => {
+      const receipt = txReceipts[idx];
+      tx.timestamp = block.timestamp;
+
+      const t = Tx.fromRPC(tx).toJSON();
+      t.status = receipt.status === "0" ? false : true;
+      t.gasUsed = parseInt(receipt.gasUsed, 16);
+      t.cumulativeGasUsed = parseInt(receipt.cumulativeGasUsed, 16);
+      t.contractAddress =
+        receipt.contractAddress === "0x0000000000000000000000000000000000000000"
+          ? undefined
+          : receipt.contractAddress;
+
+      bulkTx.push({
+        updateOne: {
+          filter: { _id: tx.hash },
+          update: t,
+          upsert: true,
+        },
+      });
+    });
+
+    await Tx.bulkWrite(bulkTx, { ordered: true });
+    await Block.findOneAndUpdate(
+      { _id: block.hash },
+      Block.fromRPC(minBlock).toJSON(),
+      {
+        upsert: true,
+      }
+    );
+
+    await Node.findOneAndUpdate(
+      { _id: block.miner },
+      { $inc: { blocks: 1 } },
+      { upsert: true, new: true }
+    );
+
+    await LogNetworkEvent.bulkWrite(notifications, { ordered: true });
+
+    // update sync state
+    syncState.number = parseInt(block.number, 16);
+    syncState.genesis = chainState.genesis;
+    syncState.hash = block.hash;
+
+    const completed = new Date();
+    console.log(
+      "Sync'd block",
+      syncState.number,
+      syncState.hash,
+      "with",
+      txHashes.length,
+      "transactions, in",
+      completed - started,
+      "ms"
+    );
   }
 
   // sync unfinalized dag blocks to tip
