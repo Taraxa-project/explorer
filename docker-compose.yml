@@ -5,7 +5,7 @@ volumes:
 services:
   taraxa-node:
     container_name: taraxa-node
-    image: gcr.io/jovial-meridian-249123/taraxa-node:pr-633-build-18
+    image: gcr.io/jovial-meridian-249123/taraxa-node-develop:develop-build-15
     restart: always
     ports:
       - "10002:10002"

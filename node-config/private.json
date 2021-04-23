@@ -1,0 +1,164 @@
+{
+  "node_secret": "3800b2875669d9b2053c1aff9224ecfdc411423aac5b5a73d7a45ced1c3b9dcd",
+  "vrf_secret": "0b6627a6680e01cea3d9f36fa797f7f34e8869c3a526d9ed63ed8170e35542aad05dc12c1df1edc9f3367fba550b7971fc2de6c5998d8784051c5be69abc9644",
+  "db_path": "/tmp/taraxa",
+  "network_is_boot_node": true,
+  "network_address": "0.0.0.0",
+  "network_tcp_port": 10002,
+  "network_udp_port": 10002,
+  "network_simulated_delay": 0,
+  "network_transaction_interval": 100,
+  "network_encrypted": 1,
+  "network_bandwidth": 40,
+  "network_ideal_peer_count": 10,
+  "network_max_peer_count": 50,
+  "network_sync_level_size": 1,
+  "network_boot_nodes": [
+    {
+      "ip": "127.0.0.1",
+      "id": "7b1fcf0ec1078320117b96e9e9ad9032c06d030cf4024a598347a4623a14a421d4f030cf25ef368ab394a45e920e14b57a259a09c41767dd50d1da27b627412a",
+      "tcp_port": 10002,
+      "udp_port": 10002
+    }
+  ],
+  "rpc": {
+    "http_port": 7777,
+    "ws_port": 8777,
+    "gql_http_port": 9777,
+    "gql_ws_port": 6777,
+    "threads_num": 10
+  },
+  "test_params": {
+    "max_transaction_queue_warn": 0,
+    "max_transaction_queue_drop": 0,
+    "max_block_queue_warn": 0,
+    "block_proposer": {
+      "shard": 1,
+      "transaction_limit": 0
+    }
+  },
+  "logging": {
+    "configurations": [
+      {
+        "name": "standard",
+        "on": true,
+        "verbosity": "ERROR",
+        "channels": [
+          {
+            "name": "FULLND",
+            "verbosity": "ERROR"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "console",
+            "format": "%NodeId% %Channel% [%TimeStamp%] %SeverityStr%: %Message%"
+          },
+          {
+            "type": "file",
+            "file_name": "Taraxa_N1_%m%d%Y_%H%M%S_%5N.log",
+            "rotation_size": 10000000,
+            "time_based_rotation": "0,0,0",
+            "format": "%NodeId% %Channel% [%TimeStamp%] %SeverityStr%: %Message%",
+            "max_size": 1000000000
+          }
+        ]
+      },
+      {
+        "name": "pbft",
+        "on": true,
+        "verbosity": "TRACE",
+        "channels": [
+          {
+            "name": "PBFT_CHAIN",
+            "verbosity": "DEBUG"
+          },
+          {
+            "name": "PBFT_MGR",
+            "verbosity": "DEBUG"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "console",
+            "format": "%NodeId% %Channel% [%TimeStamp%] %SeverityStr%: %Message%"
+          },
+          {
+            "type": "file",
+            "file_name": "Pbft_N1_%m%d%Y_%H%M%S_%5N.log",
+            "rotation_size": 10000000,
+            "time_based_rotation": "0,0,0",
+            "format": "%NodeId% %Channel% [%TimeStamp%] %SeverityStr%: %Message%",
+            "max_size": 1000000000
+          }
+        ]
+      }
+    ]
+  },
+  "chain_config": {
+    "chain_id": "0xd903",
+    "dag_genesis_block": {
+      "hash": "0xc9524784c4bf29e6facdd94ef7d214b9f512cdfd0f68184432dab85d053cbc69",
+      "level": "0x0",
+      "pivot": "0x0000000000000000000000000000000000000000000000000000000000000000",
+      "sender": "0xde2b1203d72d3549ee2f733b00b2789414c7cea5",
+      "sig": "0xb7e22d46c1ba94d5e8347b01d137b5c428fcbbeaf0a77fb024cbbf1517656ff00d04f7f25be608c321b0d7483c402c294ff46c49b265305d046a52236c0a363701",
+      "timestamp": "0x5d422b80",
+      "tips": [],
+      "transactions": []
+    },
+    "final_chain": {
+      "genesis_block_fields": {
+        "author": "0x0000000000000000000000000000000000000000",
+        "timestamp": "0x5d422b80"
+      },
+      "state": {
+        "disable_block_rewards": true,
+        "dpos": {
+          "deposit_delay": "0x10",
+          "withdrawal_delay": "0x10",
+          "eligibility_balance_threshold": "0xd3c21bcecceda0000000",
+          "genesis_state": {
+            "0xde2b1203d72d3549ee2f733b00b2789414c7cea5": {
+              "0xde2b1203d72d3549ee2f733b00b2789414c7cea5": "0xd3c21bcecceda0000000"
+            }
+          }
+        },
+        "eth_chain_config": {
+          "byzantium_block": "0x0",
+          "constantinople_block": "0x0",
+          "dao_fork_block": "0xffffffffffffffff",
+          "eip_150_block": "0x0",
+          "eip_158_block": "0x0",
+          "homestead_block": "0x0",
+          "petersburg_block": "0x0"
+        },
+        "execution_options": {
+          "disable_gas_fee": false,
+          "disable_nonce_check": true
+        },
+        "genesis_balances": {
+          "0xde2b1203d72d3549ee2f733b00b2789414c7cea5": "0x1027e72f1f12813088000000"
+        }
+      }
+    },
+    "pbft": {
+      "committee_size": "0x5",
+      "dag_blocks_size": "0xa",
+      "ghost_path_move_back": "0x0",
+      "lambda_ms_min": "0x3e8",
+      "run_count_votes": false
+    },
+    "replay_protection_service": {
+      "range": "0xa"
+    },
+    "vdf": {
+      "difficulty_max": "0x15",
+      "difficulty_min": "0x10",
+      "threshold_selection": "0xbffd",
+      "threshold_vdf_omit": "0x6bf7",
+      "difficulty_stale": "0x16",
+      "lambda_bound": "0x64"
+    }
+  }
+}
