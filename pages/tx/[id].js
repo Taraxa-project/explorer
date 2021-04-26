@@ -104,7 +104,7 @@ export default function TxPage({ tx, dags }) {
             )}
 
             {tx.input ? <li>{`Contract Input: ${tx.input}`}</li> : ""}
-            {decodedData.name ? (
+            {decodedData?.name ? (
               <>
                 <li>
                   Contract Function: {decodedData.name}
