@@ -11,7 +11,6 @@ const DagBlock = require("../models/dag_block");
 const Block = require("../models/block");
 const PBFTBlock = require("../models/pbft_block");
 const Tx = require("../models/tx");
-const Node = require("../models/node");
 
 const LogNetworkEvent = require("../models/log_network_event");
 
@@ -111,7 +110,6 @@ async function dropChainData() {
     DagBlock.deleteMany(),
     Block.deleteMany(),
     Tx.deleteMany(),
-    Node.deleteMany(),
   ]);
 }
 
@@ -496,12 +494,6 @@ async function historicalSync(subscribed = false) {
       {
         upsert: true,
       }
-    );
-
-    await Node.findOneAndUpdate(
-      { _id: block.miner },
-      { $inc: { blocks: 1 } },
-      { upsert: true, new: true }
     );
 
     await LogNetworkEvent.bulkWrite(notifications, { ordered: true });

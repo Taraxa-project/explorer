@@ -1,34 +1,41 @@
 import Link from "next/link";
 import { useState } from "react";
-
-import { Card, Table, Row, Col, Form, Pagination } from "react-bootstrap";
-
+import { Card, Table, Container, Row, Col, Pagination } from "react-bootstrap";
 import useSwr from "swr";
+
+const MONTHS = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
 
 const fetcher = (url) => fetch(url).then((res) => res.json());
 
 export default function Nodes() {
+  const today = new Date();
   const limit = 20;
   const [skip, setSkip] = useState(0);
-  const [reverse, setReverse] = useState(true);
+  const [month, setMonth] = useState(today.getMonth());
+  const [year, setYear] = useState(today.getFullYear());
 
   let query = `/api/nodes?limit=${limit}`;
-  if (reverse) {
-    query += "&reverse=true";
-  }
   if (skip) {
     query += `&skip=${skip}`;
   }
 
-  const { data } = useSwr(query, fetcher);
+  query += `&month=${month}`;
+  query += `&year=${year}`;
 
-  function updateQueryReverse(e) {
-    let val = true;
-    if (e.target.value === "false") {
-      val = false;
-    }
-    setReverse(val);
-  }
+  const { data } = useSwr(query, fetcher);
 
   function updateQuerySkip(val) {
     setSkip(Number(val));
@@ -39,54 +46,84 @@ export default function Nodes() {
   const pages = Math.ceil(total / limit);
   const page = skip / limit + 1;
 
+  const isThisMonth = today.getMonth() === month;
+
   return (
     <>
-      <Row>
-        <Col sm="8" md="10">
-          <h1>Nodes</h1>
-        </Col>
-        <Col>
-          <Form>
-            <Form.Group>
-              <Form.Control
-                id="sortControl"
-                size="sm"
-                as="select"
-                onChange={updateQueryReverse}
-              >
-                <option value="true">Highest number of blocks first</option>
-                <option value="false">Lowest number of blocks first</option>
-              </Form.Control>
-            </Form.Group>
-          </Form>
-        </Col>
-      </Row>
+      <Container fluid={true}>
+        <Row>
+          <Col sm="8" md="10">
+            <h1>
+              Top Nodes {MONTHS[month]} {year}
+            </h1>
+          </Col>
+          <Col>
+            <Pagination className="justify-content-end">
+              <Pagination.Prev
+                onClick={() => {
+                  if (month === 0) {
+                    setMonth(11);
+                    setYear(year - 1);
+                    return;
+                  }
+
+                  setMonth((month) => month - 1);
+                }}
+              />
+              <Pagination.Item disabled={true}>
+                {MONTHS[month]} {year}
+              </Pagination.Item>
+              {!isThisMonth && (
+                <Pagination.Next
+                  onClick={() => {
+                    if (month === 11) {
+                      setMonth(0);
+                      setYear(year + 1);
+                      return;
+                    }
+                    setMonth((month) => month + 1);
+                  }}
+                />
+              )}
+            </Pagination>
+          </Col>
+        </Row>
+      </Container>
       <Card
         style={{ margin: 5, marginTop: 0, marginBottom: 10 }}
         bg="dark"
         text="white"
       >
-        <Table responsive variant="dark">
-          <thead>
-            <tr>
-              <th>Address</th>
-              <th>Number of Mined Blocks</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data &&
-              nodes.map((node) => (
-                <tr key={node._id}>
-                  <td>
-                    <Link href="/address/[id]" as={`/address/${node._id}`}>
-                      <a className="long-hash">{`${node._id}`}</a>
-                    </Link>
-                  </td>
-                  <td>{node.blocks}</td>
-                </tr>
-              ))}
-          </tbody>
-        </Table>
+        {total > 0 && (
+          <Table responsive variant="dark">
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>Node Address</th>
+                <th># blocks produced</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data &&
+                nodes.map((node, i) => (
+                  <tr key={node._id}>
+                    <td>{i + 1}</td>
+                    <td>
+                      <Link href="/address/[id]" as={`/address/${node._id}`}>
+                        <a className="long-hash">{`${node._id}`}</a>
+                      </Link>
+                    </td>
+                    <td>{node.count}</td>
+                  </tr>
+                ))}
+            </tbody>
+          </Table>
+        )}
+        {total === 0 && (
+          <p style={{ margin: 0, padding: "20px" }}>
+            <strong>No data found for selected month.</strong>
+          </p>
+        )}
       </Card>
 
       {total > limit && (

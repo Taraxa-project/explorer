@@ -120,7 +120,7 @@ export default function AddressPage({ data }) {
           </ul>
         </Card.Body>
         <Card.Body>
-          <Card.Title>Number of Mined Blocks: {data.mined}</Card.Title>
+          <Card.Title># blocks produced: {data.produced}</Card.Title>
         </Card.Body>
         <Card.Body>
           <Card.Title>Transactions:</Card.Title>
