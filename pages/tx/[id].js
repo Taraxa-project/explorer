@@ -8,6 +8,9 @@ import DagBlock from "../../models/dag_block";
 import { Card, Table } from "react-bootstrap";
 
 import abiDecoder from "abi-decoder";
+import * as RLP from "rlp";
+import BN from "bn.js";
+import Web3Utils from "web3-utils";
 
 import RepresentationABI from "../../contracts/Representation.abi.json";
 import RecordsRepositoryABI from "../../contracts/RecordsRepository.abi.json";
@@ -44,12 +47,35 @@ export default function TxPage({ tx, dags }) {
   let decodedData = {};
   if (tx.input) {
     try {
-      decodedData = abiDecoder.decodeMethod(tx.input);
+      const rlpData = RLP.decode(Buffer.from(Web3Utils.hexToBytes(tx.input)));
+      decodedData = {
+        name: "delegate",
+        params: rlpData.map((beneficiary) => {
+          const isNegative = !!(new BN(
+            beneficiary[1][1].toString("hex"),
+            "hex"
+          )).toNumber();
+          return {
+            name: Web3Utils.bytesToHex(beneficiary[0]),
+            value: `${isNegative ? '-' : ''}${(new BN(
+              beneficiary[1][0].toString("hex"),
+              "hex"
+            )).toString()}`,
+            type: "address: value",
+          };
+        }),
+      };
     } catch (e) {
       console.error(e);
     }
+    if (!decodedData?.name) {
+      try {
+        decodedData = abiDecoder.decodeMethod(tx.input);
+      } catch (e) {
+        console.error(e);
+      }
+    }
   }
-
   return (
     <>
       <h1>Tx {tx._id}</h1>
