@@ -1,5 +1,6 @@
 import config from "config";
 import mongoose from "mongoose";
+import moment from "moment";
 
 import Block from "../../models/block";
 
@@ -16,16 +17,12 @@ export default async function handler(req, res) {
 
   let skip = Number(req.query.skip) || 0;
   let limit = Number(req.query.limit) || 20;
-  const today = new Date();
-  let month = Number(req.query.month);
-  let year = Number(req.query.year) || today.getFullYear();
+  let week = Number(req.query.week) || moment().isoWeek();
+  let year = Number(req.query.year) || moment().isoWeekYear();
 
-  if (month > 11 || month < 0) {
-    month = today.getMonth();
-  }
-
-  const firstDay = new Date(year, month, 1);
-  const lastDay = new Date(year, month + 1, 0);
+  const now = moment().isoWeekYear(year).isoWeek(week);
+  const firstDay = now.startOf("week").toDate();
+  const lastDay = now.endOf("week").toDate();
 
   try {
     const match = {

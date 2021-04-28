@@ -1,38 +1,23 @@
 import Link from "next/link";
 import { useState } from "react";
+import moment from "moment";
 import { Card, Table, Container, Row, Col, Pagination } from "react-bootstrap";
 import useSwr from "swr";
-
-const MONTHS = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
-];
 
 const fetcher = (url) => fetch(url).then((res) => res.json());
 
 export default function Nodes() {
-  const today = new Date();
   const limit = 20;
   const [skip, setSkip] = useState(0);
-  const [month, setMonth] = useState(today.getMonth());
-  const [year, setYear] = useState(today.getFullYear());
+  const [week, setWeek] = useState(moment().isoWeek());
+  const [year, setYear] = useState(moment().isoWeekYear());
 
   let query = `/api/nodes?limit=${limit}`;
   if (skip) {
     query += `&skip=${skip}`;
   }
 
-  query += `&month=${month}`;
+  query += `&week=${week}`;
   query += `&year=${year}`;
 
   const { data } = useSwr(query, fetcher);
@@ -46,7 +31,10 @@ export default function Nodes() {
   const pages = Math.ceil(total / limit);
   const page = skip / limit + 1;
 
-  const isThisMonth = today.getMonth() === month;
+  const isThisWeek = moment().isoWeek() === week;
+  const now = moment().isoWeekYear(year).isoWeek(week);
+  const startOfWeek = now.startOf("week").format("MMMM Do");
+  const endOfWeek = now.endOf("week").format("MMMM Do");
 
   return (
     <>
@@ -54,34 +42,34 @@ export default function Nodes() {
         <Row>
           <Col sm="8" md="10">
             <h1>
-              Top Nodes {MONTHS[month]} {year}
+              Top nodes for Week {week} {year} ({startOfWeek} - {endOfWeek})
             </h1>
           </Col>
           <Col>
             <Pagination className="justify-content-end">
               <Pagination.Prev
                 onClick={() => {
-                  if (month === 0) {
-                    setMonth(11);
-                    setYear(year - 1);
+                  if (week === 1) {
+                    setWeek(moment().isoWeeksInYear(year - 1));
+                    setYear((year) => year - 1);
                     return;
                   }
 
-                  setMonth((month) => month - 1);
+                  setWeek((week) => week - 1);
                 }}
               />
               <Pagination.Item disabled={true}>
-                {MONTHS[month]} {year}
+                W{week} {year}
               </Pagination.Item>
-              {!isThisMonth && (
+              {!isThisWeek && (
                 <Pagination.Next
                   onClick={() => {
-                    if (month === 11) {
-                      setMonth(0);
-                      setYear(year + 1);
+                    if (week === moment().isoWeeksInYear(year)) {
+                      setWeek(1);
+                      setYear((year) => year + 1);
                       return;
                     }
-                    setMonth((month) => month + 1);
+                    setWeek((week) => week + 1);
                   }}
                 />
               )}
@@ -121,7 +109,7 @@ export default function Nodes() {
         )}
         {total === 0 && (
           <p style={{ margin: 0, padding: "20px" }}>
-            <strong>No data found for selected month.</strong>
+            <strong>No data found for selected week.</strong>
           </p>
         )}
       </Card>
