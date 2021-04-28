@@ -1,20 +1,15 @@
-import Web3Utils from "web3-utils";
-import { undelegateFrom } from "../../../lib/delegation";
+import { verifyAddress, undelegateFrom } from "../../../lib/delegation";
 
 export default async function undelegateHandler(req, res) {
   const {
-    query: { id },
+    query: { id, sig },
   } = req;
 
-  let address = id;
-
-  if (typeof address !== "string") {
-    address = address.toString();
-  }
-  address = address.trim();
-
-  if (!Web3Utils.isAddress(address)) {
-    res.status(400).json({ error: "Wallet Address is not valid." });
+  let address;
+  try {
+    address = verifyAddress(id, sig);
+  } catch (e) {
+    res.status(400).json({ error: e.message });
     return;
   }
 
