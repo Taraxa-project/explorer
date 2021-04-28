@@ -1,7 +1,7 @@
 import Web3Utils from "web3-utils";
-import { delegateTo } from "../../../lib/delegation";
+import { undelegateFrom } from "../../../lib/delegation";
 
-export default async function delegateHandler(req, res) {
+export default async function undelegateHandler(req, res) {
   const {
     query: { id },
   } = req;
@@ -19,7 +19,7 @@ export default async function delegateHandler(req, res) {
   }
 
   try {
-    await delegateTo(address);
+    await undelegateFrom(address);
   } catch (e) {
     console.error(e);
     res
@@ -29,6 +29,6 @@ export default async function delegateHandler(req, res) {
   }
 
   res.json({
-    status: `Successfully delegated to ${address}.`,
+    status: `Successfully undelegated from ${address}.`,
   });
 }

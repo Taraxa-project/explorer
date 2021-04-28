@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const Delegate = new mongoose.Schema(
   {
-    address: { type: String, unique: true },
+    _id: { type: String },
     value: { type: String, default: "0" },
     created: { type: Date, default: Date.now, index: true },
   },
