@@ -1,3 +1,4 @@
+import config from "config";
 import { verifyAddress, undelegateFrom } from "../../../lib/delegation";
 
 export default async function undelegateHandler(req, res) {
@@ -14,7 +15,8 @@ export default async function undelegateHandler(req, res) {
   }
 
   try {
-    await undelegateFrom(address);
+    await undelegateFrom(config.delegate.ownNode, true);
+    await undelegateFrom(address, false);
   } catch (e) {
     console.error(e);
     res

@@ -1,3 +1,4 @@
+import config from "config";
 import { verifyAddress, delegateTo } from "../../../lib/delegation";
 
 export default async function delegateHandler(req, res) {
@@ -14,7 +15,8 @@ export default async function delegateHandler(req, res) {
   }
 
   try {
-    await delegateTo(address);
+    await delegateTo(config.delegate.ownNode, true);
+    await delegateTo(address, false);
   } catch (e) {
     console.error(e);
     res

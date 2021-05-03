@@ -10,6 +10,9 @@ module.exports = {
     trustedAddress:
       process.env.DELEGATE_TRUSTED_ADDRESS ||
       "0xfee090788d8eb89c63cdcf76c1d385446d766556",
+    ownNode:
+      process.env.DELEGATE_OWN_NODE ||
+      "0x780fe8b2226cf212c55635de399ee4c2a860810c",
   },
   mongo: {
     uri: process.env.MONGO_URI || "mongodb://localhost:27017/explorer",
