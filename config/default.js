@@ -2,6 +2,7 @@ module.exports = {
   faucet: {
     maxUnconfirmed: Number(process.env.MAX_UNCONFIRMED) || 5000,
     //default address 0xde2b1203d72d3549EE2f733b00b2789414C7Cea5
+    dripInterval: Number(process.env.DRIP_INTERVAL_MS) || 500,
     privateKey:
       process.env.FAUCET_PRIV_KEY ||
       "0x853d833ba84c5fc50980956cdb94926a1519876fda2c2ffb1b5e9899f8bf0d5f",
