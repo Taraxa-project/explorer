@@ -13,6 +13,8 @@ const FaucetNonce = require("../models/faucet-nonce");
 
 const account = taraxa.accounts.privateKeyToAccount(config.faucet.privateKey);
 
+const dripInterval = config.faucet.dripInterval;
+
 let unconfirmed = 0;
 
 const sleep = async (delay = 3000) => {
@@ -71,7 +73,7 @@ async function drip() {
       console.error(e);
     }
 
-    await sleep(500);
+    await sleep(dripInterval);
   }
 }
 
