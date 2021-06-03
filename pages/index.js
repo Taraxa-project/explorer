@@ -52,8 +52,8 @@ function Index({recentBlocks, recentDagBlocks}) {
     reversedRecentBlocks.forEach((block, index) => {
       if (index !== 0) {
         let previousBlockTimestamp = reversedRecentBlocks[index - 1].timestamp;
-        const elapsedSeconds = Math.abs(Math.round(new Date(block.timestamp).valueOf() / 1000) - Math.round(new Date(previousBlockTimestamp).valueOf() / 1000))
-        const tps = Number(block.transactions.length / elapsedSeconds).toFixed(1);
+        const elapsedSeconds = Math.round(new Date(block.timestamp).valueOf() / 1000) - Math.round(new Date(previousBlockTimestamp).valueOf() / 1000)
+        const tps = Number(Math.abs(block.transactions.length / elapsedSeconds)).toFixed(1);
         newTpsData.push({
           block: block.number,
           tps,
@@ -83,11 +83,11 @@ function Index({recentBlocks, recentDagBlocks}) {
           const dagBlocks = dpsData[period];
           const dagStart = new Date(dagBlocks[0].timestamp).valueOf();
           const dagEnd = new Date(dagBlocks[dagBlocks.length - 1].timestamp).valueOf();
-          const durationSeconds = Math.abs(Math.round(dagEnd / 1000) - Math.round(dagStart / 1000))
+          const durationSeconds = Math.round(dagEnd / 1000) - Math.round(dagStart / 1000)
           if (durationSeconds) {
             newDps.push({
               period: period.toString(),
-              blocksPerSecond: Number(dagBlocks.length / durationSeconds).toFixed(1)
+              blocksPerSecond: Number(Math.abs(dagBlocks.length / durationSeconds)).toFixed(1)
             })
           }
           // get % of unique hashes per block
