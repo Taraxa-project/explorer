@@ -1,4 +1,5 @@
 module.exports = {
+  nodeConfigPath: process.env.NODE_CONFIG_PATH || '/opt/taraxa/conf/taraxa.json',
   faucet: {
     maxUnconfirmed: Number(process.env.MAX_UNCONFIRMED) || 5000,
     //default address 0xde2b1203d72d3549EE2f733b00b2789414C7Cea5
@@ -11,9 +12,6 @@ module.exports = {
     trustedAddress:
       process.env.DELEGATE_TRUSTED_ADDRESS ||
       "0xfee090788d8eb89c63cdcf76c1d385446d766556",
-    ownNode:
-      process.env.DELEGATE_OWN_NODE ||
-      "0x780fe8b2226cf212c55635de399ee4c2a860810c",
   },
   mongo: {
     uri: process.env.MONGO_URI || "mongodb://localhost:27017/explorer",
