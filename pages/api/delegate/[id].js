@@ -1,4 +1,4 @@
-import { verifyAddress, delegateTo, getOwnNode } from "../../../lib/delegation";
+import { verifyAddress, delegateTo } from "../../../lib/delegation";
 
 export default async function delegateHandler(req, res) {
   const {
@@ -14,8 +14,7 @@ export default async function delegateHandler(req, res) {
   }
 
   try {
-    await delegateTo(getOwnNode(), true);
-    await delegateTo(address, false);
+    await delegateTo(address);
   } catch (e) {
     console.error(e);
     res
