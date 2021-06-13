@@ -1,4 +1,4 @@
-import { verifyAddress, undelegateFrom, getOwnNode } from "../../../lib/delegation";
+import { verifyAddress, undelegateFrom } from "../../../lib/delegation";
 
 export default async function undelegateHandler(req, res) {
   const {
@@ -14,8 +14,7 @@ export default async function undelegateHandler(req, res) {
   }
 
   try {
-    await undelegateFrom(getOwnNode(), true);
-    await undelegateFrom(address, false);
+    await undelegateFrom(address);
   } catch (e) {
     console.error(e);
     res
