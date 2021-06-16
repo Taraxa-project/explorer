@@ -48,9 +48,9 @@ export default async function handler(req, res) {
         $group: { _id: "$author", count: { $sum: 1 } },
       },
     ])
-      .limit(limit)
+      .sort({ count: -1 })
       .skip(skip)
-      .sort({ count: -1 });
+      .limit(limit);
     res.json({
       total: total.length > 0 ? total[0].total : 0,
       skip,
