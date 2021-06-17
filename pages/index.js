@@ -70,7 +70,6 @@ function Index({recentBlocks, recentDagBlocks}) {
     let newDps = [];
     let newDe = [];
     const reversedDagBlocks = reverse(recentDagBlocks);
-
     if (reversedDagBlocks.length) {
       reversedDagBlocks.forEach((block, index) => {
         let period = block.period;
@@ -256,7 +255,7 @@ export const getServerSideProps = wrapper.getServerSideProps(async ({ store }) =
 
       let [blocks, dagBlocks, txs] = await Promise.all([
         Block.find().limit(10).sort({timestamp: -1}).lean(),
-        DagBlock.find().limit(50).sort({timestamp: -1}).lean(),
+        DagBlock.find().limit(1000).sort({timestamp: -1}).lean(),
       ])
 
       blocks = JSON.parse(JSON.stringify(blocks));
