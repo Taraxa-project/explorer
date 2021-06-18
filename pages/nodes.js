@@ -95,7 +95,7 @@ export default function Nodes() {
               {data &&
                 nodes.map((node, i) => (
                   <tr key={node._id}>
-                    <td>{i + 1}</td>
+                    <td>{skip + i + 1}</td>
                     <td>
                       <Link href="/address/[id]" as={`/address/${node._id}`}>
                         <a className="long-hash">{`${node._id}`}</a>
