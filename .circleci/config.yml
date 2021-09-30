@@ -14,7 +14,8 @@ jobs:
       - run:
          name: Prepare Environment
          command: |
-           echo "export START_TIME=$(date +%Y%m%d-%Hh%Mm%Ss)" >>$BASH_ENV
+           echo "export START_TIME=$(date +%Y%m%d-%Hh%Mm%Ss)" >> $BASH_ENV
+           echo "export VERSION=$(grep -m1 version package.json | awk -F: '{ print $2 }' | sed 's/[", ]//g')" >> $BASH_ENV
 
       - run:
          name: Login into docker hub
@@ -24,13 +25,15 @@ jobs:
       - run:
          name: Build Docker image
          command: |
-                docker build -t ${IMAGE} -f Dockerfile .
+          docker build -t ${IMAGE} -f Dockerfile .
+          
             
       - run:
          name: Tag images and push images
          command: |
-           docker tag ${IMAGE}:latest ${IMAGE}:$(grep -m1 version package.json | awk -F: \'{ print $2 }\' | sed \'s/[", ]//g\')-${CIRCLE_BUILD_NUM}'
-           docker push ${IMAGE}:$(grep -m1 version package.json | awk -F: \'{ print $2 }\' | sed \'s/[", ]//g\')-${CIRCLE_BUILD_NUM}'
+           VER
+           docker tag ${IMAGE}:latest ${IMAGE}:${VERSION}-${CIRCLE_BUILD_NUM}
+           docker push ${IMAGE}:${VERSION}-${CIRCLE_BUILD_NUM}
            docker push ${IMAGE}:latest'
 
 workflows:
