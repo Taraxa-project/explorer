@@ -7,7 +7,7 @@ jobs:
       - IMAGE: taraxa/explorer
     machine:
       image: ubuntu-2004:202010-01
-      docker_layer_caching: false
+      docker_layer_caching: true
     resource_class: medium
     steps:
       - checkout
@@ -33,7 +33,7 @@ jobs:
          command: |
            docker tag ${IMAGE}:latest ${IMAGE}:${VERSION}-${CIRCLE_BUILD_NUM}
            docker push ${IMAGE}:${VERSION}-${CIRCLE_BUILD_NUM}
-           docker push ${IMAGE}:latest'
+           docker push ${IMAGE}:latest
 
 workflows:
   version: 2
