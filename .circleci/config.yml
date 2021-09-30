@@ -31,7 +31,6 @@ jobs:
       - run:
          name: Tag images and push images
          command: |
-           VER
            docker tag ${IMAGE}:latest ${IMAGE}:${VERSION}-${CIRCLE_BUILD_NUM}
            docker push ${IMAGE}:${VERSION}-${CIRCLE_BUILD_NUM}
            docker push ${IMAGE}:latest'
