@@ -9,7 +9,7 @@ const RLP = require("rlp");
 const Delegate = require("../models/delegate");
 const FaucetNonce = require("../models/faucet-nonce");
 
-const sleep = async (delay = 3 * 1000) => {
+const sleep = async (delay = 30 * 1000) => {
   return await new Promise((resolve) => {
     setTimeout(resolve, delay);
   });
@@ -121,7 +121,9 @@ async function sendTransaction(input) {
     taraxa.eth
       .sendSignedTransaction(tx.rawTransaction)
       .on("transactionHash", (txHash) => {
-        resolve(txHash);
+        waitForTransaction(taraxa, txHash).then(() => {
+          resolve(txHash);
+        });
       })
       .on("error", (error) => {
         reject(error);
@@ -133,6 +135,61 @@ function bufferToHex(buffer) {
   return [...new Uint8Array(buffer)]
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");
+}
+
+function waitForTransaction(web3, txnHash, options = null) {
+  const interval = options && options.interval ? options.interval : 500;
+  const blocksToWait =
+    options && options.blocksToWait ? options.blocksToWait : 1;
+  const transactionReceiptAsync = async function (txnHash, resolve, reject) {
+    try {
+      var receipt = web3.eth.getTransactionReceipt(txnHash);
+      if (!receipt) {
+        setTimeout(function () {
+          transactionReceiptAsync(txnHash, resolve, reject);
+        }, interval);
+      } else {
+        if (blocksToWait > 0) {
+          var resolvedReceipt = await receipt;
+          if (!resolvedReceipt || !resolvedReceipt.blockNumber) {
+            setTimeout(function () {
+              transactionReceiptAsync(txnHash, resolve, reject);
+            }, interval);
+          } else {
+            try {
+              var block = await web3.eth.getBlock(resolvedReceipt.blockNumber);
+              var current = await web3.eth.getBlock("latest");
+              if (current.number - block.number >= blocksToWait) {
+                var txn = await web3.eth.getTransaction(txnHash);
+                if (txn.blockNumber != null) resolve(resolvedReceipt);
+                else
+                  reject(
+                    new Error(
+                      "Transaction with hash: " +
+                        txnHash +
+                        " ended up in an uncle block."
+                    )
+                  );
+              } else
+                setTimeout(function () {
+                  transactionReceiptAsync(txnHash, resolve, reject);
+                }, interval);
+            } catch (e) {
+              setTimeout(function () {
+                transactionReceiptAsync(txnHash, resolve, reject);
+              }, interval);
+            }
+          }
+        } else resolve(receipt);
+      }
+    } catch (e) {
+      reject(e);
+    }
+  };
+
+  return new Promise(function (resolve, reject) {
+    transactionReceiptAsync(txnHash, resolve, reject);
+  });
 }
 
 (async () => {
