@@ -1,6 +1,8 @@
+import { runCorsMiddleware } from '../../../lib/cors';
 import { verifyAddress, delegateTo } from "../../../lib/delegation";
 
 export default async function delegateHandler(req, res) {
+  await runCorsMiddleware(req, res);
   const {
     query: { id, sig },
   } = req;

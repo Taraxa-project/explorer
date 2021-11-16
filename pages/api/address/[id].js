@@ -1,6 +1,8 @@
+import { runCorsMiddleware } from '../../../lib/cors';
 import {getAddress} from '../../../lib/db'
 
 export default async function userHandler(req, res) {
+    await runCorsMiddleware(req, res);
     const {
         query: {id},
         method,

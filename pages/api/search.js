@@ -1,6 +1,7 @@
 import config from 'config';
 import mongoose from 'mongoose';
 
+import { runCorsMiddleware } from '../../lib/cors';
 import DagBlock from '../../models/dag_block';
 import Block from '../../models/block';
 import Tx from '../../models/tx';
@@ -8,6 +9,7 @@ import Tx from '../../models/tx';
 import utils from 'web3-utils'
 
 export default async function handler(req, res) {
+    await runCorsMiddleware(req, res);
     try {
         mongoose.connection._readyState || await mongoose.connect(config.mongo.uri, config.mongo.options);
     } catch (e) {

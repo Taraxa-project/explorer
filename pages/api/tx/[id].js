@@ -1,9 +1,11 @@
 import config from 'config';
 import mongoose from 'mongoose';
 
+import { runCorsMiddleware } from '../../../lib/cors';
 import Tx from '../../../models/tx';
 
 export default async function userHandler(req, res) {
+    await runCorsMiddleware(req, res);
     try {
         mongoose.connection._readyState || await mongoose.connect(config.mongo.uri, config.mongo.options);
     } catch (e) {

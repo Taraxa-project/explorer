@@ -2,9 +2,11 @@ import config from "config";
 import mongoose from "mongoose";
 import Web3Utils from "web3-utils";
 
+import { runCorsMiddleware } from '../../../lib/cors';
 import Faucet from "../../../models/faucet";
 
 export default async function userHandler(req, res) {
+  await runCorsMiddleware(req, res);
   try {
     mongoose.connection._readyState ||
       (await mongoose.connect(config.mongo.uri, config.mongo.options));
