@@ -22,7 +22,7 @@ export default async function handler(req, res) {
     try {
         let blocks = [];
         let periods = [];
-        const total = await DagBlock.countDocuments();
+        const total = await DagBlock.estimatedDocumentCount();
         if (fullTransactions) {
             blocks = await DagBlock.find().limit(limit).skip(skip).sort({level: reverse ? -1 : 1}).populate('transactions');
         } else {

@@ -24,7 +24,7 @@ export default async function handler(req, res) {
     }
 
     try {
-        const total = await Tx.countDocuments();
+        const total = await Tx.estimatedDocumentCount();
         const txs = await Tx.find(query).limit(limit).skip(skip).sort({timestamp: reverse ? -1 : 1});
         res.json({
             total,

@@ -20,7 +20,7 @@ export default async function handler(req, res) {
 
     try {
         let blocks = [];
-        const total = await Block.countDocuments();
+        const total = await Block.estimatedDocumentCount();
         if (fullTransactions) {
             blocks = await Block.find().limit(limit).skip(skip).sort({number: reverse ? -1 : 1}).populate('transactions');
         } else {
