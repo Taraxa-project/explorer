@@ -32,6 +32,7 @@ async function worker() {
     const valueToAdd = new BN(delegate.valueToAdd);
     const valueToSubstract = new BN(delegate.valueToSubstract);
     let total = new BN(delegate.total);
+    let status = "FINISHED";
 
     if (valueToAdd.gtn(0)) {
       console.log(
@@ -41,13 +42,18 @@ async function worker() {
         valueToAdd.toString()
       );
 
-      await delegateTransaction(
-        delegate.counterpart,
-        valueToAdd.mul(new BN(2))
-      );
-      console.log("- own node", delegate.counterpart);
-      await delegateTransaction(delegate._id, valueToAdd);
-      console.log("- user node", delegate._id);
+      try {
+        await delegateTransaction(
+          delegate.counterpart,
+          valueToAdd.mul(new BN(2))
+        );
+        console.log("- own node", delegate.counterpart);
+        await delegateTransaction(delegate._id, valueToAdd);
+        console.log("- user node", delegate._id);
+      } catch (e) {
+        console.error(e);
+        status = "ERROR"
+      }
 
       total = total.add(valueToAdd);
     }
@@ -60,13 +66,18 @@ async function worker() {
         valueToSubstract.toString()
       );
 
-      await undelegateTransaction(
-        delegate.counterpart,
-        valueToSubstract.mul(new BN(2))
-      );
-      console.log("- own node", delegate.counterpart);
-      await undelegateTransaction(delegate._id, valueToSubstract);
-      console.log("- user node", delegate._id);
+      try {
+        await undelegateTransaction(
+          delegate.counterpart,
+          valueToSubstract.mul(new BN(2))
+        );
+        console.log("- own node", delegate.counterpart);
+        await undelegateTransaction(delegate._id, valueToSubstract);
+        console.log("- user node", delegate._id);
+      } catch (e) {
+        console.error(e);
+        status = "ERROR"
+      }
 
       total = total.sub(valueToSubstract);
     }
