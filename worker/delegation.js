@@ -32,14 +32,20 @@ async function worker() {
     const valueToAdd = new BN(delegate.valueToAdd);
     const valueToSubstract = new BN(delegate.valueToSubstract);
     let total = new BN(delegate.total);
+    let status = 'FINISHED';
 
     if (valueToAdd.gtn(0)) {
       console.log('Delegating to', delegate._id, 'value', valueToAdd.toString());
 
-      await delegateTransaction(delegate.counterpart, valueToAdd.mul(new BN(2)));
-      console.log('- own node', delegate.counterpart);
-      await delegateTransaction(delegate._id, valueToAdd);
-      console.log('- user node', delegate._id);
+      try {
+        await delegateTransaction(delegate.counterpart, valueToAdd.mul(new BN(2)));
+        console.log('- own node', delegate.counterpart);
+        await delegateTransaction(delegate._id, valueToAdd);
+        console.log('- user node', delegate._id);
+      } catch (e) {
+        console.error(e);
+        status = 'ERROR';
+      }
 
       total = total.add(valueToAdd);
     }
@@ -47,10 +53,15 @@ async function worker() {
     if (valueToSubstract.gtn(0)) {
       console.log('Undelegating from', delegate._id, 'value', valueToSubstract.toString());
 
-      await undelegateTransaction(delegate.counterpart, valueToSubstract.mul(new BN(2)));
-      console.log('- own node', delegate.counterpart);
-      await undelegateTransaction(delegate._id, valueToSubstract);
-      console.log('- user node', delegate._id);
+      try {
+        await undelegateTransaction(delegate.counterpart, valueToSubstract.mul(new BN(2)));
+        console.log('- own node', delegate.counterpart);
+        await undelegateTransaction(delegate._id, valueToSubstract);
+        console.log('- user node', delegate._id);
+      } catch (e) {
+        console.error(e);
+        status = 'ERROR';
+      }
 
       total = total.sub(valueToSubstract);
     }
@@ -61,7 +72,7 @@ async function worker() {
         valueToAdd: '0',
         valueToSubstract: '0',
         total: total.toString(),
-        status: 'FINISHED',
+        status: status,
       },
     );
 
@@ -136,22 +147,27 @@ function waitForTransaction(web3, txnHash, options = null) {
               var current = await web3.eth.getBlock('latest');
               if (current.number - block.number >= blocksToWait) {
                 var txn = await web3.eth.getTransaction(txnHash);
-                if (txn.blockNumber != null) resolve(resolvedReceipt);
-                else
+                if (txn.blockNumber != null) {
+                  resolve(resolvedReceipt);
+                } else {
                   reject(
-                    new Error('Transaction with hash: ' + txnHash + ' ended up in an uncle block.'),
+                    new Error(`Transaction with hash: ${txnHash} ended up in an uncle block.`),
                   );
-              } else
+                }
+              } else {
                 setTimeout(function () {
                   transactionReceiptAsync(txnHash, resolve, reject);
                 }, interval);
+              }
             } catch (e) {
               setTimeout(function () {
                 transactionReceiptAsync(txnHash, resolve, reject);
               }, interval);
             }
           }
-        } else resolve(receipt);
+        } else {
+          resolve(receipt);
+        }
       }
     } catch (e) {
       reject(e);

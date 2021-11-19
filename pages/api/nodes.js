@@ -45,10 +45,10 @@ export default async function handler(req, res) {
     const nodes = await Block.aggregate([
       match,
       {
-        $group: { _id: '$author', count: { $sum: 1 } },
+        $group: { _id: '$author', lastBlockNumber: { $last: '$number' }, count: { $sum: 1 } },
       },
     ])
-      .sort({ count: -1 })
+      .sort({ count: -1, lastBlockNumber: 1 })
       .skip(skip)
       .limit(limit);
     res.json({

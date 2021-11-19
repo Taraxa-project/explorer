@@ -25,6 +25,7 @@
     "screen": "readonly"
   },
   "rules": {
+    "no-constant-condition": "off",
     "no-empty": "off",
     "react/prop-types": "off",
     "array-bracket-spacing": [2, "never"],
