@@ -1,4 +1,4 @@
-version: "3"
+version: '3'
 
 services:
   explorer-sync:
@@ -11,13 +11,7 @@ services:
       RPC_HTTP_PROVIDER: ${RPC_HTTP_PROVIDER}
       RPC_WS_PROVIDER: ${RPC_WS_PROVIDER}
       MONGO_URI: ${MONGO_URI}
-    command:
-      [
-        "node",
-        "./worker/blockchain-sync",
-        "-c",
-        "/var/taraxa/conf/private.json",
-      ]
+    command: ['node', './worker/blockchain-sync', '-c', '/var/taraxa/conf/private.json']
     volumes:
       - ./node-config:/var/taraxa/conf
   explorer:
@@ -30,8 +24,8 @@ services:
       MONGO_URI: ${MONGO_URI}
       NEXT_PUBLIC_EXPLORER_WS: ${NEXT_PUBLIC_EXPLORER_WS}
     ports:
-      - "3000:3000"
-    command: ["npm", "start"]
+      - '3000:3000'
+    command: ['npm', 'start']
   explorer-ws:
     container_name: explorer-ws
     build:
@@ -41,10 +35,10 @@ services:
     environment:
       MONGO_URI: ${MONGO_URI}
     ports:
-      - "3001:3001"
+      - '3001:3001'
     depends_on:
       - mongodb
-    command: ["node", "./ws-server"]
+    command: ['node', './ws-server']
   faucet:
     container_name: faucet
     build:
@@ -55,4 +49,4 @@ services:
       RPC_HTTP_PROVIDER: ${RPC_HTTP_PROVIDER}
       RPC_WS_PROVIDER: ${RPC_WS_PROVIDER}
       MONGO_URI: ${MONGO_URI}
-    command: ["node", "./worker/faucet"]
+    command: ['node', './worker/faucet']

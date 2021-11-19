@@ -1,8 +1,8 @@
-import Link from "next/link";
-import { useState } from "react";
-import moment from "moment";
-import { Card, Table, Container, Row, Col, Pagination } from "react-bootstrap";
-import useSwr from "swr";
+import React, { useState } from 'react';
+import Link from 'next/link';
+import moment from 'moment';
+import { Card, Table, Container, Row, Col, Pagination } from 'react-bootstrap';
+import useSwr from 'swr';
 
 const fetcher = (url) => fetch(url).then((res) => res.json());
 
@@ -33,8 +33,8 @@ export default function Nodes() {
 
   const isThisWeek = moment().isoWeek() === week;
   const now = moment().isoWeekYear(year).isoWeek(week);
-  const startOfWeek = now.startOf("week").format("MMMM Do");
-  const endOfWeek = now.endOf("week").format("MMMM Do");
+  const startOfWeek = now.startOf('week').format('MMMM Do');
+  const endOfWeek = now.endOf('week').format('MMMM Do');
 
   return (
     <>
@@ -77,11 +77,7 @@ export default function Nodes() {
           </Col>
         </Row>
       </Container>
-      <Card
-        style={{ margin: 5, marginTop: 0, marginBottom: 10 }}
-        bg="dark"
-        text="white"
-      >
+      <Card style={{ margin: 5, marginTop: 0, marginBottom: 10 }} bg="dark" text="white">
         {total > 0 && (
           <Table responsive variant="dark">
             <thead>
@@ -108,7 +104,7 @@ export default function Nodes() {
           </Table>
         )}
         {total === 0 && (
-          <p style={{ margin: 0, padding: "20px" }}>
+          <p style={{ margin: 0, padding: '20px' }}>
             <strong>No data found for selected week.</strong>
           </p>
         )}
@@ -119,17 +115,11 @@ export default function Nodes() {
           {page >= 2 && (
             <>
               <Pagination.First onClick={() => updateQuerySkip(0)} />
-              <Pagination.Prev
-                onClick={() => updateQuerySkip((page - 2) * limit)}
-              />
+              <Pagination.Prev onClick={() => updateQuerySkip((page - 2) * limit)} />
             </>
           )}
 
-          {page !== 1 && (
-            <Pagination.Item onClick={() => updateQuerySkip(0)}>
-              {1}
-            </Pagination.Item>
-          )}
+          {page !== 1 && <Pagination.Item onClick={() => updateQuerySkip(0)}>{1}</Pagination.Item>}
 
           {page > 4 && (
             <>
@@ -138,16 +128,12 @@ export default function Nodes() {
           )}
 
           {page - 2 > 1 && (
-            <Pagination.Item
-              onClick={() => updateQuerySkip((page - 3) * limit)}
-            >
+            <Pagination.Item onClick={() => updateQuerySkip((page - 3) * limit)}>
               {page - 2}
             </Pagination.Item>
           )}
           {page - 1 > 1 && (
-            <Pagination.Item
-              onClick={() => updateQuerySkip((page - 2) * limit)}
-            >
+            <Pagination.Item onClick={() => updateQuerySkip((page - 2) * limit)}>
               {page - 1}
             </Pagination.Item>
           )}
@@ -158,9 +144,7 @@ export default function Nodes() {
             </Pagination.Item>
           )}
           {page + 2 < pages && (
-            <Pagination.Item
-              onClick={() => updateQuerySkip((page + 1) * limit)}
-            >
+            <Pagination.Item onClick={() => updateQuerySkip((page + 1) * limit)}>
               {page + 2}
             </Pagination.Item>
           )}
@@ -172,9 +156,7 @@ export default function Nodes() {
           )}
 
           {page !== pages && (
-            <Pagination.Item
-              onClick={() => updateQuerySkip((pages - 1) * limit)}
-            >
+            <Pagination.Item onClick={() => updateQuerySkip((pages - 1) * limit)}>
               {pages}
             </Pagination.Item>
           )}
@@ -182,9 +164,7 @@ export default function Nodes() {
           {page < pages && (
             <>
               <Pagination.Next onClick={() => updateQuerySkip(page * limit)} />
-              <Pagination.Last
-                onClick={() => updateQuerySkip((pages - 1) * limit)}
-              />
+              <Pagination.Last onClick={() => updateQuerySkip((pages - 1) * limit)} />
             </>
           )}
         </Pagination>

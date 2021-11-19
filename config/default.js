@@ -6,15 +6,14 @@ module.exports = {
     dripInterval: Number(process.env.DRIP_INTERVAL_MS) || 500,
     privateKey:
       process.env.FAUCET_PRIV_KEY ||
-      "0x853d833ba84c5fc50980956cdb94926a1519876fda2c2ffb1b5e9899f8bf0d5f",
+      '0x853d833ba84c5fc50980956cdb94926a1519876fda2c2ffb1b5e9899f8bf0d5f',
   },
   delegate: {
     trustedAddress:
-      process.env.DELEGATE_TRUSTED_ADDRESS ||
-      "0xfee090788d8eb89c63cdcf76c1d385446d766556",
+      process.env.DELEGATE_TRUSTED_ADDRESS || '0xfee090788d8eb89c63cdcf76c1d385446d766556',
   },
   mongo: {
-    uri: process.env.MONGO_URI || "mongodb://localhost:27017/explorer",
+    uri: process.env.MONGO_URI || 'mongodb://localhost:27017/explorer',
     options: {
       useCreateIndex: true,
       useNewUrlParser: true,
@@ -26,8 +25,8 @@ module.exports = {
   },
   taraxa: {
     node: {
-      http: process.env.RPC_HTTP_PROVIDER || "http://localhost:7777",
-      ws: process.env.RPC_WS_PROVIDER || "ws://localhost:8777",
+      http: process.env.RPC_HTTP_PROVIDER || 'http://localhost:7777',
+      ws: process.env.RPC_WS_PROVIDER || 'ws://localhost:8777',
     },
   },
 };

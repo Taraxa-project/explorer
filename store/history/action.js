@@ -1,10 +1,10 @@
 export const historyActionTypes = {
-    ADDHISTORY: 'ADDHISTORY'
-}
+  ADDHISTORY: 'ADDHISTORY',
+};
 
 export const addNewHistory = (message) => (dispatch) => {
-    return dispatch({
-        type: historyActionTypes.ADDHISTORY,
-        data: message
-    })
-}
+  return dispatch({
+    type: historyActionTypes.ADDHISTORY,
+    data: message,
+  });
+};

@@ -1,8 +1,8 @@
-import { historyActionTypes } from './action'
+import { historyActionTypes } from './action';
 
 const historyInitialState = {
   recent: [],
-}
+};
 
 export default function reducer(state = historyInitialState, action) {
   let recent = [].concat(state.recent);
@@ -15,8 +15,8 @@ export default function reducer(state = historyInitialState, action) {
 
       return Object.assign({}, state, {
         recent,
-      })
+      });
     default:
-      return state
+      return state;
   }
 }

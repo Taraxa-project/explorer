@@ -10,6 +10,7 @@ This project uses [Next.js](https://nextjs.org/) to provide the following featur
 ## Starting a Private Taraxa Testnet
 
 This project uses docker images of the following:
+
 - [Taraxa-Node](https://github.com/Taraxa-project/taraxa-node)
 - [MongoDB](https://www.mongodb.com)
 
@@ -19,15 +20,13 @@ Run Everything:
 docker-compose up --build
 ```
 
-Note: The taraxa-config container must start up and write the config first before the other containers will start correctly. You may see some errors at first as services restart, until that config file is written. 
+Note: The taraxa-config container must start up and write the config first before the other containers will start correctly. You may see some errors at first as services restart, until that config file is written.
 
 1. This will generate a unique taraxa config and start a taraxa node
 2. MongoDB will be running on port 27017
 3. Taraxa Explorer will be running at [http://localhost:3000](http://localhost:3000)
 4. Taraxa Explorer Blockchain Sync daemon will start syncing the chain data to MongoDB
 5. Taraxa Explorer Websocket Service will start, providing real time data to the UI
-
-
 
 ## Generating blockchain transactions, blocks, etc
 

@@ -1,8 +1,8 @@
-import { blockActionTypes } from './action'
+import { blockActionTypes } from './action';
 
 const blocksInitialState = {
   recent: [],
-}
+};
 
 export default function reducer(state = blocksInitialState, action) {
   let recent = [].concat(state.recent);
@@ -15,8 +15,8 @@ export default function reducer(state = blocksInitialState, action) {
 
       return Object.assign({}, state, {
         recent,
-      })
+      });
     default:
-      return state
+      return state;
   }
 }

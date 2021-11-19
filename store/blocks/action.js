@@ -1,10 +1,10 @@
 export const blockActionTypes = {
-    NEWBLOCK: 'NEWBLOCK',
-}
-  
+  NEWBLOCK: 'NEWBLOCK',
+};
+
 export const addNewBlock = (block) => (dispatch) => {
-    return dispatch({
-        type: blockActionTypes.NEWBLOCK,
-        data: block
-    })
-}
+  return dispatch({
+    type: blockActionTypes.NEWBLOCK,
+    data: block,
+  });
+};

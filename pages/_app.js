@@ -1,23 +1,21 @@
-import { wrapper } from "../store/store";
-import { useState } from "react";
-import { useRouter } from "next/router";
+import React, { useState } from 'react';
+import { wrapper } from '../store/store';
+import { useRouter } from 'next/router';
+import Head from 'next/head';
+import Link from 'next/link';
+import utils from 'web3-utils';
 
-import Head from "next/head";
-import Link from "next/link";
+import 'bootstrap/dist/css/bootstrap.min.css';
+import '../styles/globals.css';
 
-import utils from "web3-utils";
+import { IoIosSearch } from 'react-icons/io';
 
-import "bootstrap/dist/css/bootstrap.min.css";
-import "../styles/globals.css";
+import { Navbar, Nav, Button, InputGroup, FormControl } from 'react-bootstrap';
 
-import { IoIosSearch } from "react-icons/io";
-
-import { Navbar, Nav, Button, InputGroup, FormControl } from "react-bootstrap";
-
-import WebsocketContainer from "../containers/ws";
+import WebsocketContainer from '../containers/ws';
 
 function ReduxApp({ Component, pageProps }) {
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState('');
   const router = useRouter();
 
   function updateSearch(e) {
@@ -43,7 +41,7 @@ function ReduxApp({ Component, pageProps }) {
 
       <WebsocketContainer wsUrl={process.env.NEXT_PUBLIC_EXPLORER_WS} />
       <Navbar collapseOnSelect expand="lg" bg="dark" variant="dark">
-        <Link href="/" as={`/`}>
+        <Link href="/" as={'/'}>
           <Navbar.Brand href="/">
             <img
               alt=""
@@ -51,8 +49,8 @@ function ReduxApp({ Component, pageProps }) {
               width="180"
               height="36"
               className="d-inline-block align-top"
-              style={{ marginBottom: "11px" }}
-            />{" "}
+              style={{ marginBottom: '11px' }}
+            />{' '}
           </Navbar.Brand>
         </Link>
 
@@ -63,8 +61,8 @@ function ReduxApp({ Component, pageProps }) {
             style={{
               padding: 10,
               maxWidth: 800,
-              marginLeft: "auto",
-              marginRight: "auto",
+              marginLeft: 'auto',
+              marginRight: 'auto',
             }}
           >
             <FormControl
@@ -81,23 +79,23 @@ function ReduxApp({ Component, pageProps }) {
           </InputGroup>
 
           <Nav style={{ padding: 10 }}>
-            <Link href="/dag_blocks" as={`/dag_blocks`}>
+            <Link href="/dag_blocks" as={'/dag_blocks'}>
               <Nav.Link href="/dag_blocks">DAG</Nav.Link>
             </Link>
 
-            <Link href="/blocks" as={`/blocks`}>
+            <Link href="/blocks" as={'/blocks'}>
               <Nav.Link href="/blocks">Blocks</Nav.Link>
             </Link>
 
-            <Link href="/txs" as={`/txs`}>
+            <Link href="/txs" as={'/txs'}>
               <Nav.Link href="/txs">Transactions</Nav.Link>
             </Link>
 
-            <Link href="/nodes" as={`/nodes`}>
+            <Link href="/nodes" as={'/nodes'}>
               <Nav.Link href="/nodes">Nodes</Nav.Link>
             </Link>
 
-            <Link href="/faucet" as={`/faucet`}>
+            <Link href="/faucet" as={'/faucet'}>
               <Nav.Link href="/faucet">Faucet</Nav.Link>
             </Link>
           </Nav>
@@ -110,19 +108,19 @@ function ReduxApp({ Component, pageProps }) {
 
       <div className="site-layout-footer">
         <p>
-          <Link href="/dag_blocks" as={`/dag_blocks`}>
+          <Link href="/dag_blocks" as={'/dag_blocks'}>
             <a href="/dag_blocks">DAG</a>
           </Link>
-          {" / "}
-          <Link href="/blocks" as={`/blocks`}>
+          {' / '}
+          <Link href="/blocks" as={'/blocks'}>
             <a href="/blocks">Blocks</a>
           </Link>
-          {" / "}
-          <Link href="/txs" as={`/txs`}>
+          {' / '}
+          <Link href="/txs" as={'/txs'}>
             <a href="/txs">Transactions</a>
           </Link>
-          {" / "}
-          <Link href="/faucet" as={`/faucet`}>
+          {' / '}
+          <Link href="/faucet" as={'/faucet'}>
             <a href="/faucet">Faucet</a>
           </Link>
         </p>

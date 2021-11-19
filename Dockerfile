@@ -10,6 +10,8 @@ COPY package* ./
 ENV NODE_ENV production
 ENV NEXT_TELEMETRY_DISABLED 1
 
+# skip trying to install husky hooks
+RUN npm set-script postinstall ""
 RUN npm ci
 COPY . .
 

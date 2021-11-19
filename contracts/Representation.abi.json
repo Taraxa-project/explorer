@@ -1,1 +1,217 @@
-[{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"representative","type":"address"},{"indexed":false,"internalType":"address","name":"represented","type":"address"}],"name":"CreateDefaultRepresentation","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"representative","type":"address"},{"indexed":false,"internalType":"address","name":"represented","type":"address"}],"name":"CreateRepresentation","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"representative","type":"address"},{"indexed":false,"internalType":"address","name":"represented","type":"address"}],"name":"RemoveRepresentation","type":"event"},{"inputs":[{"internalType":"address","name":"representative","type":"address"},{"internalType":"address","name":"represented","type":"address"}],"name":"addDefaultRepresentative","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"representative","type":"address"},{"internalType":"address","name":"represented","type":"address"},{"internalType":"bytes32","name":"r","type":"bytes32"},{"internalType":"bytes32","name":"s","type":"bytes32"},{"internalType":"uint8","name":"v","type":"uint8"}],"name":"addDefaultRepresentativeWithSignature","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"representative","type":"address"},{"internalType":"address","name":"represented","type":"address"}],"name":"addRepresentative","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"representative","type":"address"},{"internalType":"address","name":"represented","type":"address"},{"internalType":"bytes32","name":"r","type":"bytes32"},{"internalType":"bytes32","name":"s","type":"bytes32"},{"internalType":"uint8","name":"v","type":"uint8"}],"name":"addRepresentativeWithSignature","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"representative","type":"address"},{"internalType":"address","name":"represented","type":"address"}],"name":"canRepresent","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"address","name":"ephemeral","type":"address"}],"name":"claimEphemeral","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"address","name":"ephemeral","type":"address"},{"internalType":"bytes32","name":"r","type":"bytes32"},{"internalType":"bytes32","name":"s","type":"bytes32"},{"internalType":"uint8","name":"v","type":"uint8"}],"name":"claimEphemeralWithSignature","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"ephemeralOwnership","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"represented","type":"address"}],"name":"getNonce","outputs":[{"internalType":"uint32","name":"","type":"uint32"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"representative","type":"address"},{"internalType":"address","name":"represented","type":"address"}],"name":"removeRepresentative","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"representative","type":"address"},{"internalType":"address","name":"represented","type":"address"},{"internalType":"bytes32","name":"r","type":"bytes32"},{"internalType":"bytes32","name":"s","type":"bytes32"},{"internalType":"uint8","name":"v","type":"uint8"}],"name":"removeRepresentativeWithSignature","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"representationAllowed","outputs":[{"internalType":"address","name":"default_representative","type":"address"},{"internalType":"uint32","name":"nonce","type":"uint32"}],"stateMutability":"view","type":"function"}]
+[
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "representative",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "represented",
+        "type": "address"
+      }
+    ],
+    "name": "CreateDefaultRepresentation",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "representative",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "represented",
+        "type": "address"
+      }
+    ],
+    "name": "CreateRepresentation",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "representative",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "represented",
+        "type": "address"
+      }
+    ],
+    "name": "RemoveRepresentation",
+    "type": "event"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "representative",
+        "type": "address"
+      },
+      { "internalType": "address", "name": "represented", "type": "address" }
+    ],
+    "name": "addDefaultRepresentative",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "representative",
+        "type": "address"
+      },
+      { "internalType": "address", "name": "represented", "type": "address" },
+      { "internalType": "bytes32", "name": "r", "type": "bytes32" },
+      { "internalType": "bytes32", "name": "s", "type": "bytes32" },
+      { "internalType": "uint8", "name": "v", "type": "uint8" }
+    ],
+    "name": "addDefaultRepresentativeWithSignature",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "representative",
+        "type": "address"
+      },
+      { "internalType": "address", "name": "represented", "type": "address" }
+    ],
+    "name": "addRepresentative",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "representative",
+        "type": "address"
+      },
+      { "internalType": "address", "name": "represented", "type": "address" },
+      { "internalType": "bytes32", "name": "r", "type": "bytes32" },
+      { "internalType": "bytes32", "name": "s", "type": "bytes32" },
+      { "internalType": "uint8", "name": "v", "type": "uint8" }
+    ],
+    "name": "addRepresentativeWithSignature",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "representative",
+        "type": "address"
+      },
+      { "internalType": "address", "name": "represented", "type": "address" }
+    ],
+    "name": "canRepresent",
+    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "owner", "type": "address" },
+      { "internalType": "address", "name": "ephemeral", "type": "address" }
+    ],
+    "name": "claimEphemeral",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "owner", "type": "address" },
+      { "internalType": "address", "name": "ephemeral", "type": "address" },
+      { "internalType": "bytes32", "name": "r", "type": "bytes32" },
+      { "internalType": "bytes32", "name": "s", "type": "bytes32" },
+      { "internalType": "uint8", "name": "v", "type": "uint8" }
+    ],
+    "name": "claimEphemeralWithSignature",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "name": "ephemeralOwnership",
+    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "address", "name": "represented", "type": "address" }],
+    "name": "getNonce",
+    "outputs": [{ "internalType": "uint32", "name": "", "type": "uint32" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "representative",
+        "type": "address"
+      },
+      { "internalType": "address", "name": "represented", "type": "address" }
+    ],
+    "name": "removeRepresentative",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "representative",
+        "type": "address"
+      },
+      { "internalType": "address", "name": "represented", "type": "address" },
+      { "internalType": "bytes32", "name": "r", "type": "bytes32" },
+      { "internalType": "bytes32", "name": "s", "type": "bytes32" },
+      { "internalType": "uint8", "name": "v", "type": "uint8" }
+    ],
+    "name": "removeRepresentativeWithSignature",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "name": "representationAllowed",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "default_representative",
+        "type": "address"
+      },
+      { "internalType": "uint32", "name": "nonce", "type": "uint32" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]

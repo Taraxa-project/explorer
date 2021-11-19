@@ -1,10 +1,10 @@
 export const txActionTypes = {
-    RECENTTXS: 'RECENTTXS',
-}
+  RECENTTXS: 'RECENTTXS',
+};
 
 export const setRecentTxs = (txs) => (dispatch) => {
-    return dispatch({
-        type: txActionTypes.RECENTTXS,
-        data: txs
-    })
-}
+  return dispatch({
+    type: txActionTypes.RECENTTXS,
+    data: txs,
+  });
+};
