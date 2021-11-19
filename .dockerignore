@@ -1,2 +1,8 @@
 .next/
 node_modules
+.env
+.env.example
+.circleci
+.vscode
+.tool-versions
+Dockerfile

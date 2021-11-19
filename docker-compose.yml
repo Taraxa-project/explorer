@@ -1,55 +1,16 @@
 version: "3"
-volumes:
-  taraxa_data:
-  mongodb_data:
-services:
-  taraxa-node:
-    container_name: taraxa-node
-    image: gcr.io/jovial-meridian-249123/taraxa-node-develop:develop-build-15
-    restart: always
-    ports:
-      - "10002:10002"
-      - "10002:10002/udp"
-      - "7777:7777"
-      - "8777:8777"
-      - "9777:9777"
-    expose:
-      - "10002"
-      - "7777"
-      - "8777"
-      - "9777"
-    entrypoint: /usr/bin/sh
-    environment:
-      - TARAXA_CONF_PATH=/var/taraxa/conf/private.json
-    command: >
-      -c "taraxad --conf_taraxa=/var/taraxa/conf/private.json"
-    volumes:
-      - ./node-config:/var/taraxa/conf
-      - taraxa_data:/var/taraxa
-  mongodb:
-    container_name: mongodb
-    image: mongo:latest
-    restart: always
-    ports:
-      - "27017:27017"
-    expose:
-      - "27017"
-    command: ["mongod", "--quiet"]
-    volumes:
-      - mongodb_data:/data/db
 
+services:
   explorer-sync:
     container_name: explorer-sync
     build:
       context: .
     restart: always
+    env_file: .env
     environment:
-      - RPC_HTTP_PROVIDER=http://taraxa-node:7777
-      - RPC_WS_PROVIDER=ws://taraxa-node:8777
-      - MONGO_URI=mongodb://mongodb:27017/explorer-dev
-    depends_on:
-      - taraxa-node
-      - mongodb
+      RPC_HTTP_PROVIDER: ${RPC_HTTP_PROVIDER}
+      RPC_WS_PROVIDER: ${RPC_WS_PROVIDER}
+      MONGO_URI: ${MONGO_URI}
     command:
       [
         "node",
@@ -64,11 +25,10 @@ services:
     build:
       context: .
     restart: always
+    env_file: .env
     environment:
-      - MONGO_URI=mongodb://mongodb:27017/explorer-dev
-      - NEXT_PUBLIC_EXPLORER_WS=ws://localhost:3001
-    depends_on:
-      - mongodb
+      MONGO_URI: ${MONGO_URI}
+      NEXT_PUBLIC_EXPLORER_WS: ${NEXT_PUBLIC_EXPLORER_WS}
     ports:
       - "3000:3000"
     command: ["npm", "start"]
@@ -77,8 +37,9 @@ services:
     build:
       context: .
     restart: always
+    env_file: .env
     environment:
-      - MONGO_URI=mongodb://mongodb:27017/explorer-dev
+      MONGO_URI: ${MONGO_URI}
     ports:
       - "3001:3001"
     depends_on:
@@ -89,11 +50,9 @@ services:
     build:
       context: .
     restart: always
+    env_file: .env
     environment:
-      - MONGO_URI=mongodb://mongodb:27017/explorer-dev
-      - RPC_HTTP_PROVIDER=http://taraxa-node:7777
-      - RPC_WS_PROVIDER=ws://taraxa-node:8777
-    depends_on:
-      - taraxa-node
-      - mongodb
+      RPC_HTTP_PROVIDER: ${RPC_HTTP_PROVIDER}
+      RPC_WS_PROVIDER: ${RPC_WS_PROVIDER}
+      MONGO_URI: ${MONGO_URI}
     command: ["node", "./worker/faucet"]
