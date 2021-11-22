@@ -344,7 +344,7 @@ export const getServerSideProps = wrapper.getServerSideProps(async ({ store }) =
 
     let [blocks, dagBlocks] = await Promise.all([
       Block.find().limit(10).sort({ timestamp: -1 }).lean(),
-      DAGBlock.find().limit(10).sort({ timestamp: -1 }).lean(),
+      DAGBlock.find().limit(1000).sort({ timestamp: -1 }).lean(),
     ]);
 
     blocks = JSON.parse(JSON.stringify(blocks));
