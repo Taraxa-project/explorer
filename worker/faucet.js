@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 const config = require('config');
-const mongoose = require('mongoose');
 const Web3 = require('web3-eth');
 const { useDb } = require('../lib/db');
 
@@ -74,7 +73,6 @@ async function drip() {
 
 (async () => {
   try {
-    await mongoose.connect(config.mongo.uri, config.mongo.options);
     console.log('Faucet started');
     while (true) {
       await drip();
