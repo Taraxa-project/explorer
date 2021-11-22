@@ -1,8 +1,7 @@
 version: 2.1
 
-
-jobs: 
-   build-and-push-docker-image:
+jobs:
+  build-and-push-docker-image:
     environment:
       - IMAGE: taraxa/explorer
     machine:
@@ -12,41 +11,40 @@ jobs:
     steps:
       - checkout
       - run:
-         name: Prepare Environment
-         command: |
-           echo "export START_TIME=$(date +%Y%m%d-%Hh%Mm%Ss)" >> $BASH_ENV
-           echo "export VERSION=$(grep -m1 version package.json | awk -F: '{ print $2 }' | sed 's/[", ]//g')" >> $BASH_ENV
+          name: Prepare Environment
+          command: |
+            echo "export START_TIME=$(date +%Y%m%d-%Hh%Mm%Ss)" >> $BASH_ENV
+            echo "export VERSION=$(grep -m1 version package.json | awk -F: '{ print $2 }' | sed 's/[", ]//g')" >> $BASH_ENV
 
       - run:
-         name: Login into docker hub
-         command: |
+          name: Login into docker hub
+          command: |
             echo ${DOCKERHUB_PASS} | docker login -u taraxa --password-stdin
-      
+
       - run:
-         name: Build Docker image
-         command: |
-          docker build -t ${IMAGE} -f Dockerfile .
-          
-            
+          name: Build Docker image
+          command: |
+            docker build -t ${IMAGE} -f Dockerfile .
+
       - run:
-         name: Tag images and push images
-         command: |
-           docker tag ${IMAGE}:latest ${IMAGE}:${VERSION}-${CIRCLE_BUILD_NUM}
-           docker push ${IMAGE}:${VERSION}-${CIRCLE_BUILD_NUM}
-           docker push ${IMAGE}:latest
+          name: Tag images and push images
+          command: |
+            docker tag ${IMAGE}:latest ${IMAGE}:${VERSION}-${CIRCLE_BUILD_NUM}
+            docker push ${IMAGE}:${VERSION}-${CIRCLE_BUILD_NUM}
+            docker push ${IMAGE}:latest
 
 workflows:
   version: 2
- 
+
   build-and-deploy-image:
     jobs:
-     - build-and-push-docker-image:
-        filters:
-           branches:
-             only:
-              - master
+      - build-and-push-docker-image:
+          filters:
+            branches:
+              only:
+                - master
 
-        context:
-         - TARAXA
-         - DOCKERHUB
-         - K8S
+          context:
+            - TARAXA
+            - DOCKERHUB
+            - K8S

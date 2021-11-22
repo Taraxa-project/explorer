@@ -1,4 +1,5 @@
-html, body {
+html,
+body {
   margin: 0px;
   padding: 0px;
   background-color: #0f1517;
@@ -15,11 +16,12 @@ html, body {
   color: #fff;
   height: 32px;
   text-align: center;
-  font-size: .8rem;
+  font-size: 0.8rem;
 }
 
-.site-layout-footer a, .site-layout-footer a:hover {
-  font-size: .8rem;
+.site-layout-footer a,
+.site-layout-footer a:hover {
+  font-size: 0.8rem;
 }
 
 .card {
@@ -35,8 +37,7 @@ a:hover,
 }
 
 .navbar-dark .navbar-nav .nav-link,
-.navbar-dark .navbar-nav .nav-link:hover
- {
+.navbar-dark .navbar-nav .nav-link:hover {
   color: #fff;
   font-size: 1.1rem;
 }
@@ -45,8 +46,8 @@ h1 {
   font-size: 1.5rem;
   width: 100%;
   text-overflow: ellipsis;
-  overflow:hidden ;
-  white-space:nowrap;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 ul {
@@ -61,7 +62,7 @@ ul {
 }
 
 .box {
-	display: flex;
+  display: flex;
   flex-wrap: wrap;
 }
 
@@ -109,7 +110,8 @@ ul {
   background-color: #0f1517;
 }
 
-.pagination > .page-item > .page-link:focus, .pagination > .page-item > .page-link:active {
+.pagination > .page-item > .page-link:focus,
+.pagination > .page-item > .page-link:active {
   outline: none !important;
   box-shadow: none !important;
 }
@@ -125,16 +127,16 @@ ul {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
-  justify-content:space-around;
+  justify-content: space-around;
   /* padding: 1rem; */
 }
 
-#dag-graph{
+#dag-graph {
   position: absolute;
   background-color: #0f1517;
   width: 100%;
   height: 100%;
-  text-align:left;
+  text-align: left;
 }
 
 .dag-controller {
@@ -165,7 +167,7 @@ ul {
   color: rgba(255, 255, 255, 1);
 }
 
-.dag-controller	.up {
+.dag-controller .up {
   position: relative;
   display: block;
   margin: 0 auto;
@@ -180,27 +182,25 @@ ul {
 .dag-controller .mid {
   position: relative;
   display: flex;
-  flex-direction:row;
+  flex-direction: row;
 }
 
 .dag-controller .mid .left {
   display: flex;
-  flex-direction:row;
+  flex-direction: row;
 }
 
 .dag-controller .mid .middle {
   display: flex;
-  flex-direction:row;
-  margin-left:5%;
-  margin-right:5%;
+  flex-direction: row;
+  margin-left: 5%;
+  margin-right: 5%;
 }
 
 .dag-controller .mid .right {
   display: flex;
-  flex-direction:row;
-
+  flex-direction: row;
 }
-
 
 .dag-graph-legend {
   position: absolute;
@@ -223,106 +223,101 @@ width: 100%;
 } */
 
 .dag-graph-legend-item {
-
-align-items: center;
-margin-right: 20px;
+  align-items: center;
+  margin-right: 20px;
 }
 
 .dag-graph-legend-item-icon {
-margin-right: 5px;
+  margin-right: 5px;
 }
 
 .dag-unfinalized {
-width: 20px;
-height: 20px;
-background-color: #000;
-border: 2px solid #80ffb9;
-border-radius: 0px;
+  width: 20px;
+  height: 20px;
+  background-color: #000;
+  border: 2px solid #80ffb9;
+  border-radius: 0px;
 }
 
 .dag-1 {
-width: 20px;
-height: 20px;
-background-color: rgb(21, 172, 91);
-border-radius: 0px;
+  width: 20px;
+  height: 20px;
+  background-color: rgb(21, 172, 91);
+  border-radius: 0px;
 }
 
 .dag-2 {
-width: 20px;
-height: 20px;
-background-color: #80ffb9;
-border-radius: 0px;
+  width: 20px;
+  height: 20px;
+  background-color: #80ffb9;
+  border-radius: 0px;
 }
 
 .dag-period {
-width: 20px;
-height: 20px;
-background-color: #fff;
-border-radius: 0px;
+  width: 20px;
+  height: 20px;
+  background-color: #fff;
+  border-radius: 0px;
 }
 
 .pivot {
-width: 30px;
-height: 2px;
-background-color: #777;
+  width: 30px;
+  height: 2px;
+  background-color: #777;
 }
 .tip {
-width: 30px;
-height: 1px;
-border-bottom: 2px dashed #777;
+  width: 30px;
+  height: 1px;
+  border-bottom: 2px dashed #777;
 }
 
 .order-block {
-width: 20px;
-height: 20px;
-background-color: #064f28;
-border-radius: 0px;
+  width: 20px;
+  height: 20px;
+  background-color: #064f28;
+  border-radius: 0px;
 }
-    
 
 .dag-graph-legend-item-text {
-color: #fff;
-line-height: 30px;
+  color: #fff;
+  line-height: 30px;
 }
 
-
 #view-dag-history {
-position: absolute;
-left: 50%;
-margin-left: -330px;
-top: -80px;
-font-size: 18px;
+  position: absolute;
+  left: 50%;
+  margin-left: -330px;
+  top: -80px;
+  font-size: 18px;
 }
 
 .dag-levels-label {
-position: absolute;
-left: 50%;
-margin-left: -46px;
-top: 0px;
-font-size: 18px;
-color: #777;
-z-index: 4;
+  position: absolute;
+  left: 50%;
+  margin-left: -46px;
+  top: 0px;
+  font-size: 18px;
+  color: #777;
+  z-index: 4;
 }
 .dag-periods-label {
-position: absolute;
-left: 50%;
-margin-left: -50px;
-top: 440px;
-font-size: 18px;
-color: #15ac5b;
+  position: absolute;
+  left: 50%;
+  margin-left: -50px;
+  top: 440px;
+  font-size: 18px;
+  color: #15ac5b;
 }
 
-
 .block-preview {
-
-position: absolute;
+  position: absolute;
   display: block;
   background-color: rgba(51, 51, 51, 0.75);
   width: auto;
   height: auto;
-padding: 20px;
-font-size: 14px;
-color: #fff;
+  padding: 20px;
+  font-size: 14px;
+  color: #fff;
   z-index: 2;
   border-radius: 0px;
   box-shadow: 0 0 10px #000;

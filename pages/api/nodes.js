@@ -1,9 +1,9 @@
-import config from "config";
-import mongoose from "mongoose";
-import moment from "moment";
+import config from 'config';
+import mongoose from 'mongoose';
+import moment from 'moment';
 
 import { runCorsMiddleware } from '../../lib/cors';
-import Block from "../../models/block";
+import Block from '../../models/block';
 
 export default async function handler(req, res) {
   await runCorsMiddleware(req, res);
@@ -12,9 +12,7 @@ export default async function handler(req, res) {
       (await mongoose.connect(config.mongo.uri, config.mongo.options));
   } catch (e) {
     console.error(e);
-    return res
-      .status(500)
-      .json({ error: "Internal error. Please try your request again." });
+    return res.status(500).json({ error: 'Internal error. Please try your request again.' });
   }
 
   let skip = Number(req.query.skip) || 0;
@@ -23,8 +21,8 @@ export default async function handler(req, res) {
   let year = Number(req.query.year) || moment().isoWeekYear();
 
   const now = moment().isoWeekYear(year).isoWeek(week);
-  const firstDay = now.startOf("week").toDate();
-  const lastDay = now.endOf("week").toDate();
+  const firstDay = now.startOf('week').toDate();
+  const lastDay = now.endOf('week').toDate();
 
   try {
     const match = {
@@ -38,16 +36,16 @@ export default async function handler(req, res) {
     const total = await Block.aggregate([
       match,
       {
-        $group: { _id: "$author" },
+        $group: { _id: '$author' },
       },
       {
-        $count: "total",
+        $count: 'total',
       },
     ]);
     const nodes = await Block.aggregate([
       match,
       {
-        $group: { _id: "$author", lastBlockNumber: { $last: "$number" }, count: { $sum: 1 } },
+        $group: { _id: '$author', lastBlockNumber: { $last: '$number' }, count: { $sum: 1 } },
       },
     ])
       .sort({ count: -1, lastBlockNumber: 1 })
@@ -63,8 +61,6 @@ export default async function handler(req, res) {
     });
   } catch (e) {
     console.error(e);
-    res
-      .status(500)
-      .json({ error: "Internal error. Please try your request again." });
+    res.status(500).json({ error: 'Internal error. Please try your request again.' });
   }
 }

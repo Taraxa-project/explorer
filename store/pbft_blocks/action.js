@@ -1,10 +1,10 @@
 export const blockActionTypes = {
-    NEWPBFTBLOCK: 'NEWPBFTBLOCK',
-}
-  
+  NEWPBFTBLOCK: 'NEWPBFTBLOCK',
+};
+
 export const addNewPbftBlock = (block) => (dispatch) => {
-    return dispatch({
-        type: blockActionTypes.NEWPBFTBLOCK,
-        data: block
-    })
-}
+  return dispatch({
+    type: blockActionTypes.NEWPBFTBLOCK,
+    data: block,
+  });
+};

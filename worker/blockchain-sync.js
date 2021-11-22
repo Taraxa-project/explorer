@@ -1,25 +1,20 @@
 #!/usr/bin/env node
 
-const _ = require("lodash");
-const { program } = require("commander");
-const pkg = require("../package.json");
+const _ = require('lodash');
+const { program } = require('commander');
+const pkg = require('../package.json');
+const config = require('config');
+const mongoose = require('mongoose');
+const { fromEvent } = require('rxjs');
+const { mergeMap } = require('rxjs/operators');
+const WebSocket = require('ws');
+const rpc = require('../lib/rpc');
 
-const config = require("config");
-const mongoose = require("mongoose");
-
-const DagBlock = require("../models/dag_block");
-const Block = require("../models/block");
-const PBFTBlock = require("../models/pbft_block");
-const Tx = require("../models/tx");
-
-const LogNetworkEvent = require("../models/log_network_event");
-
-const { fromEvent } = require("rxjs");
-const { mergeMap } = require("rxjs/operators");
-
-const WebSocket = require("ws");
-
-const rpc = require("../lib/rpc");
+const DagBlock = require('../models/dag_block');
+const Block = require('../models/block');
+const PBFTBlock = require('../models/pbft_block');
+const Tx = require('../models/tx');
+const LogNetworkEvent = require('../models/log_network_event');
 
 let taraxaConfig;
 
@@ -27,26 +22,19 @@ let historicalSyncRunning = false;
 
 let chainState = {
   number: 0,
-  hash: "",
-  genesis: "",
+  hash: '',
+  genesis: '',
   dagBlockLevel: 0,
   dagBlockPeriod: 0,
 };
 
 async function getChainState() {
-  const state = await Promise.all([
-    rpc.blockNumber(),
-    rpc.dagBlockLevel(),
-    rpc.dagBlockPeriod(),
-  ]);
+  const state = await Promise.all([rpc.blockNumber(), rpc.dagBlockLevel(), rpc.dagBlockPeriod()]);
   const blockNumber = parseInt(state[0], 16);
   const dagBlockLevel = parseInt(state[1], 16);
   const dagBlockPeriod = parseInt(state[2], 16);
 
-  const blocks = await Promise.all([
-    rpc.getBlockByNumber(0),
-    rpc.getBlockByNumber(blockNumber),
-  ]);
+  const blocks = await Promise.all([rpc.getBlockByNumber(0), rpc.getBlockByNumber(blockNumber)]);
 
   const genesis = blocks[0];
   const block = blocks[1];
@@ -75,8 +63,8 @@ async function getSyncState() {
   const lastDagBlocksByPeriod = blocks[3];
 
   const syncState = {
-    hash: "",
-    genesis: "",
+    hash: '',
+    genesis: '',
     number: -1,
     dagBlockLevel: 0,
     dagBlockPeriod: -1,
@@ -106,17 +94,13 @@ async function getSyncState() {
 }
 
 async function dropChainData() {
-  await Promise.all([
-    DagBlock.deleteMany(),
-    Block.deleteMany(),
-    Tx.deleteMany(),
-  ]);
+  await Promise.all([DagBlock.deleteMany(), Block.deleteMany(), Tx.deleteMany()]);
 }
 
 function formatPbftBlock(pbftBlock) {
   // todo: rpc currently incorrectly returns hex without the 0x prefix
   const dagPeriodBlocks = pbftBlock.schedule.dag_blocks_order;
-  if (!dagPeriodBlocks[0].startsWith("0x")) {
+  if (!dagPeriodBlocks[0].startsWith('0x')) {
     dagPeriodBlocks.forEach((dagPeriodBlock, index) => {
       pbftBlock.schedule.dag_blocks_order[index] = `0x${dagPeriodBlock}`;
     });
@@ -124,7 +108,7 @@ function formatPbftBlock(pbftBlock) {
 
   // todo: rpc currently incorrectly returns integer, but it should return hex
   let dagPeriod = pbftBlock.period;
-  if (typeof dagPeriod === "string") {
+  if (typeof dagPeriod === 'string') {
     pbftBlock.period = parseInt(dagPeriod, 16);
   }
 
@@ -135,18 +119,13 @@ function formatPbftBlock(pbftBlock) {
 }
 
 async function realtimeSync() {
-  const topics = [
-    "newDagBlocks",
-    "newDagBlocksFinalized",
-    "newPbftBlocks",
-    "newHeads",
-  ];
+  const topics = ['newDagBlocks', 'newDagBlocksFinalized', 'newPbftBlocks', 'newHeads'];
   let id = 0;
   let subscriptionRequests = [];
   let subscribed = {};
   const ws = new WebSocket(config.taraxa.node.ws);
-  const blockchainEvent$ = fromEvent(ws, "message");
-  const blockchainError$ = fromEvent(ws, "error");
+  const blockchainEvent$ = fromEvent(ws, 'message');
+  const blockchainError$ = fromEvent(ws, 'error');
 
   blockchainError$.subscribe((error) => {
     console.error(error);
@@ -159,40 +138,32 @@ async function realtimeSync() {
           const jsonRpc = JSON.parse(o.data);
           // handle subscription request responses
           if (subscriptionRequests[jsonRpc.id]) {
-            console.log(
-              `Subscribed to ${subscriptionRequests[jsonRpc.id].topic}`
-            );
+            console.log(`Subscribed to ${subscriptionRequests[jsonRpc.id].topic}`);
             subscribed[jsonRpc.result] = subscriptionRequests[jsonRpc.id].topic;
             // handle subscription data
           } else if (subscribed[jsonRpc.params?.subscription]) {
             console.log(
               subscribed[jsonRpc.params.subscription],
-              JSON.stringify(jsonRpc.params.result, null, 2)
+              JSON.stringify(jsonRpc.params.result, null, 2),
             );
             switch (subscribed[jsonRpc.params.subscription]) {
-              case "newDagBlocks":
-                const dagBlock = DagBlock.fromRPC(
-                  jsonRpc.params.result
-                ).toJSON();
-                await DagBlock.findOneAndUpdate(
-                  { _id: dagBlock._id },
-                  dagBlock,
-                  { upsert: true }
-                );
+              case 'newDagBlocks':
+                const dagBlock = DagBlock.fromRPC(jsonRpc.params.result).toJSON();
+                await DagBlock.findOneAndUpdate({ _id: dagBlock._id }, dagBlock, { upsert: true });
                 await new LogNetworkEvent({
-                  log: "dag-block",
+                  log: 'dag-block',
                   data: dagBlock,
                 }).save();
                 return dagBlock;
-              case "newDagBlocksFinalized":
+              case 'newDagBlocksFinalized':
                 // console.log(subscribed[jsonRpc.params.subscription], JSON.stringify(jsonRpc.params.result, null, 2));
                 const dagBlockFinalized = await DagBlock.findOneAndUpdate(
                   { _id: jsonRpc.params.result.block },
                   { period: jsonRpc.params.result.period },
-                  { upsert: false, new: true }
+                  { upsert: false, new: true },
                 );
                 await new LogNetworkEvent({
-                  log: "dag-block-finalized",
+                  log: 'dag-block-finalized',
                   data: {
                     block: dagBlockFinalized._id,
                     period: dagBlockFinalized.period,
@@ -200,26 +171,23 @@ async function realtimeSync() {
                 }).save();
 
                 return dagBlockFinalized;
-              case "newPbftBlocks":
+              case 'newPbftBlocks':
                 // console.log(subscribed[jsonRpc.params.subscription], JSON.stringify(jsonRpc.params.result, null, 2));
-                const pbftBlock = formatPbftBlock(
-                  jsonRpc.params.result.pbft_block
-                );
-                await PBFTBlock.findOneAndUpdate(
-                  { _id: pbftBlock._id },
-                  pbftBlock,
-                  { new: true, upsert: true }
-                );
+                const pbftBlock = formatPbftBlock(jsonRpc.params.result.pbft_block);
+                await PBFTBlock.findOneAndUpdate({ _id: pbftBlock._id }, pbftBlock, {
+                  new: true,
+                  upsert: true,
+                });
                 await DagBlock.updateMany(
                   { _id: { $in: pbftBlock.schedule.dag_blocks_order } },
-                  { $set: { period: pbftBlock.period } }
+                  { $set: { period: pbftBlock.period } },
                 );
                 await new LogNetworkEvent({
-                  log: "pbft-block",
+                  log: 'pbft-block',
                   data: formatPbftBlock(jsonRpc.params.result.pbft_block),
                 }).save();
                 return;
-              case "newHeads":
+              case 'newHeads':
                 // console.log(subscribed[jsonRpc.params.subscription], JSON.stringify(jsonRpc.params.result, null, 2));
                 const blockNumber = parseInt(jsonRpc.params.result.number, 16);
                 chainState.number = blockNumber;
@@ -228,36 +196,36 @@ async function realtimeSync() {
                 return;
               default:
                 console.log(
-                  "Not persisting data for",
+                  'Not persisting data for',
                   subscribed[jsonRpc.params.subscription],
-                  jsonRpc.params.result
+                  jsonRpc.params.result,
                 );
                 return;
             }
           } else {
-            console.log("Ignored message:", jsonRpc);
+            console.log('Ignored message:', jsonRpc);
           }
         } catch (e) {
-          console.error("Error", e, o.data);
+          console.error('Error', e, o.data);
         }
-      })
+      }),
     )
     .subscribe(async function (o) {
       // console.log(o)
     });
 
-  ws.on("open", function () {
+  ws.on('open', function () {
     topics.forEach((topic) => {
       subscriptionRequests[id.toString(16)] = { topic };
-      const request = rpc.request("eth_subscribe", [topic], id);
+      const request = rpc.request('eth_subscribe', [topic], id);
       ws.send(JSON.stringify(request));
       // console.log('Request', request);
       id++;
     });
   });
 
-  ws.on("close", function close() {
-    console.log("socket disconnected");
+  ws.on('close', function close() {
+    console.log('socket disconnected');
     process.exit(1);
   });
 }
@@ -295,14 +263,14 @@ async function historicalSync(subscribed = false) {
 
   // if genesis block changes, resync
   if (!chainState.genesis || chainState.genesis !== syncState.genesis) {
-    console.log("New genesis block hash. Restarting chain sync.");
+    console.log('New genesis block hash. Restarting chain sync.');
     // console.log('chainState', chainState);
     // console.log('syncState', syncState);
     await dropChainData();
     syncState = {
       number: -1,
-      hash: "",
-      genesis: "",
+      hash: '',
+      genesis: '',
       dagBlockLevel: 0,
       dagBlockPeriod: -1,
     };
@@ -313,9 +281,9 @@ async function historicalSync(subscribed = false) {
     const chainBlockAtSyncNumber = await rpc.getBlockByNumber(syncState.number);
     if (chainBlockAtSyncNumber.hash !== syncState.hash) {
       console.log(
-        "Block hash at height",
+        'Block hash at height',
         syncState.number,
-        "has changed. Re-org detected, walking back."
+        'has changed. Re-org detected, walking back.',
       );
       const lastBlock = await Block.findOne({ _id: syncState.hash });
       // go back a step
@@ -349,13 +317,12 @@ async function historicalSync(subscribed = false) {
     };
 
     // SPECIAL CASE GENESIS BLOCK
-    if (block.number === "0x0") {
-      let genesis =
-        taraxaConfig?.chain_config?.final_chain?.state?.genesis_balances || {};
+    if (block.number === '0x0') {
+      let genesis = taraxaConfig?.chain_config?.final_chain?.state?.genesis_balances || {};
       Object.keys(genesis).forEach((address, index) => {
         const fakeTx = new Tx({
           // _id: '0x0000000000000000000000000000000000000000000000000000000000000000',
-          _id: "GENESIS_" + index,
+          _id: 'GENESIS_' + index,
           blockHash: block.hash,
           blockNumber: block.number,
           to: `0x${address}`,
@@ -378,9 +345,7 @@ async function historicalSync(subscribed = false) {
     } else {
       if (!subscribed) {
         // no need to do this if already getting dag blocks over websocket
-        const scheduleBlockRPC = await rpc.getScheduleBlockByPeriod(
-          block.number
-        );
+        const scheduleBlockRPC = await rpc.getScheduleBlockByPeriod(block.number);
         scheduleBlock = formatPbftBlock(scheduleBlockRPC);
         const getDagPromises = [];
         for (const dagBlockHash of scheduleBlock.schedule.dag_blocks_order) {
@@ -390,16 +355,14 @@ async function historicalSync(subscribed = false) {
         for (const dagBlockRPC of dagBlocks) {
           const dagBlock = DagBlock.fromRPC(dagBlockRPC);
           const d = dagBlock.toJSON();
-          const existingDagBlock = await DagBlock.findOneAndUpdate(
-            { _id: dagBlock._id },
-            d,
-            { upsert: true }
-          );
+          const existingDagBlock = await DagBlock.findOneAndUpdate({ _id: dagBlock._id }, d, {
+            upsert: true,
+          });
           if (!existingDagBlock) {
             notifications.push({
               insertOne: {
                 document: {
-                  log: "dag-block",
+                  log: 'dag-block',
                   data: d,
                 },
               },
@@ -415,7 +378,7 @@ async function historicalSync(subscribed = false) {
           notifications.push({
             insertOne: {
               document: {
-                log: "dag-block-finalized",
+                log: 'dag-block-finalized',
                 data: {
                   block: dagBlock._id,
                   period: dagBlock.period,
@@ -424,15 +387,14 @@ async function historicalSync(subscribed = false) {
             },
           });
         }
-        await PBFTBlock.findOneAndUpdate(
-          { _id: scheduleBlock._id },
-          scheduleBlock,
-          { new: true, upsert: true }
-        );
+        await PBFTBlock.findOneAndUpdate({ _id: scheduleBlock._id }, scheduleBlock, {
+          new: true,
+          upsert: true,
+        });
         notifications.push({
           insertOne: {
             document: {
-              log: "pbft-block",
+              log: 'pbft-block',
               data: scheduleBlock,
             },
           },
@@ -444,7 +406,7 @@ async function historicalSync(subscribed = false) {
 
     const txReceipts = await getTransactionReceipts(
       block.transactions.map((tx) => tx.hash),
-      20
+      20,
     );
 
     block.transactions.forEach((tx, idx) => {
@@ -459,7 +421,7 @@ async function historicalSync(subscribed = false) {
     notifications.push({
       insertOne: {
         document: {
-          log: "block",
+          log: 'block',
           data: Block.fromRPC(minBlock).toJSON(),
         },
       },
@@ -470,11 +432,11 @@ async function historicalSync(subscribed = false) {
       tx.timestamp = block.timestamp;
 
       const t = Tx.fromRPC(tx).toJSON();
-      t.status = receipt.status === "0" ? false : true;
+      t.status = receipt.status === '0' ? false : true;
       t.gasUsed = parseInt(receipt.gasUsed, 16);
       t.cumulativeGasUsed = parseInt(receipt.cumulativeGasUsed, 16);
       t.contractAddress =
-        receipt.contractAddress === "0x0000000000000000000000000000000000000000"
+        receipt.contractAddress === '0x0000000000000000000000000000000000000000'
           ? undefined
           : receipt.contractAddress;
 
@@ -488,13 +450,9 @@ async function historicalSync(subscribed = false) {
     });
 
     await Tx.bulkWrite(bulkTx, { ordered: true });
-    await Block.findOneAndUpdate(
-      { _id: block.hash },
-      Block.fromRPC(minBlock).toJSON(),
-      {
-        upsert: true,
-      }
-    );
+    await Block.findOneAndUpdate({ _id: block.hash }, Block.fromRPC(minBlock).toJSON(), {
+      upsert: true,
+    });
 
     await LogNetworkEvent.bulkWrite(notifications, { ordered: true });
 
@@ -508,11 +466,11 @@ async function historicalSync(subscribed = false) {
       "Sync'd block",
       syncState.number,
       syncState.hash,
-      "with",
+      'with',
       txHashes.length,
-      "transactions, in",
+      'transactions, in',
       completed - started,
-      "ms"
+      'ms',
     );
   }
 
@@ -520,32 +478,22 @@ async function historicalSync(subscribed = false) {
   if (!subscribed) {
     // no need to do this if already getting dag blocks over websocket
     while (syncState.dagBlockLevel < chainState.dagBlockLevel) {
-      console.log(
-        "DAG sync:",
-        syncState.dagBlockLevel + 1,
-        "of",
-        chainState.dagBlockLevel
-      );
+      console.log('DAG sync:', syncState.dagBlockLevel + 1, 'of', chainState.dagBlockLevel);
       const notifications = [];
 
-      const dagBlocks = await rpc.getDagBlocksByLevel(
-        syncState.dagBlockLevel + 1,
-        false
-      );
+      const dagBlocks = await rpc.getDagBlocksByLevel(syncState.dagBlockLevel + 1, false);
 
       for (const dagBlockRPC of dagBlocks) {
         const dagBlock = DagBlock.fromRPC(dagBlockRPC);
         const d = dagBlock.toJSON();
-        const existingDagBlock = await DagBlock.findOneAndUpdate(
-          { _id: dagBlock._id },
-          d,
-          { upsert: true }
-        );
+        const existingDagBlock = await DagBlock.findOneAndUpdate({ _id: dagBlock._id }, d, {
+          upsert: true,
+        });
         if (!existingDagBlock) {
           notifications.push({
             insertOne: {
               document: {
-                log: "dag-block",
+                log: 'dag-block',
                 data: d,
               },
             },
@@ -565,17 +513,17 @@ async function historicalSync(subscribed = false) {
 }
 
 program.version(pkg.version);
-program.option("-c, --config <string>", "path to taraxa config file");
+program.option('-c, --config <string>', 'path to taraxa config file');
 program.action(async function (cmdObj) {
   try {
     if (!cmdObj.config) {
-      throw new Error("path to config file not specified. Please use --config");
+      throw new Error('path to config file not specified. Please use --config');
     }
 
     try {
       taraxaConfig = require(cmdObj.config);
     } catch (e) {
-      throw new Error("Could not open config file: " + cmdObj.config);
+      throw new Error('Could not open config file: ' + cmdObj.config);
     }
 
     await mongoose.connect(config.mongo.uri, config.mongo.options);

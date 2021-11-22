@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 
-const config = require("config");
-const mongoose = require("mongoose");
-const BN = require("bn.js");
-const Web3 = require("web3");
-const RLP = require("rlp");
+const config = require('config');
+const mongoose = require('mongoose');
+const BN = require('bn.js');
+const Web3 = require('web3');
+const RLP = require('rlp');
 
-const Delegate = require("../models/delegate");
-const FaucetNonce = require("../models/faucet-nonce");
+const Delegate = require('../models/delegate');
+const FaucetNonce = require('../models/faucet-nonce');
 
 const sleep = async (delay = 30 * 1000) => {
   return await new Promise((resolve) => {
@@ -17,66 +17,50 @@ const sleep = async (delay = 30 * 1000) => {
 
 async function worker() {
   const delegates = await Delegate.find({
-    status: "QUEUED",
+    status: 'QUEUED',
   }).sort({
     updatedAt: 1,
   });
   if (delegates.length === 0) {
-    console.log("No delegation requests!");
+    console.log('No delegation requests!');
     return await sleep();
   }
 
   for (let delegate of delegates) {
-    console.log("Processing delegation", delegate);
+    console.log('Processing delegation', delegate);
 
     const valueToAdd = new BN(delegate.valueToAdd);
     const valueToSubstract = new BN(delegate.valueToSubstract);
     let total = new BN(delegate.total);
-    let status = "FINISHED";
+    let status = 'FINISHED';
 
     if (valueToAdd.gtn(0)) {
-      console.log(
-        "Delegating to",
-        delegate._id,
-        "value",
-        valueToAdd.toString()
-      );
+      console.log('Delegating to', delegate._id, 'value', valueToAdd.toString());
 
       try {
-        await delegateTransaction(
-          delegate.counterpart,
-          valueToAdd.mul(new BN(2))
-        );
-        console.log("- own node", delegate.counterpart);
+        await delegateTransaction(delegate.counterpart, valueToAdd.mul(new BN(2)));
+        console.log('- own node', delegate.counterpart);
         await delegateTransaction(delegate._id, valueToAdd);
-        console.log("- user node", delegate._id);
+        console.log('- user node', delegate._id);
       } catch (e) {
         console.error(e);
-        status = "ERROR"
+        status = 'ERROR';
       }
 
       total = total.add(valueToAdd);
     }
 
     if (valueToSubstract.gtn(0)) {
-      console.log(
-        "Undelegating from",
-        delegate._id,
-        "value",
-        valueToSubstract.toString()
-      );
+      console.log('Undelegating from', delegate._id, 'value', valueToSubstract.toString());
 
       try {
-        await undelegateTransaction(
-          delegate.counterpart,
-          valueToSubstract.mul(new BN(2))
-        );
-        console.log("- own node", delegate.counterpart);
+        await undelegateTransaction(delegate.counterpart, valueToSubstract.mul(new BN(2)));
+        console.log('- own node', delegate.counterpart);
         await undelegateTransaction(delegate._id, valueToSubstract);
-        console.log("- user node", delegate._id);
+        console.log('- user node', delegate._id);
       } catch (e) {
         console.error(e);
-        status = "ERROR"
+        status = 'ERROR';
       }
 
       total = total.sub(valueToSubstract);
@@ -85,11 +69,11 @@ async function worker() {
     await Delegate.findOneAndUpdate(
       { _id: delegate._id },
       {
-        valueToAdd: "0",
-        valueToSubstract: "0",
+        valueToAdd: '0',
+        valueToSubstract: '0',
         total: total.toString(),
-        status: "FINISHED",
-      }
+        status: status,
+      },
     );
 
     await sleep();
@@ -97,30 +81,24 @@ async function worker() {
 }
 
 async function delegateTransaction(address, value) {
-  await sendTransaction(
-    `0x${bufferToHex(RLP.encode([[address, [value, 0]]]))}`
-  );
+  await sendTransaction(`0x${bufferToHex(RLP.encode([[address, [value, 0]]]))}`);
 }
 
 async function undelegateTransaction(address, value) {
-  await sendTransaction(
-    `0x${bufferToHex(RLP.encode([[address, [value, 1]]]))}`
-  );
+  await sendTransaction(`0x${bufferToHex(RLP.encode([[address, [value, 1]]]))}`);
 }
 
 async function sendTransaction(input) {
   const taraxa = new Web3(config.taraxa.node.http);
-  const account = taraxa.eth.accounts.privateKeyToAccount(
-    config.faucet.privateKey
-  );
+  const account = taraxa.eth.accounts.privateKeyToAccount(config.faucet.privateKey);
   const faucetNonce = await FaucetNonce.findOneAndUpdate(
     {},
     { $inc: { nonce: 1 } },
-    { upsert: true, new: true }
+    { upsert: true, new: true },
   );
   const tx = await account.signTransaction({
     from: account.address,
-    to: "0x00000000000000000000000000000000000000ff",
+    to: '0x00000000000000000000000000000000000000ff',
     value: 0,
     gas: 30000,
     gasPrice: 0,
@@ -131,27 +109,24 @@ async function sendTransaction(input) {
   await new Promise((resolve, reject) => {
     taraxa.eth
       .sendSignedTransaction(tx.rawTransaction)
-      .on("transactionHash", (txHash) => {
+      .on('transactionHash', (txHash) => {
         waitForTransaction(taraxa, txHash).then(() => {
           resolve(txHash);
         });
       })
-      .on("error", (error) => {
+      .on('error', (error) => {
         reject(error);
       });
   });
 }
 
 function bufferToHex(buffer) {
-  return [...new Uint8Array(buffer)]
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
+  return [...new Uint8Array(buffer)].map((b) => b.toString(16).padStart(2, '0')).join('');
 }
 
 function waitForTransaction(web3, txnHash, options = null) {
   const interval = options && options.interval ? options.interval : 500;
-  const blocksToWait =
-    options && options.blocksToWait ? options.blocksToWait : 1;
+  const blocksToWait = options && options.blocksToWait ? options.blocksToWait : 1;
   const transactionReceiptAsync = async function (txnHash, resolve, reject) {
     try {
       var receipt = web3.eth.getTransactionReceipt(txnHash);
@@ -169,29 +144,30 @@ function waitForTransaction(web3, txnHash, options = null) {
           } else {
             try {
               var block = await web3.eth.getBlock(resolvedReceipt.blockNumber);
-              var current = await web3.eth.getBlock("latest");
+              var current = await web3.eth.getBlock('latest');
               if (current.number - block.number >= blocksToWait) {
                 var txn = await web3.eth.getTransaction(txnHash);
-                if (txn.blockNumber != null) resolve(resolvedReceipt);
-                else
+                if (txn.blockNumber != null) {
+                  resolve(resolvedReceipt);
+                } else {
                   reject(
-                    new Error(
-                      "Transaction with hash: " +
-                        txnHash +
-                        " ended up in an uncle block."
-                    )
+                    new Error(`Transaction with hash: ${txnHash} ended up in an uncle block.`),
                   );
-              } else
+                }
+              } else {
                 setTimeout(function () {
                   transactionReceiptAsync(txnHash, resolve, reject);
                 }, interval);
+              }
             } catch (e) {
               setTimeout(function () {
                 transactionReceiptAsync(txnHash, resolve, reject);
               }, interval);
             }
           }
-        } else resolve(receipt);
+        } else {
+          resolve(receipt);
+        }
       }
     } catch (e) {
       reject(e);
@@ -206,7 +182,7 @@ function waitForTransaction(web3, txnHash, options = null) {
 (async () => {
   try {
     mongoose.connect(config.mongo.uri, config.mongo.options);
-    console.log("Delegation worker started");
+    console.log('Delegation worker started');
     while (true) {
       await worker();
     }

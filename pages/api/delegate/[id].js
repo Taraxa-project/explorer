@@ -1,5 +1,5 @@
 import { runCorsMiddleware } from '../../../lib/cors';
-import { verifyAddress, delegateTo } from "../../../lib/delegation";
+import { verifyAddress, delegateTo } from '../../../lib/delegation';
 
 export default async function delegateHandler(req, res) {
   await runCorsMiddleware(req, res);
@@ -19,9 +19,7 @@ export default async function delegateHandler(req, res) {
     await delegateTo(address);
   } catch (e) {
     console.error(e);
-    res
-      .status(500)
-      .json({ error: "Internal error. Please try your request again." });
+    res.status(500).json({ error: 'Internal error. Please try your request again.' });
     return;
   }
 

@@ -1,19 +1,16 @@
-import Link from "next/link";
-
-import config from "config";
-import mongoose from "mongoose";
-import Tx from "../../models/tx";
-import DagBlock from "../../models/dag_block";
-
-import { Card, Table } from "react-bootstrap";
-
-import abiDecoder from "abi-decoder";
-import * as RLP from "rlp";
-import BN from "bn.js";
-import Web3Utils from "web3-utils";
-
-import RepresentationABI from "../../contracts/Representation.abi.json";
-import RecordsRepositoryABI from "../../contracts/RecordsRepository.abi.json";
+import React from 'react';
+import Link from 'next/link';
+import config from 'config';
+import mongoose from 'mongoose';
+import { Card, Table } from 'react-bootstrap';
+import abiDecoder from 'abi-decoder';
+import * as RLP from 'rlp';
+import BN from 'bn.js';
+import Web3Utils from 'web3-utils';
+import RepresentationABI from '../../contracts/Representation.abi.json';
+import RecordsRepositoryABI from '../../contracts/RecordsRepository.abi.json';
+import Tx from '../../models/tx';
+import DagBlock from '../../models/dag_block';
 
 abiDecoder.addABI(RecordsRepositoryABI);
 abiDecoder.addABI(RepresentationABI);
@@ -29,13 +26,11 @@ export async function getServerSideProps(context) {
     const tx = await Tx.findOne({ _id: context.query.id }).lean();
     if (tx) {
       props.tx = JSON.parse(JSON.stringify(tx));
-      const dags = await DagBlock.find({ transactions: tx._id })
-        .sort({ timestamp: 1 })
-        .lean();
+      const dags = await DagBlock.find({ transactions: tx._id }).sort({ timestamp: 1 }).lean();
       props.dags = JSON.parse(JSON.stringify(dags));
     }
   } catch (e) {
-    console.error("Error in Server Props: " + e.message);
+    console.error(`Error in Server Props: ${e.message}`);
   }
 
   return {
@@ -49,19 +44,16 @@ export default function TxPage({ tx, dags }) {
     try {
       const rlpData = RLP.decode(Buffer.from(Web3Utils.hexToBytes(tx.input)));
       decodedData = {
-        name: "delegate",
+        name: 'delegate',
         params: rlpData.map((beneficiary) => {
-          const isNegative = !!(new BN(
-            beneficiary[1][1].toString("hex"),
-            "hex"
-          )).toNumber();
+          const isNegative = !!new BN(beneficiary[1][1].toString('hex'), 'hex').toNumber();
           return {
             name: Web3Utils.bytesToHex(beneficiary[0]),
-            value: `${isNegative ? '-' : ''}${(new BN(
-              beneficiary[1][0].toString("hex"),
-              "hex"
-            )).toString()}`,
-            type: "address: value",
+            value: `${isNegative ? '-' : ''}${new BN(
+              beneficiary[1][0].toString('hex'),
+              'hex',
+            ).toString()}`,
+            type: 'address: value',
           };
         }),
       };
@@ -79,39 +71,35 @@ export default function TxPage({ tx, dags }) {
   return (
     <>
       <h1>Tx {tx._id}</h1>
-      <Card
-        style={{ margin: 5, marginTop: 0, marginBottom: 10 }}
-        bg="dark"
-        text="white"
-      >
+      <Card style={{ margin: 5, marginTop: 0, marginBottom: 10 }} bg="dark" text="white">
         <Card.Body>
           <Card.Title>{new Date(tx.timestamp).toLocaleString()}</Card.Title>
           <ul>
             {tx.from ? (
               <li>
-                From{" "}
+                From{' '}
                 <Link href="/address/[id]" as={`/address/${tx.from}`}>
                   <a>{`${tx.from}`}</a>
                 </Link>
               </li>
             ) : (
-              ""
+              ''
             )}
             <li>
-              {tx.input ? "Contract " : "To "}
+              {tx.input ? 'Contract ' : 'To '}
               <Link href="/address/[id]" as={`/address/${tx.to}`}>
                 <a>{`${tx.to}`}</a>
               </Link>
             </li>
             <li>
-              Block{" "}
+              Block{' '}
               <Link href="/block/[id]" as={`/block/${tx.blockHash}`}>
                 <a>{`${tx.blockHash}`}</a>
               </Link>
             </li>
             <li>Block Number {`${tx.blockNumber}`}</li>
 
-            <li>{`Status ${tx.status === true ? "Success" : "Failed"}`}</li>
+            <li>{`Status ${tx.status === true ? 'Success' : 'Failed'}`}</li>
 
             <li>{`Gas Limit ${tx.gas}`}</li>
 
@@ -123,20 +111,16 @@ export default function TxPage({ tx, dags }) {
 
             <li>Value {(tx.value / 1e18).toFixed(6)} TARA</li>
 
-            {tx.contractAddress ? (
-              <li>{`Deployed Contract ${tx.contractAddress}`}</li>
-            ) : (
-              ""
-            )}
+            {tx.contractAddress ? <li>{`Deployed Contract ${tx.contractAddress}`}</li> : ''}
 
-            {tx.input ? <li>{`Contract Input: ${tx.input}`}</li> : ""}
+            {tx.input ? <li>{`Contract Input: ${tx.input}`}</li> : ''}
             {decodedData?.name ? (
               <>
                 <li>
                   Contract Function: {decodedData.name}
                   <ul>
                     {decodedData.params.map((p) => (
-                      <li>
+                      <li key={`${p.name}${p.value}${p.type}`}>
                         {p.name}: {p.value} ({p.type})
                       </li>
                     ))}
@@ -144,7 +128,7 @@ export default function TxPage({ tx, dags }) {
                 </li>
               </>
             ) : (
-              ""
+              ''
             )}
           </ul>
         </Card.Body>
@@ -165,10 +149,7 @@ export default function TxPage({ tx, dags }) {
                   <td>{new Date(dagBlock.timestamp).toLocaleString()}</td>
                   <td>{`${dagBlock.level} `}</td>
                   <td>
-                    <Link
-                      href="/dag_block/[id]"
-                      as={`/dag_block/${dagBlock._id}`}
-                    >
+                    <Link href="/dag_block/[id]" as={`/dag_block/${dagBlock._id}`}>
                       <a className="long-hash">{`${dagBlock._id}`}</a>
                     </Link>
                   </td>

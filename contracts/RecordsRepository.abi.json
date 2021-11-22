@@ -1,1 +1,190 @@
-[{"anonymous":false,"inputs":[{"indexed":false,"internalType":"bytes32","name":"recordHash","type":"bytes32"},{"indexed":false,"internalType":"address","name":"approver","type":"address"}],"name":"ApproveRecord","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"bytes32","name":"recordHash","type":"bytes32"},{"indexed":false,"internalType":"bytes32","name":"projectNonceHash","type":"bytes32"},{"indexed":false,"internalType":"int256","name":"nonce","type":"int256"}],"name":"RecordAssignedToProject","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"bytes32","name":"recordHash","type":"bytes32"},{"indexed":false,"internalType":"address","name":"approver","type":"address"},{"indexed":false,"internalType":"string","name":"reason","type":"string"}],"name":"RejectRecord","type":"event"},{"inputs":[{"internalType":"bytes32","name":"hashValue","type":"bytes32"},{"internalType":"bool","name":"approved","type":"bool"},{"internalType":"address","name":"signatory","type":"address"},{"internalType":"bytes32","name":"r","type":"bytes32"},{"internalType":"bytes32","name":"s","type":"bytes32"},{"internalType":"uint8","name":"v","type":"uint8"}],"name":"_verifySignature","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes32","name":"hashValue","type":"bytes32"},{"internalType":"address","name":"promoterAddress","type":"address"},{"internalType":"bytes32","name":"r","type":"bytes32"},{"internalType":"bytes32","name":"s","type":"bytes32"},{"internalType":"uint8","name":"v","type":"uint8"}],"name":"addRecord","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"hashValue","type":"bytes32"},{"internalType":"address","name":"signatory","type":"address"},{"internalType":"bytes32","name":"r","type":"bytes32"},{"internalType":"bytes32","name":"s","type":"bytes32"},{"internalType":"uint8","name":"v","type":"uint8"}],"name":"approveRecord","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"recordHash","type":"bytes32"},{"internalType":"bytes32","name":"projectNonceHash","type":"bytes32"},{"internalType":"int256","name":"nonce","type":"int256"}],"name":"assignRecordToProject","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"hashValue","type":"bytes32"}],"name":"existRecord","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"representation_","type":"address"}],"name":"init","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"name":"records","outputs":[{"internalType":"bytes32","name":"hashValue","type":"bytes32"},{"internalType":"address","name":"promoterAddress","type":"address"},{"internalType":"uint256","name":"timestamp","type":"uint256"},{"internalType":"int256","name":"signaturesCount","type":"int256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes32","name":"hashValue","type":"bytes32"},{"internalType":"address","name":"signatory","type":"address"},{"internalType":"string","name":"rejectReason","type":"string"},{"internalType":"bytes32","name":"r","type":"bytes32"},{"internalType":"bytes32","name":"s","type":"bytes32"},{"internalType":"uint8","name":"v","type":"uint8"}],"name":"rejectRecord","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"hashValue","type":"bytes32"},{"internalType":"address","name":"signatory","type":"address"}],"name":"signatureExists","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"}]
+[
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "recordHash",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "approver",
+        "type": "address"
+      }
+    ],
+    "name": "ApproveRecord",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "recordHash",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "projectNonceHash",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "int256",
+        "name": "nonce",
+        "type": "int256"
+      }
+    ],
+    "name": "RecordAssignedToProject",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "recordHash",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "approver",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "reason",
+        "type": "string"
+      }
+    ],
+    "name": "RejectRecord",
+    "type": "event"
+  },
+  {
+    "inputs": [
+      { "internalType": "bytes32", "name": "hashValue", "type": "bytes32" },
+      { "internalType": "bool", "name": "approved", "type": "bool" },
+      { "internalType": "address", "name": "signatory", "type": "address" },
+      { "internalType": "bytes32", "name": "r", "type": "bytes32" },
+      { "internalType": "bytes32", "name": "s", "type": "bytes32" },
+      { "internalType": "uint8", "name": "v", "type": "uint8" }
+    ],
+    "name": "_verifySignature",
+    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "bytes32", "name": "hashValue", "type": "bytes32" },
+      {
+        "internalType": "address",
+        "name": "promoterAddress",
+        "type": "address"
+      },
+      { "internalType": "bytes32", "name": "r", "type": "bytes32" },
+      { "internalType": "bytes32", "name": "s", "type": "bytes32" },
+      { "internalType": "uint8", "name": "v", "type": "uint8" }
+    ],
+    "name": "addRecord",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "bytes32", "name": "hashValue", "type": "bytes32" },
+      { "internalType": "address", "name": "signatory", "type": "address" },
+      { "internalType": "bytes32", "name": "r", "type": "bytes32" },
+      { "internalType": "bytes32", "name": "s", "type": "bytes32" },
+      { "internalType": "uint8", "name": "v", "type": "uint8" }
+    ],
+    "name": "approveRecord",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "bytes32", "name": "recordHash", "type": "bytes32" },
+      {
+        "internalType": "bytes32",
+        "name": "projectNonceHash",
+        "type": "bytes32"
+      },
+      { "internalType": "int256", "name": "nonce", "type": "int256" }
+    ],
+    "name": "assignRecordToProject",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "bytes32", "name": "hashValue", "type": "bytes32" }],
+    "name": "existRecord",
+    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "representation_",
+        "type": "address"
+      }
+    ],
+    "name": "init",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
+    "name": "records",
+    "outputs": [
+      { "internalType": "bytes32", "name": "hashValue", "type": "bytes32" },
+      {
+        "internalType": "address",
+        "name": "promoterAddress",
+        "type": "address"
+      },
+      { "internalType": "uint256", "name": "timestamp", "type": "uint256" },
+      { "internalType": "int256", "name": "signaturesCount", "type": "int256" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "bytes32", "name": "hashValue", "type": "bytes32" },
+      { "internalType": "address", "name": "signatory", "type": "address" },
+      { "internalType": "string", "name": "rejectReason", "type": "string" },
+      { "internalType": "bytes32", "name": "r", "type": "bytes32" },
+      { "internalType": "bytes32", "name": "s", "type": "bytes32" },
+      { "internalType": "uint8", "name": "v", "type": "uint8" }
+    ],
+    "name": "rejectRecord",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "bytes32", "name": "hashValue", "type": "bytes32" },
+      { "internalType": "address", "name": "signatory", "type": "address" }
+    ],
+    "name": "signatureExists",
+    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]
