@@ -18,7 +18,7 @@ const sleep = async (delay = 3000) => {
 };
 
 async function drip() {
-  const { Faucet, FaucetNonce } = useDb();
+  const { Faucet, FaucetNonce } = await useDb();
   const cups = await Faucet.find().sort({ created: -1 });
   if (cups.length === 0) {
     console.log('No addresses in the faucet');
