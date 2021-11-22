@@ -1,18 +1,15 @@
 import React from 'react';
 import Link from 'next/link';
-import config from 'config';
-import mongoose from 'mongoose';
+import { useDb } from '../../lib/db';
 import { IoMdCheckmark, IoMdClose } from 'react-icons/io';
 import { Accordion, Button, Card, Table } from 'react-bootstrap';
-import Block from '../../models/block';
 
 export async function getServerSideProps(context) {
   let props = {
     data: {},
   };
   try {
-    mongoose.connection._readyState ||
-      (await mongoose.connect(config.mongo.uri, config.mongo.options));
+    const { Block } = await useDb();
     const block = await Block.findOne({ _id: context.query.id })
       .populate({
         path: 'transactions',
@@ -105,44 +102,45 @@ export default function BlockPage({ data }) {
                 </tr>
               </thead>
               <tbody>
-                {data.transactions?.map((tx, index) => (
-                  <tr key={tx._id}>
-                    <td>{index + 1}</td>
-                    <td>
-                      {tx.status ? (
-                        <IoMdCheckmark size={20} />
-                      ) : (
-                        <IoMdClose size={25} color="red" />
-                      )}
-                      {tx.status}
-                    </td>
-                    <td className="table-cell-overflow2">
-                      <Link href="/tx/[id]" as={`/tx/${tx._id}`}>
-                        <a className="long-hash">{`${tx._id}`}</a>
-                      </Link>
-                    </td>
-                    <td className="table-cell-overflow">
-                      {tx.to ? (
-                        <Link href="/address/[id]" as={`/address/${tx.to}`}>
-                          <a className="long-hash">{`${tx.to}`}</a>
+                {data.transactions &&
+                  data.transactions.map((tx, index) => (
+                    <tr key={tx._id}>
+                      <td>{index + 1}</td>
+                      <td>
+                        {tx.status ? (
+                          <IoMdCheckmark size={20} />
+                        ) : (
+                          <IoMdClose size={25} color="red" />
+                        )}
+                        {tx.status}
+                      </td>
+                      <td className="table-cell-overflow2">
+                        <Link href="/tx/[id]" as={`/tx/${tx._id}`}>
+                          <a className="long-hash">{`${tx._id}`}</a>
                         </Link>
-                      ) : (
-                        ''
-                      )}
-                    </td>
-                    <td className="table-cell-overflow">
-                      {tx.from ? (
-                        <Link href="/address/[id]" as={`/address/${tx.from}`}>
-                          <a className="long-hash">{`${tx.from}`}</a>
-                        </Link>
-                      ) : (
-                        ''
-                      )}
-                    </td>
-                    <td>{(tx.value / 1e18).toFixed(6)} TARA</td>
-                    <td>{((tx.gasUsed * tx.gasPrice) / 1e18).toFixed(6)} TARA</td>
-                  </tr>
-                ))}
+                      </td>
+                      <td className="table-cell-overflow">
+                        {tx.to ? (
+                          <Link href="/address/[id]" as={`/address/${tx.to}`}>
+                            <a className="long-hash">{`${tx.to}`}</a>
+                          </Link>
+                        ) : (
+                          ''
+                        )}
+                      </td>
+                      <td className="table-cell-overflow">
+                        {tx.from ? (
+                          <Link href="/address/[id]" as={`/address/${tx.from}`}>
+                            <a className="long-hash">{`${tx.from}`}</a>
+                          </Link>
+                        ) : (
+                          ''
+                        )}
+                      </td>
+                      <td>{(tx.value / 1e18).toFixed(6)} TARA</td>
+                      <td>{((tx.gasUsed * tx.gasPrice) / 1e18).toFixed(6)} TARA</td>
+                    </tr>
+                  ))}
               </tbody>
             </Table>
           </Card.Body>

@@ -1,7 +1,5 @@
 import React from 'react';
 import Link from 'next/link';
-import config from 'config';
-import mongoose from 'mongoose';
 import { Card, Table } from 'react-bootstrap';
 import abiDecoder from 'abi-decoder';
 import * as RLP from 'rlp';
@@ -9,8 +7,7 @@ import BN from 'bn.js';
 import Web3Utils from 'web3-utils';
 import RepresentationABI from '../../contracts/Representation.abi.json';
 import RecordsRepositoryABI from '../../contracts/RecordsRepository.abi.json';
-import Tx from '../../models/tx';
-import DagBlock from '../../models/dag_block';
+import { useDb } from '../../lib/db';
 
 abiDecoder.addABI(RecordsRepositoryABI);
 abiDecoder.addABI(RepresentationABI);
@@ -21,12 +18,12 @@ export async function getServerSideProps(context) {
     dags: [],
   };
   try {
-    mongoose.connection._readyState ||
-      (await mongoose.connect(config.mongo.uri, config.mongo.options));
+    const { DAGBlock, Tx } = await useDb();
+
     const tx = await Tx.findOne({ _id: context.query.id }).lean();
     if (tx) {
       props.tx = JSON.parse(JSON.stringify(tx));
-      const dags = await DagBlock.find({ transactions: tx._id }).sort({ timestamp: 1 }).lean();
+      const dags = await DAGBlock.find({ transactions: tx._id }).sort({ timestamp: 1 }).lean();
       props.dags = JSON.parse(JSON.stringify(dags));
     }
   } catch (e) {

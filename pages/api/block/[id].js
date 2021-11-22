@@ -1,24 +1,14 @@
-import config from 'config';
-import mongoose from 'mongoose';
+import withApiHandler from '../../../lib/api-handler';
 
-import { runCorsMiddleware } from '../../../lib/cors';
-import Block from '../../../models/block';
+async function handler(req, res) {
+  const { Block } = req.models;
 
-export default async function userHandler(req, res) {
-  await runCorsMiddleware(req, res);
-  try {
-    mongoose.connection._readyState ||
-      (await mongoose.connect(config.mongo.uri, config.mongo.options));
-  } catch (e) {
-    console.error(e);
-    return res.status(500).json({ error: 'Internal error. Please try your request again.' });
-  }
   const {
     query: { id },
     method,
   } = req;
 
-  let fullTransactions = Boolean(req.query.fullTransactions) || false;
+  let fullTransactions = Boolean(req.query.fullTransactions);
 
   switch (method) {
     case 'GET':
@@ -44,3 +34,5 @@ export default async function userHandler(req, res) {
       res.status(405).end(`Method ${method} Not Allowed`);
   }
 }
+
+export default withApiHandler(handler);

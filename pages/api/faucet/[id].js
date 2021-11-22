@@ -1,20 +1,9 @@
-import config from 'config';
-import mongoose from 'mongoose';
 import Web3Utils from 'web3-utils';
+import withApiHandler from '../../../lib/api-handler';
 
-import { runCorsMiddleware } from '../../../lib/cors';
-import Faucet from '../../../models/faucet';
-
-export default async function userHandler(req, res) {
-  await runCorsMiddleware(req, res);
-  try {
-    mongoose.connection._readyState ||
-      (await mongoose.connect(config.mongo.uri, config.mongo.options));
-  } catch (e) {
-    console.error(e);
-    return res.status(500).json({ error: 'Internal error. Please try your request again.' });
-  }
+async function handler(req, res) {
   const {
+    models: { Faucet },
     query: { id },
   } = req;
 
@@ -38,3 +27,5 @@ export default async function userHandler(req, res) {
     res.status(500).json({ error: 'Internal error. Please try your request again.' });
   }
 }
+
+export default withApiHandler(handler);

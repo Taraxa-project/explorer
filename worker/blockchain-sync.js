@@ -4,17 +4,11 @@ const _ = require('lodash');
 const { program } = require('commander');
 const pkg = require('../package.json');
 const config = require('config');
-const mongoose = require('mongoose');
 const { fromEvent } = require('rxjs');
 const { mergeMap } = require('rxjs/operators');
 const WebSocket = require('ws');
 const rpc = require('../lib/rpc');
-
-const DagBlock = require('../models/dag_block');
-const Block = require('../models/block');
-const PBFTBlock = require('../models/pbft_block');
-const Tx = require('../models/tx');
-const LogNetworkEvent = require('../models/log_network_event');
+const { useDb } = require('../lib/db');
 
 let taraxaConfig;
 
@@ -51,11 +45,13 @@ async function getChainState() {
 }
 
 async function getSyncState() {
+  const { Block, DAGBlock } = await useDb();
+
   const blocks = await Promise.all([
     Block.find({ number: 0 }),
     Block.find().sort({ number: -1 }).limit(1),
-    DagBlock.find().sort({ level: -1 }).limit(1),
-    DagBlock.find().sort({ period: -1 }).limit(1),
+    DAGBlock.find().sort({ level: -1 }).limit(1),
+    DAGBlock.find().sort({ period: -1 }).limit(1),
   ]);
   const genesisBlocks = blocks[0];
   const lastBlocks = blocks[1];
@@ -93,10 +89,6 @@ async function getSyncState() {
   return syncState;
 }
 
-async function dropChainData() {
-  await Promise.all([DagBlock.deleteMany(), Block.deleteMany(), Tx.deleteMany()]);
-}
-
 function formatPbftBlock(pbftBlock) {
   // todo: rpc currently incorrectly returns hex without the 0x prefix
   const dagPeriodBlocks = pbftBlock.schedule.dag_blocks_order;
@@ -119,6 +111,7 @@ function formatPbftBlock(pbftBlock) {
 }
 
 async function realtimeSync() {
+  const { DAGBlock, LogNetworkEvent, PBFTBlock } = await useDb();
   const topics = ['newDagBlocks', 'newDagBlocksFinalized', 'newPbftBlocks', 'newHeads'];
   let id = 0;
   let subscriptionRequests = [];
@@ -131,88 +124,91 @@ async function realtimeSync() {
     console.error(error);
   });
 
-  blockchainEvent$
-    .pipe(
-      mergeMap(async (o) => {
-        try {
-          const jsonRpc = JSON.parse(o.data);
-          // handle subscription request responses
-          if (subscriptionRequests[jsonRpc.id]) {
-            console.log(`Subscribed to ${subscriptionRequests[jsonRpc.id].topic}`);
-            subscribed[jsonRpc.result] = subscriptionRequests[jsonRpc.id].topic;
-            // handle subscription data
-          } else if (subscribed[jsonRpc.params?.subscription]) {
-            console.log(
-              subscribed[jsonRpc.params.subscription],
-              JSON.stringify(jsonRpc.params.result, null, 2),
-            );
-            switch (subscribed[jsonRpc.params.subscription]) {
-              case 'newDagBlocks':
-                const dagBlock = DagBlock.fromRPC(jsonRpc.params.result).toJSON();
-                await DagBlock.findOneAndUpdate({ _id: dagBlock._id }, dagBlock, { upsert: true });
-                await new LogNetworkEvent({
-                  log: 'dag-block',
-                  data: dagBlock,
-                }).save();
-                return dagBlock;
-              case 'newDagBlocksFinalized':
-                // console.log(subscribed[jsonRpc.params.subscription], JSON.stringify(jsonRpc.params.result, null, 2));
-                const dagBlockFinalized = await DagBlock.findOneAndUpdate(
-                  { _id: jsonRpc.params.result.block },
-                  { period: jsonRpc.params.result.period },
-                  { upsert: false, new: true },
-                );
-                await new LogNetworkEvent({
-                  log: 'dag-block-finalized',
-                  data: {
-                    block: dagBlockFinalized._id,
-                    period: dagBlockFinalized.period,
-                  },
-                }).save();
-
-                return dagBlockFinalized;
-              case 'newPbftBlocks':
-                // console.log(subscribed[jsonRpc.params.subscription], JSON.stringify(jsonRpc.params.result, null, 2));
-                const pbftBlock = formatPbftBlock(jsonRpc.params.result.pbft_block);
-                await PBFTBlock.findOneAndUpdate({ _id: pbftBlock._id }, pbftBlock, {
-                  new: true,
-                  upsert: true,
-                });
-                await DagBlock.updateMany(
-                  { _id: { $in: pbftBlock.schedule.dag_blocks_order } },
-                  { $set: { period: pbftBlock.period } },
-                );
-                await new LogNetworkEvent({
-                  log: 'pbft-block',
-                  data: formatPbftBlock(jsonRpc.params.result.pbft_block),
-                }).save();
-                return;
-              case 'newHeads':
-                // console.log(subscribed[jsonRpc.params.subscription], JSON.stringify(jsonRpc.params.result, null, 2));
-                const blockNumber = parseInt(jsonRpc.params.result.number, 16);
-                chainState.number = blockNumber;
-                chainState.hash = jsonRpc.params.result.hash;
-                await historicalSync(true);
-                return;
-              default:
-                console.log(
-                  'Not persisting data for',
-                  subscribed[jsonRpc.params.subscription],
-                  jsonRpc.params.result,
-                );
-                return;
+  blockchainEvent$.pipe(
+    mergeMap(async (o) => {
+      try {
+        const jsonRpc = JSON.parse(o.data);
+        // handle subscription request responses
+        if (subscriptionRequests[jsonRpc.id]) {
+          console.log(`Subscribed to ${subscriptionRequests[jsonRpc.id].topic}`);
+          subscribed[jsonRpc.result] = subscriptionRequests[jsonRpc.id].topic;
+          // handle subscription data
+        } else if (subscribed[jsonRpc.params?.subscription]) {
+          console.log(
+            subscribed[jsonRpc.params.subscription],
+            JSON.stringify(jsonRpc.params.result, null, 2),
+          );
+          switch (subscribed[jsonRpc.params.subscription]) {
+            case 'newDagBlocks': {
+              const dagBlock = DAGBlock.fromRPC(jsonRpc.params.result).toJSON();
+              await DAGBlock.findOneAndUpdate({ _id: dagBlock._id }, dagBlock, { upsert: true });
+              await new LogNetworkEvent({
+                log: 'dag-block',
+                data: dagBlock,
+              }).save();
+              return dagBlock;
             }
-          } else {
-            console.log('Ignored message:', jsonRpc);
+            case 'newDagBlocksFinalized': {
+              // console.log(subscribed[jsonRpc.params.subscription], JSON.stringify(jsonRpc.params.result, null, 2));
+              const dagBlockFinalized = await DAGBlock.findOneAndUpdate(
+                { _id: jsonRpc.params.result.block },
+                { period: jsonRpc.params.result.period },
+                { upsert: false, new: true },
+              );
+              await new LogNetworkEvent({
+                log: 'dag-block-finalized',
+                data: {
+                  block: dagBlockFinalized._id,
+                  period: dagBlockFinalized.period,
+                },
+              }).save();
+
+              return dagBlockFinalized;
+            }
+            case 'newPbftBlocks': {
+              // console.log(subscribed[jsonRpc.params.subscription], JSON.stringify(jsonRpc.params.result, null, 2));
+              const pbftBlock = formatPbftBlock(jsonRpc.params.result.pbft_block);
+              await PBFTBlock.findOneAndUpdate({ _id: pbftBlock._id }, pbftBlock, {
+                new: true,
+                upsert: true,
+              });
+              await DAGBlock.updateMany(
+                { _id: { $in: pbftBlock.schedule.dag_blocks_order } },
+                { $set: { period: pbftBlock.period } },
+              );
+              await new LogNetworkEvent({
+                log: 'pbft-block',
+                data: formatPbftBlock(jsonRpc.params.result.pbft_block),
+              }).save();
+              return;
+            }
+            case 'newHeads': {
+              // console.log(subscribed[jsonRpc.params.subscription], JSON.stringify(jsonRpc.params.result, null, 2));
+              const blockNumber = parseInt(jsonRpc.params.result.number, 16);
+              chainState.number = blockNumber;
+              chainState.hash = jsonRpc.params.result.hash;
+              await historicalSync(true);
+              return;
+            }
+            default:
+              console.log(
+                'Not persisting data for',
+                subscribed[jsonRpc.params.subscription],
+                jsonRpc.params.result,
+              );
+              return;
           }
-        } catch (e) {
-          console.error('Error', e, o.data);
+        } else {
+          console.log('Ignored message:', jsonRpc);
         }
-      }),
-    )
-    .subscribe(async function (o) {
-      // console.log(o)
-    });
+      } catch (e) {
+        console.error('Error', e, o.data);
+      }
+    }),
+  );
+  // .subscribe(async function (o) {
+  //   console.log(o)
+  // });
 
   ws.on('open', function () {
     topics.forEach((topic) => {
@@ -249,6 +245,7 @@ async function historicalSync(subscribed = false) {
   if (historicalSyncRunning) {
     return;
   }
+  const { Block, DAGBlock, LogNetworkEvent, PBFTBlock, Tx } = await useDb();
   historicalSyncRunning = true;
   const state = await Promise.all([
     getChainState(), // updates global var
@@ -266,7 +263,7 @@ async function historicalSync(subscribed = false) {
     console.log('New genesis block hash. Restarting chain sync.');
     // console.log('chainState', chainState);
     // console.log('syncState', syncState);
-    await dropChainData();
+    await Promise.all([DAGBlock.deleteMany(), Block.deleteMany(), Tx.deleteMany()]);
     syncState = {
       number: -1,
       hash: '',
@@ -322,7 +319,7 @@ async function historicalSync(subscribed = false) {
       Object.keys(genesis).forEach((address, index) => {
         const fakeTx = new Tx({
           // _id: '0x0000000000000000000000000000000000000000000000000000000000000000',
-          _id: 'GENESIS_' + index,
+          _id: `GENESIS_${index}`,
           blockHash: block.hash,
           blockNumber: block.number,
           to: `0x${address}`,
@@ -353,9 +350,9 @@ async function historicalSync(subscribed = false) {
         }
         const dagBlocks = await Promise.all(getDagPromises);
         for (const dagBlockRPC of dagBlocks) {
-          const dagBlock = DagBlock.fromRPC(dagBlockRPC);
+          const dagBlock = DAGBlock.fromRPC(dagBlockRPC);
           const d = dagBlock.toJSON();
-          const existingDagBlock = await DagBlock.findOneAndUpdate({ _id: dagBlock._id }, d, {
+          const existingDagBlock = await DAGBlock.findOneAndUpdate({ _id: dagBlock._id }, d, {
             upsert: true,
           });
           if (!existingDagBlock) {
@@ -374,7 +371,7 @@ async function historicalSync(subscribed = false) {
         if (dagBlocks.length) {
           // send for last dag block in schedule
           const dagBlockRPC = dagBlocks[dagBlocks.length - 1];
-          const dagBlock = DagBlock.fromRPC(dagBlockRPC);
+          const dagBlock = DAGBlock.fromRPC(dagBlockRPC);
           notifications.push({
             insertOne: {
               document: {
@@ -463,7 +460,7 @@ async function historicalSync(subscribed = false) {
 
     const completed = new Date();
     console.log(
-      "Sync'd block",
+      'Synced block',
       syncState.number,
       syncState.hash,
       'with',
@@ -484,9 +481,9 @@ async function historicalSync(subscribed = false) {
       const dagBlocks = await rpc.getDagBlocksByLevel(syncState.dagBlockLevel + 1, false);
 
       for (const dagBlockRPC of dagBlocks) {
-        const dagBlock = DagBlock.fromRPC(dagBlockRPC);
+        const dagBlock = DAGBlock.fromRPC(dagBlockRPC);
         const d = dagBlock.toJSON();
-        const existingDagBlock = await DagBlock.findOneAndUpdate({ _id: dagBlock._id }, d, {
+        const existingDagBlock = await DAGBlock.findOneAndUpdate({ _id: dagBlock._id }, d, {
           upsert: true,
         });
         if (!existingDagBlock) {
@@ -523,16 +520,15 @@ program.action(async function (cmdObj) {
     try {
       taraxaConfig = require(cmdObj.config);
     } catch (e) {
-      throw new Error('Could not open config file: ' + cmdObj.config);
+      throw new Error(`Could not open config file: ${cmdObj.config}`);
     }
-
-    await mongoose.connect(config.mongo.uri, config.mongo.options);
     await historicalSync();
     // switch to realtime events from socket
-    realtimeSync();
+    await realtimeSync();
   } catch (e) {
     console.error(e.message);
     process.exit(1);
   }
 });
+
 program.parse(process.argv);

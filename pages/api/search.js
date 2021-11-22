@@ -1,20 +1,8 @@
-import config from 'config';
-import mongoose from 'mongoose';
 import utils from 'web3-utils';
-import { runCorsMiddleware } from '../../lib/cors';
-import DagBlock from '../../models/dag_block';
-import Block from '../../models/block';
-import Tx from '../../models/tx';
+import withApiHandler from '../../lib/api-handler';
 
-export default async function handler(req, res) {
-  await runCorsMiddleware(req, res);
-  try {
-    mongoose.connection._readyState ||
-      (await mongoose.connect(config.mongo.uri, config.mongo.options));
-  } catch (e) {
-    console.error(e);
-    return res.status(500).json({ error: 'Internal error. Please try your request again.' });
-  }
+async function handler(req, res) {
+  const { DAGBlock, Block, Tx } = req.models;
 
   let queryString = req.query.query || '';
   queryString = queryString.trim();
@@ -28,11 +16,13 @@ export default async function handler(req, res) {
       if (utils.isHexStrict(queryString)) {
         const hex = queryString.toLowerCase();
         blocks = await Block.find({ _id: hex }).limit(1);
-        dagBlocks = await DagBlock.find({ _id: hex }).limit(1);
+        dagBlocks = await DAGBlock.find({ _id: hex }).limit(1);
         txs = await Tx.find({ _id: hex }).limit(1);
-      } else {
+      } else if (!isNaN(Number(queryString))) {
         blocks = await Block.find({ number: Number(queryString) }).limit(1);
-        dagBlocks = await DagBlock.find({ level: Number(queryString) }).limit(1);
+        dagBlocks = await DAGBlock.find({ level: Number(queryString) }).limit(1);
+      } else {
+        return res.status(400).json({ error: 'Invalid search parameters.' });
       }
     }
 
@@ -46,3 +36,5 @@ export default async function handler(req, res) {
     res.status(500).json({ error: 'Internal error. Please try your request again.' });
   }
 }
+
+export default withApiHandler(handler);

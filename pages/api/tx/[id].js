@@ -1,19 +1,8 @@
-import config from 'config';
-import mongoose from 'mongoose';
+import withApiHandler from '../../../lib/api-handler';
 
-import { runCorsMiddleware } from '../../../lib/cors';
-import Tx from '../../../models/tx';
-
-export default async function userHandler(req, res) {
-  await runCorsMiddleware(req, res);
-  try {
-    mongoose.connection._readyState ||
-      (await mongoose.connect(config.mongo.uri, config.mongo.options));
-  } catch (e) {
-    console.error(e);
-    return res.status(500).json({ error: 'Internal error. Please try your request again.' });
-  }
+async function handler(req, res) {
   const {
+    models: { Tx },
     query: { id },
     method,
   } = req;
@@ -36,3 +25,5 @@ export default async function userHandler(req, res) {
       res.status(405).end(`Method ${method} Not Allowed`);
   }
 }
+
+export default withApiHandler(handler);
