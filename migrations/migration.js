@@ -3,12 +3,14 @@ const { useDb } = require('../lib/db');
 
 // 30m should be enough to create indices
 const socketTimeoutMS = 60000 * 30;
+const serverSelectionTimeoutMS = 60000 * 30;
+const connectTimeoutMS = 60000 * 30;
 
 async function createIndexes(specs) {
   try {
     const start = new Date();
     console.log('Creating indexes...');
-    const models = await useDb({ socketTimeoutMS });
+    const models = await useDb({ socketTimeoutMS, serverSelectionTimeoutMS, connectTimeoutMS });
 
     let indexNumber = 0;
     for (const [model, args] of specs) {
