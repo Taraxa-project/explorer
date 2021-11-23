@@ -1,17 +1,14 @@
 import React from 'react';
 import Link from 'next/link';
 import { Accordion, Button, Card, Table } from 'react-bootstrap';
-import config from 'config';
-import mongoose from 'mongoose';
-import DAGBlock from '../../models/dag_block';
+import { useDb } from '../../lib/db';
 
 export async function getServerSideProps(context) {
   let props = {
     data: {},
   };
   try {
-    mongoose.connection._readyState ||
-      (await mongoose.connect(config.mongo.uri, config.mongo.options));
+    const { DAGBlock } = await useDb();
     const block = await DAGBlock.findOne({ _id: context.query.id })
       .populate({
         path: 'transactions',
@@ -73,7 +70,7 @@ export default function DagBlockPage({ data }) {
               </ul>
             </Accordion.Collapse>
           </Card.Body>
-          {data.tips.length ? (
+          {data.tips && data.tips.length ? (
             <Card.Body>
               <Card.Title>Tips:</Card.Title>
               <Table responsive variant="dark">
@@ -115,18 +112,19 @@ export default function DagBlockPage({ data }) {
                 </tr>
               </thead>
               <tbody>
-                {data.transactions.map((tx) => (
-                  <tr key={tx._id}>
-                    <td>{new Date(tx.timestamp).toLocaleString()}</td>
-                    <td>{`${tx.blockNumber} `}</td>
-                    <td>
-                      <Link href="/tx/[id]" as={`/tx/${tx._id}`}>
-                        <a className="long-hash">{`${tx._id}`}</a>
-                      </Link>
-                    </td>
-                    <td>{(tx.value / 1e18).toFixed(6)} TARA</td>
-                  </tr>
-                ))}
+                {data.transactions &&
+                  data.transactions.map((tx) => (
+                    <tr key={tx._id}>
+                      <td>{new Date(tx.timestamp).toLocaleString()}</td>
+                      <td>{`${tx.blockNumber} `}</td>
+                      <td>
+                        <Link href="/tx/[id]" as={`/tx/${tx._id}`}>
+                          <a className="long-hash">{`${tx._id}`}</a>
+                        </Link>
+                      </td>
+                      <td>{(tx.value / 1e18).toFixed(6)} TARA</td>
+                    </tr>
+                  ))}
               </tbody>
             </Table>
           </Card.Body>

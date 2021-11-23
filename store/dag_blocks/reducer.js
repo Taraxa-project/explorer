@@ -39,7 +39,7 @@ export default function reducer(state = blocksInitialState, action) {
         recent: updated,
         period: action.data.period,
       });
-    case blockActionTypes.NEWPBFTBLOCK:
+    case blockActionTypes.NEWPBFTBLOCK: {
       const sched = action.data.schedule.dag_blocks_order;
       for (let block of recent) {
         if (sched.includes(block._id) || sched.includes(block._id.replace(/^0x/, ''))) {
@@ -51,6 +51,7 @@ export default function reducer(state = blocksInitialState, action) {
         recent: updated,
         period: action.data.period,
       });
+    }
     default:
       return state;
   }

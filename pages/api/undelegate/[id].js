@@ -1,8 +1,7 @@
-import { runCorsMiddleware } from '../../../lib/cors';
+import withApiHandler from '../../../lib/api-handler';
 import { verifyAddress, undelegateFrom } from '../../../lib/delegation';
 
-export default async function undelegateHandler(req, res) {
-  await runCorsMiddleware(req, res);
+async function handler(req, res) {
   const {
     query: { id, sig },
   } = req;
@@ -27,3 +26,5 @@ export default async function undelegateHandler(req, res) {
     status: `Successfully undelegated from ${address}.`,
   });
 }
+
+export default withApiHandler(handler);

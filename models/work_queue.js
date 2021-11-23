@@ -17,4 +17,4 @@ const WorkQueue = new mongoose.Schema({
   worker: { type: String },
 });
 
-module.exports = mongoose.model('WorkQueue', WorkQueue);
+module.exports = mongoose.models?.WorkQueue || mongoose.model('WorkQueue', WorkQueue);

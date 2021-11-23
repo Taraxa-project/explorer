@@ -1,23 +1,12 @@
-import config from 'config';
-import mongoose from 'mongoose';
+import withApiHandler from '../../lib/api-handler';
 
-import { runCorsMiddleware } from '../../lib/cors';
-import Block from '../../models/block';
-
-export default async function handler(req, res) {
-  await runCorsMiddleware(req, res);
-  try {
-    mongoose.connection._readyState ||
-      (await mongoose.connect(config.mongo.uri, config.mongo.options));
-  } catch (e) {
-    console.error(e);
-    return res.status(500).json({ error: 'Internal error. Please try your request again.' });
-  }
+async function handler(req, res) {
+  const { Block } = req.models;
 
   let skip = Number(req.query.skip) || 0;
   let limit = Number(req.query.limit) || 20;
   let reverse = Boolean(req.query.reverse);
-  let fullTransactions = Boolean(req.query.fullTransactions) || false;
+  let fullTransactions = Boolean(req.query.fullTransactions);
 
   try {
     let blocks = [];
@@ -48,3 +37,5 @@ export default async function handler(req, res) {
     res.status(500).json({ error: 'Internal error. Please try your request again.' });
   }
 }
+
+export default withApiHandler(handler);

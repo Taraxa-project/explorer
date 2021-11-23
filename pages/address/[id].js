@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { getAddress } from '../../lib/db';
+import { getAddress } from '../../lib/address';
 import { Form, Row, Col, Pagination, Card, Table } from 'react-bootstrap';
 import { IoMdCheckmark, IoMdClose } from 'react-icons/io';
 import useSwr from 'swr';
@@ -121,24 +121,29 @@ export default function AddressPage({ data }) {
               </tr>
             </thead>
             <tbody>
-              {data.transactions.map((tx) => (
-                <tr key={tx._id}>
-                  <td>{new Date(tx.timestamp).toLocaleString()}</td>
-                  <td>{`${tx.blockNumber} `}</td>
-                  <td>{data.address === tx.to ? 'Receive' : 'Send'}</td>
-                  <td>
-                    {tx.status ? <IoMdCheckmark size={20} /> : <IoMdClose size={25} color="red" />}
-                    {tx.status}
-                  </td>
-                  <td className="table-cell-overflow2">
-                    <Link href="/tx/[id]" as={`/tx/${tx._id}`}>
-                      <a className="long-hash">{`${tx._id}`}</a>
-                    </Link>
-                  </td>
-                  <td>{(tx.value / 1e18).toFixed(6)} TARA</td>
-                  <td>{((tx.gasUsed * tx.gasPrice) / 1e18).toFixed(6)} TARA</td>
-                </tr>
-              ))}
+              {data.transactions &&
+                data.transactions.map((tx) => (
+                  <tr key={tx._id}>
+                    <td>{new Date(tx.timestamp).toLocaleString()}</td>
+                    <td>{`${tx.blockNumber} `}</td>
+                    <td>{data.address === tx.to ? 'Receive' : 'Send'}</td>
+                    <td>
+                      {tx.status ? (
+                        <IoMdCheckmark size={20} />
+                      ) : (
+                        <IoMdClose size={25} color="red" />
+                      )}
+                      {tx.status}
+                    </td>
+                    <td className="table-cell-overflow2">
+                      <Link href="/tx/[id]" as={`/tx/${tx._id}`}>
+                        <a className="long-hash">{`${tx._id}`}</a>
+                      </Link>
+                    </td>
+                    <td>{(tx.value / 1e18).toFixed(6)} TARA</td>
+                    <td>{((tx.gasUsed * tx.gasPrice) / 1e18).toFixed(6)} TARA</td>
+                  </tr>
+                ))}
             </tbody>
           </Table>
         </Card.Body>

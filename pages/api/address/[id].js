@@ -1,8 +1,7 @@
-import { runCorsMiddleware } from '../../../lib/cors';
-import { getAddress } from '../../../lib/db';
+import withApiHandler from '../../../lib/api-handler';
+import { getAddress } from '../../../lib/address';
 
-export default async function userHandler(req, res) {
-  await runCorsMiddleware(req, res);
+async function handler(req, res) {
   const {
     query: { id },
     method,
@@ -28,3 +27,5 @@ export default async function userHandler(req, res) {
       res.status(405).end(`Method ${method} Not Allowed`);
   }
 }
+
+export default withApiHandler(handler);

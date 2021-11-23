@@ -1,20 +1,7 @@
-import config from 'config';
-import mongoose from 'mongoose';
+import withApiHandler from '../../lib/api-handler';
 
-import { runCorsMiddleware } from '../../lib/cors';
-import DagBlock from '../../models/dag_block';
-import PbftBlock from '../../models/pbft_block';
-
-export default async function handler(req, res) {
-  await runCorsMiddleware(req, res);
-  try {
-    mongoose.connection._readyState ||
-      (await mongoose.connect(config.mongo.uri, config.mongo.options));
-  } catch (e) {
-    console.error(e);
-    return res.status(500).json({ error: 'Internal error. Please try your request again.' });
-  }
-
+async function handler(req, res) {
+  const { DAGBlock, PBFTBlock } = req.models;
   let skip = Number(req.query.skip) || 0;
   let limit = Number(req.query.limit) || 20;
   let reverse = Boolean(req.query.reverse);
@@ -23,15 +10,15 @@ export default async function handler(req, res) {
   try {
     let blocks = [];
     let periods = [];
-    const total = await DagBlock.estimatedDocumentCount();
+    const total = await DAGBlock.estimatedDocumentCount();
     if (fullTransactions) {
-      blocks = await DagBlock.find()
+      blocks = await DAGBlock.find()
         .limit(limit)
         .skip(skip)
         .sort({ level: reverse ? -1 : 1 })
         .populate('transactions');
     } else {
-      blocks = await DagBlock.find()
+      blocks = await DAGBlock.find()
         .limit(limit)
         .skip(skip)
         .sort({ level: reverse ? -1 : 1 });
@@ -42,7 +29,7 @@ export default async function handler(req, res) {
         periods.push(block.period);
       }
     });
-    let pbftBlocks = await PbftBlock.find({ period: { $in: periods } }).sort({
+    let pbftBlocks = await PBFTBlock.find({ period: { $in: periods } }).sort({
       period: reverse ? -1 : 1,
     });
 
@@ -61,3 +48,5 @@ export default async function handler(req, res) {
     res.status(500).json({ error: 'Internal error. Please try your request again.' });
   }
 }
+
+export default withApiHandler(handler);

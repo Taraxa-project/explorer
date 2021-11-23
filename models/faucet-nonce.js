@@ -9,4 +9,4 @@ const FaucetNonce = new mongoose.Schema(
   },
 );
 
-module.exports = mongoose.models.FaucetNonce || mongoose.model('FaucetNonce', FaucetNonce);
+module.exports = mongoose.models?.FaucetNonce || mongoose.model('FaucetNonce', FaucetNonce);

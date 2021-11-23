@@ -4,15 +4,12 @@ import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Link from 'next/link';
 import utils from 'web3-utils';
+import { IoIosSearch } from 'react-icons/io';
+import { Navbar, Nav, Button, InputGroup, FormControl } from 'react-bootstrap';
+import WebsocketContainer from '../containers/ws';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../styles/globals.css';
-
-import { IoIosSearch } from 'react-icons/io';
-
-import { Navbar, Nav, Button, InputGroup, FormControl } from 'react-bootstrap';
-
-import WebsocketContainer from '../containers/ws';
 
 function ReduxApp({ Component, pageProps }) {
   const [search, setSearch] = useState('');

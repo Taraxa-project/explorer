@@ -1,11 +1,10 @@
-const config = require('config');
-const mongoose = require('mongoose');
-const WebSocket = require('ws');
+#!/usr/bin/env node
 
-const LogNetworkEvent = require('./models/log_network_event');
+const WebSocket = require('ws');
+const { useDb } = require('./lib/db');
 
 (async () => {
-  await mongoose.connect(config.mongo.uri, config.mongo.options);
+  const { LogNetworkEvent } = await useDb();
 
   const wsServer = new WebSocket.Server({
     port: 3001,

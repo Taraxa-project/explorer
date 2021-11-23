@@ -10,4 +10,4 @@ const Faucet = new mongoose.Schema(
   },
 );
 
-module.exports = mongoose.models.Faucet || mongoose.model('Faucet', Faucet);
+module.exports = mongoose.models?.Faucet || mongoose.model('Faucet', Faucet);

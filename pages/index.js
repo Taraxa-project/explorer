@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import config from 'config';
-import mongoose from 'mongoose';
 import moment from 'moment';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
 import { Container, Row, Col, Card, ListGroup, ListGroupItem } from 'react-bootstrap';
@@ -9,12 +7,7 @@ import { connect } from 'react-redux';
 import { wrapper } from '../store/store';
 import { addNewBlock } from '../store/blocks/action';
 import { addNewDagBlock } from '../store/dag_blocks/action';
-import Block from '../models/block';
-import DagBlock from '../models/dag_block';
-if (typeof window === 'undefined') {
-  // this is needed when running on the server side to avoid "model not registered error"
-  require('../models/tx');
-}
+import { useDb } from '../lib/db';
 
 function Index({ recentBlocks, recentDagBlocks }) {
   moment.relativeTimeThreshold('s', 60);
@@ -347,12 +340,11 @@ function Index({ recentBlocks, recentDagBlocks }) {
 
 export const getServerSideProps = wrapper.getServerSideProps(async ({ store }) => {
   try {
-    mongoose.connection._readyState ||
-      (await mongoose.connect(config.mongo.uri, config.mongo.options));
+    const { Block, DAGBlock } = await useDb();
 
     let [blocks, dagBlocks] = await Promise.all([
       Block.find().limit(10).sort({ timestamp: -1 }).lean(),
-      DagBlock.find().limit(1000).sort({ timestamp: -1 }).lean(),
+      DAGBlock.find().limit(1000).sort({ timestamp: -1 }).lean(),
     ]);
 
     blocks = JSON.parse(JSON.stringify(blocks));

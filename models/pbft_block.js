@@ -17,4 +17,4 @@ const PBFTBlock = new mongoose.Schema(
   },
 );
 
-module.exports = mongoose.models.PBFTBlock || mongoose.model('PBFTBlock', PBFTBlock);
+module.exports = mongoose.models?.PBFTBlock || mongoose.model('PBFTBlock', PBFTBlock);
