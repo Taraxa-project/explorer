@@ -5,12 +5,20 @@ const { useDb } = require('../lib/db');
 const socketTimeoutMS = 60000 * 30;
 const serverSelectionTimeoutMS = 60000 * 30;
 const connectTimeoutMS = 60000 * 30;
+const keepAliveInitialDelay = 5000;
+const heartbeatFrequencyMS = 1000;
 
 async function createIndexes(specs) {
   try {
     const start = new Date();
     console.log('Creating indexes...');
-    const models = await useDb({ socketTimeoutMS, serverSelectionTimeoutMS, connectTimeoutMS });
+    const models = await useDb({
+      keepAliveInitialDelay,
+      socketTimeoutMS,
+      serverSelectionTimeoutMS,
+      connectTimeoutMS,
+      heartbeatFrequencyMS,
+    });
 
     let indexNumber = 0;
     for (const [model, args] of specs) {
