@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 const { createIndexes } = require('./migration');
 
 (async () => {
