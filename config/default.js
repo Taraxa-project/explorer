@@ -21,6 +21,7 @@ module.exports = {
       keepAlive: true,
       socketTimeoutMS: 0,
       useFindAndModify: false,
+      autoIndex: false,
     },
   },
   taraxa: {
