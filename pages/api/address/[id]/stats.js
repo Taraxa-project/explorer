@@ -1,12 +1,11 @@
 import moment from 'moment';
 import withApiHandler from '../../../../lib/api-handler';
 
-import Block from '../../../../models/block';
-
 async function handler(req, res) {
   const {
     method,
     query: { id },
+    models: { Block },
   } = req;
 
   switch (method) {
