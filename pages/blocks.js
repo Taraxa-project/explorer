@@ -1,24 +1,22 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { Card, Pagination, Table, Row, Col, Form } from 'react-bootstrap';
-import useSwr from 'swr';
-
-const fetcher = (url) => fetch(url).then((res) => res.json());
+import { useApiFromClient } from '../lib/api-client';
 
 export default function Index() {
   const limit = 20;
   const [skip, setSkip] = useState(0);
   const [reverse, setReverse] = useState(true);
 
-  let query = `/api/blocks?limit=${limit}`;
+  let url = `/api/blocks?limit=${limit}`;
   if (reverse) {
-    query += '&reverse=true';
+    url += '&reverse=true';
   }
   if (skip) {
-    query += `&skip=${skip}`;
+    url += `&skip=${skip}`;
   }
 
-  const { data } = useSwr(query, fetcher);
+  const { data } = useApiFromClient(url);
 
   function updateQueryReverse(e) {
     let val = true;
@@ -28,8 +26,8 @@ export default function Index() {
     setReverse(val);
   }
 
-  function updateQuerySkip(e) {
-    setSkip(Number(e));
+  function updateQuerySkip(num) {
+    setSkip(Number(num));
   }
 
   const total = data?.total || 0;

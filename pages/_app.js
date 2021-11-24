@@ -127,7 +127,7 @@ function ReduxApp({ Component, pageProps }) {
             <a href="/faucet">Faucet</a>
           </Link>
         </p>
-        <p>© 2020 Taraxa.io</p>
+        <p>© 2020-2021 Taraxa.io</p>
       </div>
     </>
   );

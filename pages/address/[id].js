@@ -3,9 +3,7 @@ import Link from 'next/link';
 import { getAddress } from '../../lib/address';
 import { Form, Row, Col, Pagination, Card, Table } from 'react-bootstrap';
 import { IoMdCheckmark, IoMdClose } from 'react-icons/io';
-import useSwr from 'swr';
-
-const fetcher = (url) => fetch(url).then((res) => res.json());
+import { useApiFromClient } from '../../lib/api-client';
 
 export async function getServerSideProps(context) {
   const id = context.query.id;
@@ -43,15 +41,15 @@ export default function AddressPage({ data }) {
   const [skip, setSkip] = useState(0);
   const [reverse, setReverse] = useState(false);
 
-  let query = `/api/address/${data.address}?limit=${limit}`;
+  let url = `/api/address/${data.address}?limit=${limit}`;
   if (reverse) {
-    query += '&reverse=true';
+    url += '&reverse=true';
   }
   if (skip) {
-    query += `&skip=${skip}`;
+    url += `&skip=${skip}`;
   }
 
-  const { data: newData, error } = useSwr(query, fetcher);
+  const { data: newData, error } = useApiFromClient(url);
   if (newData) {
     data = newData;
   }
