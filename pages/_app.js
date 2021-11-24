@@ -64,9 +64,15 @@ function ReduxApp({ Component, pageProps }) {
           >
             <FormControl
               placeholder="Address, Hash, or Number"
-              aria-label="Recipient's username"
+              aria-label="Address, Hash, or Number"
               aria-describedby="basic-addon2"
               onChange={updateSearch}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  doSearch();
+                }
+              }}
             />
             <InputGroup.Append>
               <Button variant="outline-light" onClick={doSearch}>
