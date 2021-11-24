@@ -64,9 +64,15 @@ function ReduxApp({ Component, pageProps }) {
           >
             <FormControl
               placeholder="Address, Hash, or Number"
-              aria-label="Recipient's username"
+              aria-label="Address, Hash, or Number"
               aria-describedby="basic-addon2"
               onChange={updateSearch}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  doSearch();
+                }
+              }}
             />
             <InputGroup.Append>
               <Button variant="outline-light" onClick={doSearch}>
@@ -121,7 +127,7 @@ function ReduxApp({ Component, pageProps }) {
             <a href="/faucet">Faucet</a>
           </Link>
         </p>
-        <p>© 2020 Taraxa.io</p>
+        <p>© 2020-2021 Taraxa.io</p>
       </div>
     </>
   );

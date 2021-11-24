@@ -2,9 +2,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import moment from 'moment';
 import { Card, Table, Container, Row, Col, Pagination } from 'react-bootstrap';
-import useSwr from 'swr';
-
-const fetcher = (url) => fetch(url).then((res) => res.json());
+import { useApiFromClient } from '../lib/api-client';
 
 export default function Nodes() {
   const limit = 20;
@@ -12,15 +10,15 @@ export default function Nodes() {
   const [week, setWeek] = useState(moment().isoWeek());
   const [year, setYear] = useState(moment().isoWeekYear());
 
-  let query = `/api/nodes?limit=${limit}`;
+  let url = `/api/nodes?limit=${limit}`;
   if (skip) {
-    query += `&skip=${skip}`;
+    url += `&skip=${skip}`;
   }
 
-  query += `&week=${week}`;
-  query += `&year=${year}`;
+  url += `&week=${week}`;
+  url += `&year=${year}`;
 
-  const { data } = useSwr(query, fetcher);
+  const { data } = useApiFromClient(url);
 
   function updateQuerySkip(val) {
     setSkip(Number(val));

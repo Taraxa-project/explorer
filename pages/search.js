@@ -1,28 +1,43 @@
 import React from 'react';
 import Link from 'next/link';
-import useSwr from 'swr';
-
 import { Card, Table } from 'react-bootstrap';
+import { useApiFromServer } from '../lib/api-client';
 
-const fetcher = (url) => fetch(url).then((res) => res.json());
-
-export default function Search() {
-  let search = '';
-  if (typeof window !== 'undefined') {
-    search = window?.location?.search;
+export async function getServerSideProps(context) {
+  const apiGet = useApiFromServer(context);
+  const { query } = context.query;
+  if (!query) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
+    };
   }
-  const params = new URLSearchParams(search);
-  let queryString = params.get('query') || '';
-  queryString = queryString.toLowerCase();
 
-  let query = `/api/search?query=${queryString}`;
+  const searchQuery = query.toLowerCase();
+  const { data, error, status } = await apiGet(`/api/search?query=${searchQuery}`);
+  return {
+    props: { data, error, status, searchQuery },
+  };
+}
 
-  const { data } = useSwr(query, fetcher);
+export default function Search({ data, error, status, searchQuery }) {
+  if (error) {
+    if (status === 400) {
+      return <h1>Invalid search parameters. Please enter a number, an address, or a hash.</h1>;
+    } else {
+      return <h1>An error occured while fetching your search results. Please try again.</h1>;
+    }
+  }
+
+  if (!data?.blocks?.length && !data?.dagBlocks?.length && !data?.txs?.length) {
+    return <h1>No results found for: {searchQuery}</h1>;
+  }
 
   return (
     <>
-      <h1>Search: {queryString}</h1>
-
+      <h1>Search: {searchQuery}</h1>
       {data?.blocks?.length ? (
         <Card style={{ margin: 5, marginTop: 0, marginBottom: 10 }} bg="dark" text="white">
           <Table responsive variant="dark">

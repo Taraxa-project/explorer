@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { Card, Table, Col, Row, Pagination, Form } from 'react-bootstrap';
-import useSwr from 'swr';
+import { useApiFromClient } from '../lib/api-client';
 import DAG from '../components/DAG';
-
-const fetcher = (url) => fetch(url).then((res) => res.json());
 
 export default function Index() {
   const [limit, setLimit] = useState(20);
@@ -12,15 +10,15 @@ export default function Index() {
   const [reverse, setReverse] = useState(true);
   const [diagram, setDiagram] = useState(true);
 
-  let query = `/api/dag_blocks?limit=${limit}`;
+  let url = `/api/dag_blocks?limit=${limit}`;
   if (reverse) {
-    query += '&reverse=true';
+    url += '&reverse=true';
   }
   if (skip) {
-    query += `&skip=${skip}`;
+    url += `&skip=${skip}`;
   }
 
-  const { data } = useSwr(query, fetcher);
+  const { data } = useApiFromClient(url);
 
   function updateQueryReverse(e) {
     let val = true;
