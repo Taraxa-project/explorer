@@ -25,13 +25,13 @@ async function handler(req, res) {
       blocks = await Block.find(filter)
         .limit(limit)
         .skip(skip)
-        .sort({ number: reverse ? -1 : 1 })
+        .sort({ timestamp: reverse ? -1 : 1 })
         .populate('transactions');
     } else {
       blocks = await Block.find(filter)
         .limit(limit)
         .skip(skip)
-        .sort({ number: reverse ? -1 : 1 });
+        .sort({ timestamp: reverse ? -1 : 1 });
     }
     res.json({ total, reverse, skip, limit, result: { blocks } });
   } catch (e) {
