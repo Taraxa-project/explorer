@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { Card, Pagination, Table, Row, Col, Form } from 'react-bootstrap';
 import { useApiFromClient } from '../lib/api-client';
+import useQuery from '../lib/query';
 
 export default function Index() {
   const limit = 20;
@@ -14,6 +15,11 @@ export default function Index() {
   }
   if (skip) {
     url += `&skip=${skip}`;
+  }
+
+  const author = useQuery().get('author');
+  if (author) {
+    url += `&author=${author.toLowerCase()}`;
   }
 
   const { data } = useApiFromClient(url);
