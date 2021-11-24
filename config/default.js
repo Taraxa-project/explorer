@@ -19,8 +19,8 @@ module.exports = {
       useNewUrlParser: true,
       useUnifiedTopology: true,
       keepAlive: true,
-      socketTimeoutMS: 0,
       useFindAndModify: false,
+      autoIndex: false,
     },
   },
   taraxa: {

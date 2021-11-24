@@ -1,13 +1,10 @@
 #!/usr/bin/env node
 
 const config = require('config');
-const mongoose = require('mongoose');
 const BN = require('bn.js');
 const Web3 = require('web3');
 const RLP = require('rlp');
-
-const Delegate = require('../models/delegate');
-const FaucetNonce = require('../models/faucet-nonce');
+const { useDb } = require('../lib/db');
 
 const sleep = async (delay = 30 * 1000) => {
   return await new Promise((resolve) => {
@@ -16,6 +13,8 @@ const sleep = async (delay = 30 * 1000) => {
 };
 
 async function worker() {
+  const { Delegate } = await useDb();
+
   const delegates = await Delegate.find({
     status: 'QUEUED',
   }).sort({
@@ -89,6 +88,7 @@ async function undelegateTransaction(address, value) {
 }
 
 async function sendTransaction(input) {
+  const { FaucetNonce } = await useDb();
   const taraxa = new Web3(config.taraxa.node.http);
   const account = taraxa.eth.accounts.privateKeyToAccount(config.faucet.privateKey);
   const faucetNonce = await FaucetNonce.findOneAndUpdate(
@@ -181,7 +181,6 @@ function waitForTransaction(web3, txnHash, options = null) {
 
 (async () => {
   try {
-    mongoose.connect(config.mongo.uri, config.mongo.options);
     console.log('Delegation worker started');
     while (true) {
       await worker();
