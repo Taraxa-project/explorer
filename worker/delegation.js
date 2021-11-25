@@ -20,9 +20,6 @@ const sleep = async (delay = 10 * 1000) => {
 
 async function worker() {
   tracer.withSpan(tracer.createSpan().setName('worker'), async (span) => {
-    console.log('worker span');
-    console.log(span);
-
     const { Delegate } = await useDb();
 
     const delegates = await Delegate.find({
@@ -92,24 +89,20 @@ async function worker() {
 
 async function delegateTransaction(address, value) {
   tracer.withSpan(tracer.createSpan().setName('undelegateTransaction'), async (span) => {
-    console.log('delegateTransaction span');
-    console.log(span);
     await sendTransaction(`0x${bufferToHex(RLP.encode([[address, [value, 0]]]))}`);
+    span.close();
   });
 }
 
 async function undelegateTransaction(address, value) {
   tracer.withSpan(tracer.createSpan().setName('undelegateTransaction'), async (span) => {
-    console.log('undelegateTransaction span');
-    console.log(span);
     await sendTransaction(`0x${bufferToHex(RLP.encode([[address, [value, 1]]]))}`);
+    span.close();
   });
 }
 
 async function sendTransaction(input) {
   tracer.withSpan(tracer.createSpan().setName('sendTransaction'), async (span) => {
-    console.log('sendTransaction span');
-    console.log(span);
     const { FaucetNonce } = await useDb();
     const taraxa = new Web3(config.taraxa.node.http);
     const account = taraxa.eth.accounts.privateKeyToAccount(config.faucet.privateKey);
@@ -140,6 +133,7 @@ async function sendTransaction(input) {
           reject(error);
         });
     });
+    span.close();
   });
 }
 
@@ -152,9 +146,6 @@ function waitForTransaction(web3, txnHash, options = null) {
   const blocksToWait = options && options.blocksToWait ? options.blocksToWait : 1;
   const transactionReceiptAsync = async function (txnHash, resolve, reject) {
     tracer.withSpan(tracer.createSpan().setName('transactionReceiptAsync'), async (span) => {
-      console.log('transactionReceiptAsync span');
-      console.log(span);
-
       try {
         var receipt = web3.eth.getTransactionReceipt(txnHash);
         if (!receipt) {
@@ -206,6 +197,7 @@ function waitForTransaction(web3, txnHash, options = null) {
         }
       } catch (e) {
         tracer.setError(e);
+        span.close();
         reject(e);
       }
     });
