@@ -19,6 +19,11 @@ async function handler(req, res) {
         const blocksProduced = await Block.aggregate([
           { $match: { author: id } },
           {
+            $sort: {
+              timestamp: 1,
+            },
+          },
+          {
             $group: {
               _id: '$author',
               count: { $sum: 1 },
@@ -27,7 +32,7 @@ async function handler(req, res) {
           },
         ]);
 
-        if (blocksProduced.length) {
+        if (blocksProduced.length > 0) {
           totalProduced = blocksProduced[0].count;
           lastBlockTimestamp = blocksProduced[0].lastBlockTimestamp;
 
