@@ -12,7 +12,7 @@ const Web3 = require('web3');
 const RLP = require('rlp');
 const { useDb } = require('../lib/db');
 
-const sleep = async (delay = 30 * 1000) => {
+const sleep = async (delay = 10 * 1000) => {
   return await new Promise((resolve) => {
     setTimeout(resolve, delay);
   });
@@ -28,55 +28,51 @@ async function worker() {
     const delegates = await Delegate.find({
       status: 'QUEUED',
     }).sort({
-      updatedAt: 1,
+      createdAt: 1,
     });
     if (delegates.length === 0) {
       console.log('No delegation requests!');
-      span.close(); //don't measure sleep for performance
+      span.close();
       return await sleep();
     }
 
     for (let delegate of delegates) {
-      tracer.withSpan(tracer.createSpan().setName('delegate'), async (span) => {
-        console.log('Processing delegation', delegate);
+      console.log('Processing delegation', delegate);
 
+      tracer.withSpan(tracer.createSpan().setName('delegate'), async (span) => {
         const valueToAdd = new BN(delegate.valueToAdd);
         const valueToSubstract = new BN(delegate.valueToSubstract);
-        let total = new BN(delegate.total);
+
         let status = 'FINISHED';
 
         if (valueToAdd.gtn(0)) {
-          console.log('Delegating to', delegate._id, 'value', valueToAdd.toString());
+          console.log('Delegating to', delegate.node, 'value', valueToAdd.toString());
 
           try {
-            await delegateTransaction(delegate.counterpart, valueToAdd.mul(new BN(2)));
             console.log('- own node', delegate.counterpart);
-            await delegateTransaction(delegate._id, valueToAdd);
-            console.log('- user node', delegate._id);
+            await delegateTransaction(delegate.counterpart, valueToAdd.mul(new BN(2)));
+            console.log('- user node', delegate.node);
+            await delegateTransaction(delegate.node, valueToAdd);
           } catch (e) {
             tracer.setError(e);
             console.error(e);
             status = 'ERROR';
           }
-
-          total = total.add(valueToAdd);
         }
 
         if (valueToSubstract.gtn(0)) {
-          console.log('Undelegating from', delegate._id, 'value', valueToSubstract.toString());
+          console.log('Undelegating from', delegate.node, 'value', valueToSubstract.toString());
 
           try {
-            await undelegateTransaction(delegate.counterpart, valueToSubstract.mul(new BN(2)));
             console.log('- own node', delegate.counterpart);
-            await undelegateTransaction(delegate._id, valueToSubstract);
-            console.log('- user node', delegate._id);
+            await undelegateTransaction(delegate.counterpart, valueToSubstract.mul(new BN(2)));
+            console.log('- user node', delegate.node);
+            await undelegateTransaction(delegate.node, valueToSubstract);
           } catch (e) {
             tracer.setError(e);
             console.error(e);
             status = 'ERROR';
           }
-
-          total = total.sub(valueToSubstract);
         }
 
         await Delegate.findOneAndUpdate(
@@ -84,16 +80,12 @@ async function worker() {
           {
             valueToAdd: '0',
             valueToSubstract: '0',
-            total: total.toString(),
             status: status,
           },
         );
-
         span.close();
+        await sleep();
       });
-
-      span.close(); //don't measure sleep for performance
-      await sleep();
     }
   });
 }
