@@ -97,10 +97,6 @@ export let onBlock = (
     block.level = parseInt(block.level);
   }
 
-  if (typeof block.timestamp === 'string') {
-    block.timestamp = parseInt(block.timestamp);
-  }
-
   var node = block2node(block, levelNodesPosition);
   var pivot = pivot2edge(block);
   var tips = tips2edge(block);

@@ -19,8 +19,14 @@ async function handler(req, res) {
     if (isNaN(level) || level === null) {
       level = reverse ? topLevel : 1;
     }
+    if (req.query.calculateLevel) {
+      return res.json({ topLevel, level });
+    }
+
     const maxLevel = reverse ? Math.min(topLevel, level) : Math.min(topLevel, level + limit);
-    const minLevel = reverse ? Math.max(1, level - limit) : Math.min(1, level);
+    const minLevel = reverse
+      ? Math.max(1, Math.min(topLevel, level - limit))
+      : Math.min(topLevel, level);
 
     let blocksQuery = await DAGBlock.find({ level: { $lte: maxLevel, $gte: minLevel } }).sort({
       level: reverse ? -1 : 1,
