@@ -1,17 +1,18 @@
 import withApiHandler from '../../lib/api-handler';
+import { extractBoolean } from '../../lib/query';
 
 const MAX_LEVELS_PER_PAGE = 150;
 const DEFAULT_LEVELS_PER_PAGE = 20;
 
 async function handler(req, res) {
   const { DAGBlock, PBFTBlock } = req.models;
-  let limit = Math.min(
+  const limit = Math.min(
     Math.max(1, Number(req.query.limit) || DEFAULT_LEVELS_PER_PAGE),
     MAX_LEVELS_PER_PAGE,
   );
   let level = req.query.level ? Number(req.query.level) : null;
-  let reverse = req.query.reverse !== 'false';
-  let fullTransactions = Boolean(req.query.fullTransactions);
+  const reverse = extractBoolean(req.query.reverse, true);
+  const fullTransactions = extractBoolean(req.query.fullTransactions, false);
 
   try {
     let periods = [];
