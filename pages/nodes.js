@@ -42,20 +42,15 @@ export default function Nodes() {
   let endOfWeekDisplay;
   let weekDisplay;
   let yearDisplay;
-  let tzOffset;
-  let tzHours;
-  let tzMinutes;
-  let tzString;
-
+  const tzOffset = moment(endOfWeek).local().utcOffset();
+  const tzHours = String(Math.abs(Math.floor(tzOffset / 60))).padStart(2, '0');
+  const tzMinutes = String(Math.abs(tzOffset % 60)).padStart(2, '0');
+  const tzString = `local time (UTC ${tzOffset >= 0 ? '+' : '-'}${tzHours}:${tzMinutes})`;
   if (displayLocal) {
     startOfWeekDisplay = moment(startOfWeek).local().format('MMMM Do YYYY, h:mm:ss');
     endOfWeekDisplay = moment(endOfWeek).local().format('MMMM Do YYYY, h:mm:ss');
     weekDisplay = moment(endOfWeek).local().week();
     yearDisplay = moment(endOfWeek).local().weekYear();
-    tzOffset = moment(endOfWeek).local().utcOffset();
-    tzHours = String(Math.abs(Math.floor(tzOffset / 60))).padStart(2, '0');
-    tzMinutes = String(Math.abs(tzOffset % 60)).padStart(2, '0');
-    tzString = `UTC ${tzOffset >= 0 ? '+' : '-'}${tzHours}:${tzMinutes}`;
   } else {
     startOfWeekDisplay = moment(startOfWeek).utc().format('MMMM Do');
     endOfWeekDisplay = moment(endOfWeek).utc().format('MMMM Do');
@@ -73,7 +68,7 @@ export default function Nodes() {
               {endOfWeekDisplay})
             </h1>
             <p>
-              All times in {displayLocal ? `local time (${tzString})` : 'UTC'}.{' '}
+              All times in {displayLocal ? tzString : 'UTC'}.{' '}
               <a
                 href="#"
                 onClick={(e) => {
@@ -81,7 +76,7 @@ export default function Nodes() {
                   setDisplayLocal((prev) => !prev);
                 }}
               >
-                Switch to {displayLocal ? 'UTC' : 'local time'}
+                Switch to {displayLocal ? 'UTC' : tzString}
               </a>
             </p>
           </Col>
