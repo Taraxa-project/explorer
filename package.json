@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "test": "mocha",
-    "postinstall": "husky install"
+    "postinstall": "husky install",
+    "ensure-indexes": "node ./ensure-indexes.js"
   },
   "lint-staged": {
     "*.{js,jsx}": [
