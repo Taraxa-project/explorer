@@ -51,4 +51,9 @@ Block.statics.fromRPC = function fromRPC(data) {
   return new this(json);
 };
 
+Block.index({ timestamp: -1 }, { background: true });
+Block.index({ author: 1, gasUsed: 1 }, { background: true, sparse: true });
+Block.index({ author: 1, timestamp: -1 }, { background: true });
+Block.index({ author: 1, timestamp: 1 }, { background: true });
+
 module.exports = mongoose.models?.Block || mongoose.model('Block', Block);
