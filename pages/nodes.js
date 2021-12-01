@@ -34,7 +34,7 @@ export default function Nodes() {
   const page = skip / limit + 1;
 
   const isThisWeek = moment(nowUTC).utc().isoWeek() === week;
-  const currentWeekYear = moment().utc().isoWeekYear(year).isoWeek(week);
+  const currentWeekYear = moment(nowUTC).utc().isoWeekYear(year).isoWeek(week);
   const startOfWeek = moment(currentWeekYear).utc().startOf('week');
   const endOfWeek = moment(currentWeekYear).utc().endOf('week');
 
