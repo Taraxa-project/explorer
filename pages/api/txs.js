@@ -4,11 +4,13 @@ import { extractBoolean } from '../../lib/query';
 async function handler(req, res) {
   const {
     models: { Tx },
-    query: { blockHash, cursorId, cursorTimestamp },
+    query: { blockHash, cursorId, cursorTimestamp, address },
   } = req;
 
   const limit = Number(req.query.limit) || 20;
   const reverse = extractBoolean(req.query.reverse, true);
+  let cursorFilter = [];
+  let addressFilter = [];
 
   try {
     let filter = {};
@@ -16,13 +18,24 @@ async function handler(req, res) {
       filter['blockHash'] = blockHash;
     }
     if (cursorId && cursorTimestamp) {
-      filter['$or'] = [
+      cursorFilter = [
         { timestamp: { [reverse ? '$lt' : '$gt']: cursorTimestamp } },
         {
           timestamp: cursorTimestamp,
           _id: { $gt: cursorId },
         },
       ];
+    }
+    if (address) {
+      addressFilter = [{ from: address }, { to: address }];
+    }
+
+    if (addressFilter.length > 0 && cursorFilter.length > 0) {
+      filter['$and'] = [{ $or: addressFilter }, { $or: cursorFilter }];
+    } else if (addressFilter.length > 0) {
+      filter['$or'] = addressFilter;
+    } else if (cursorFilter.length > 0) {
+      filter['$or'] = cursorFilter;
     }
 
     const txs = await Tx.find(filter)

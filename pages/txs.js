@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { Card, Table, Row, Col, Form, Pagination } from 'react-bootstrap';
 import { IoMdCheckmark, IoMdClose } from 'react-icons/io';
 import { fetchApi } from '../lib/api-client';
+import { useClientQuery } from '../lib/query';
 
 export default function Index() {
   const limit = 100;
@@ -11,9 +12,14 @@ export default function Index() {
   const [hasMore, setHasMore] = useState(true);
   const [transactions, setTransactions] = useState([]);
 
+  const address = useClientQuery().get('address');
+
   let url = `/api/txs?limit=${limit}`;
   if (reverse) {
     url += '&reverse=true';
+  }
+  if (address) {
+    url += `&address=${address.toLowerCase()}`;
   }
   if (cursor) {
     url += `&cursorId=${cursor.id}&cursorTimestamp=${cursor.timestamp}`;
