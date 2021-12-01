@@ -42,4 +42,13 @@ Tx.statics.fromRPC = function fromRPC(data) {
   return new this(json);
 };
 
+Tx.index({ to: 1, status: 1, value: 1 }, { background: true, sparse: true });
+Tx.index({ from: 1, status: 1, value: 1 }, { background: true, sparse: true });
+Tx.index({ from: 1, gasUsed: 1, gasPrice: 1 }, { background: true, sparse: true });
+Tx.index({ timestamp: -1 }, { background: true });
+Tx.index({ from: 1, timestamp: -1 }, { background: true });
+Tx.index({ to: 1, timestamp: -1 }, { background: true });
+Tx.index({ from: 1, timestamp: 1 }, { background: true });
+Tx.index({ to: 1, timestamp: 1 }, { background: true });
+
 module.exports = mongoose.models?.Tx || mongoose.model('Tx', Tx);
