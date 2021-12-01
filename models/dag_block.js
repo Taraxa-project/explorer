@@ -38,4 +38,7 @@ DAGBlock.statics.fromRPC = function fromRPC(json) {
   return new this(json);
 };
 
+DAGBlock.index({ level: 1 }, { background: true });
+DAGBlock.index({ level: -1 }, { background: true });
+
 module.exports = mongoose.models?.DAGBlock || mongoose.model('DAGBlock', DAGBlock);
