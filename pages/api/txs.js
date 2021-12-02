@@ -9,11 +9,11 @@ async function handler(req, res) {
 
   const limit = Number(req.query.limit) || 20;
   const reverse = extractBoolean(req.query.reverse, true);
-  let cursorFilter = [];
-  let addressFilter = [];
 
   try {
     let filter = {};
+    let cursorFilter = [];
+    let addressFilter = [];
     if (blockHash) {
       filter['blockHash'] = blockHash;
     }
@@ -27,7 +27,7 @@ async function handler(req, res) {
       ];
     }
     if (address) {
-      addressFilter = [{ from: address }, { to: address }];
+      addressFilter = [{ from: address.toLowerCase() }, { to: address.toLowerCase() }];
     }
 
     if (addressFilter.length > 0 && cursorFilter.length > 0) {

@@ -1,45 +1,67 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Card, Pagination, Table, Row, Col, Form } from 'react-bootstrap';
-import { useApiFromClient } from '../lib/api-client';
+import { fetchApi } from '../lib/api-client';
 import { useClientQuery } from '../lib/query';
 
 export default function Index() {
-  const limit = 20;
-  const [skip, setSkip] = useState(0);
+  const limit = 100;
+  const [cursor, setCursor] = useState(null);
   const [reverse, setReverse] = useState(true);
+  const [hasMore, setHasMore] = useState(true);
+  const [blocks, setBlocks] = useState([]);
+
+  const author = useClientQuery().get('author');
 
   let url = `/api/blocks?limit=${limit}`;
   if (reverse) {
     url += '&reverse=true';
   }
-  if (skip) {
-    url += `&skip=${skip}`;
+  if (cursor) {
+    url += `&cursorId=${cursor.id}&cursorTimestamp=${cursor.timestamp}`;
   }
-
-  const author = useClientQuery().get('author');
   if (author) {
     url += `&author=${author.toLowerCase()}`;
   }
 
-  const { data } = useApiFromClient(url);
+  const fetchBlocks = useCallback(async () => {
+    if (hasMore) {
+      const { data } = await fetchApi(url);
+      const incomingBlocks = data?.result?.blocks || [];
+      setBlocks((prevBlocks) => {
+        if (incomingBlocks.length === 0) {
+          setHasMore(false);
+          return prevBlocks;
+        }
+        return prevBlocks.concat(incomingBlocks);
+      });
+    }
+  }, [url, hasMore]);
+
+  useEffect(() => fetchBlocks(), [fetchBlocks]);
+
+  function updateCursor(e) {
+    e.preventDefault();
+    if (hasMore && blocks.length > 0) {
+      const { _id: id, timestamp } = blocks[blocks.length - 1];
+      setCursor({ id, timestamp });
+    }
+  }
 
   function updateQueryReverse(e) {
     let val = true;
     if (e.target.value === 'false') {
       val = false;
     }
-    setReverse(val);
+    setReverse((prevVal) => {
+      if (prevVal !== val) {
+        setBlocks([]);
+        setCursor(null);
+        setHasMore(true);
+      }
+      return val;
+    });
   }
-
-  function updateQuerySkip(num) {
-    setSkip(Number(num));
-  }
-
-  const total = data?.total || 0;
-  const blocks = data?.result?.blocks || [];
-  const pages = Math.ceil(total / limit);
-  const page = skip / limit + 1;
 
   return (
     <>
@@ -87,89 +109,10 @@ export default function Index() {
           </tbody>
         </Table>
       </Card>
-
-      {total > limit ? (
+      {hasMore && (
         <Pagination className="justify-content-center" style={{ padding: 10 }}>
-          {page < 2 ? (
-            ''
-          ) : (
-            <>
-              <Pagination.First onClick={() => updateQuerySkip(0)} />
-              <Pagination.Prev onClick={() => updateQuerySkip((page - 2) * limit)} />
-            </>
-          )}
-
-          {page !== 1 ? (
-            <Pagination.Item onClick={() => updateQuerySkip(0)}>{1}</Pagination.Item>
-          ) : (
-            ''
-          )}
-
-          {page > 4 ? (
-            <>
-              <Pagination.Ellipsis />
-            </>
-          ) : (
-            ''
-          )}
-
-          {page - 2 > 1 ? (
-            <Pagination.Item onClick={() => updateQuerySkip((page - 3) * limit)}>
-              {page - 2}
-            </Pagination.Item>
-          ) : (
-            ''
-          )}
-          {page - 1 > 1 ? (
-            <Pagination.Item onClick={() => updateQuerySkip((page - 2) * limit)}>
-              {page - 1}
-            </Pagination.Item>
-          ) : (
-            ''
-          )}
-          <Pagination.Item active>{page}</Pagination.Item>
-          {page + 1 < pages ? (
-            <Pagination.Item onClick={() => updateQuerySkip(page * limit)}>
-              {page + 1}
-            </Pagination.Item>
-          ) : (
-            ''
-          )}
-          {page + 2 < pages ? (
-            <Pagination.Item onClick={() => updateQuerySkip((page + 1) * limit)}>
-              {page + 2}
-            </Pagination.Item>
-          ) : (
-            ''
-          )}
-
-          {pages > page + 2 ? (
-            <>
-              <Pagination.Ellipsis />
-            </>
-          ) : (
-            ''
-          )}
-
-          {page !== pages ? (
-            <Pagination.Item onClick={() => updateQuerySkip((pages - 1) * limit)}>
-              {pages}
-            </Pagination.Item>
-          ) : (
-            ''
-          )}
-
-          {page < pages ? (
-            <>
-              <Pagination.Next onClick={() => updateQuerySkip(page * limit)} />
-              <Pagination.Last onClick={() => updateQuerySkip((pages - 1) * limit)} />
-            </>
-          ) : (
-            ''
-          )}
+          <Pagination.Item onClick={updateCursor}>show more...</Pagination.Item>
         </Pagination>
-      ) : (
-        ''
       )}
     </>
   );
