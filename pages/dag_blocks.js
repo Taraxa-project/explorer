@@ -64,7 +64,7 @@ export default function Index() {
             backgroundColor: '#0f1517',
           }}
         >
-          <DAG dagBlocks={blocks} reverse={true} pbftBlocks={pbftBlocks} />
+          <DAG dagBlocks={blocks} pbftBlocks={pbftBlocks} />
         </Col>
       </Row>
       {maxLevel !== null && (
