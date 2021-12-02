@@ -1,18 +1,19 @@
 import withApiHandler from '../../lib/api-handler';
+import { extractBoolean } from '../../lib/query';
 
 async function handler(req, res) {
   const { Block } = req.models;
 
-  let author = req.query.author ? req.query.author.toLowerCase() : '';
-  let skip = Number(req.query.skip) || 0;
-  let limit = Number(req.query.limit) || 20;
-  let reverse = Boolean(req.query.reverse);
-  let fullTransactions = Boolean(req.query.fullTransactions);
+  const author = req.query.author ? req.query.author.toLowerCase() : '';
+  const skip = Number(req.query.skip) || 0;
+  const limit = Number(req.query.limit) || 20;
+  const reverse = extractBoolean(req.query.reverse, true);
+  const fullTransactions = extractBoolean(req.query.fullTransactions, false);
 
   try {
     let filter = {};
     let total;
-    let blocks = [];
+    let blocksQuery;
 
     if (author) {
       filter = { author };
@@ -21,18 +22,16 @@ async function handler(req, res) {
       total = await Block.estimatedDocumentCount();
     }
 
+    blocksQuery = Block.find(filter)
+      .limit(limit)
+      .skip(skip)
+      .sort({ timestamp: reverse ? -1 : 1 });
+
     if (fullTransactions) {
-      blocks = await Block.find(filter)
-        .limit(limit)
-        .skip(skip)
-        .sort({ timestamp: reverse ? -1 : 1 })
-        .populate('transactions');
-    } else {
-      blocks = await Block.find(filter)
-        .limit(limit)
-        .skip(skip)
-        .sort({ timestamp: reverse ? -1 : 1 });
+      blocksQuery = blocksQuery.populate('transactions');
     }
+    const blocks = await blocksQuery;
+
     res.json({ total, reverse, skip, limit, result: { blocks } });
   } catch (e) {
     console.error(e);

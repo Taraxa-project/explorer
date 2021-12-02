@@ -1,5 +1,6 @@
 import withApiHandler from '../../../lib/api-handler';
 import { getAddress } from '../../../lib/address';
+import { extractBoolean } from '../../../lib/query';
 
 async function handler(req, res) {
   const {
@@ -7,11 +8,10 @@ async function handler(req, res) {
     method,
   } = req;
 
-  let skip = Number(req.query.skip) || 0;
-  let limit = Number(req.query.limit) || 20;
-  let sortOrder = req.query.reverse ? 1 : -1;
-
-  let query = { id, skip, limit, sortOrder };
+  const skip = Number(req.query.skip) || 0;
+  const limit = Number(req.query.limit) || 20;
+  const sortOrder = extractBoolean(req.query.reverse, true) ? 1 : -1;
+  const query = { id, skip, limit, sortOrder };
 
   switch (method) {
     case 'GET':
