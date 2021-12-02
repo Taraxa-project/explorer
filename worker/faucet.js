@@ -1,6 +1,12 @@
 #!/usr/bin/env node
 
 const config = require('config');
+const { Appsignal } = require('@appsignal/nodejs');
+
+const appsignal = new Appsignal(config.appsignal);
+const tracer = appsignal.tracer();
+const rootSpan = tracer.createSpan({ namespace: 'background' }).setName('faucet-worker');
+
 const Web3 = require('web3-eth');
 const { useDb } = require('../lib/db');
 
@@ -30,55 +36,69 @@ async function drip() {
       return await sleep();
     }
 
-    try {
-      const faucetNonce = await FaucetNonce.findOneAndUpdate(
-        {},
-        { $inc: { nonce: 1 } },
-        { upsert: true, new: true },
-      );
+    tracer.withSpan(tracer.createSpan().setName('cup'), async (span) => {
+      try {
+        const faucetNonce = await FaucetNonce.findOneAndUpdate(
+          {},
+          { $inc: { nonce: 1 } },
+          { upsert: true, new: true },
+        );
 
-      const tx = await account.signTransaction({
-        from: account.address,
-        to: cup.address,
-        value: 1 * 1e17,
-        gas: 21000,
-        gasPrice: 1 * 1e9,
-        nonce: faucetNonce.nonce - 1,
-      });
+        const tx = await account.signTransaction({
+          from: account.address,
+          to: cup.address,
+          value: 1 * 1e17,
+          gas: 21000,
+          gasPrice: 1 * 1e9,
+          nonce: faucetNonce.nonce - 1,
+        });
 
-      await new Promise((resolve, reject) => {
-        taraxa
-          .sendSignedTransaction(tx.rawTransaction)
-          .once('transactionHash', (txHash) => {
-            console.log(`Sending tx ${txHash} to ${cup.address}`);
-            unconfirmed++;
-            resolve(txHash);
-          })
-          .once('receipt', () => {
-            unconfirmed--;
-          })
-          .once('error', (error) => {
-            unconfirmed--;
-            console.error(error);
-            reject(error);
-          });
-      });
-    } catch (e) {
-      console.error(e);
-    }
+        await new Promise((resolve, reject) => {
+          taraxa
+            .sendSignedTransaction(tx.rawTransaction)
+            .once('transactionHash', (txHash) => {
+              console.log(`Sending tx ${txHash} to ${cup.address}`);
+              unconfirmed++;
+              resolve(txHash);
+            })
+            .once('receipt', () => {
+              unconfirmed--;
+            })
+            .once('error', (error) => {
+              unconfirmed--;
+              console.error(error);
+              reject(error);
+            });
+        });
+      } catch (e) {
+        tracer.setError(e);
+        console.error(e);
+      }
+      span.close();
+    });
 
     await sleep(dripInterval);
   }
 }
 
-(async () => {
+const main = async () => {
+  console.log('Faucet started');
+  while (true) {
+    await drip();
+  }
+};
+
+tracer.withSpan(rootSpan, async (span) => {
   try {
-    console.log('Faucet started');
-    while (true) {
-      await drip();
-    }
+    await main();
   } catch (e) {
     console.error(e);
+    tracer.setError(e);
+    span.close();
+    appsignal.stop();
     process.exit(1);
   }
-})();
+
+  span.close();
+  appsignal.stop();
+});
