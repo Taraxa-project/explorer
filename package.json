@@ -25,6 +25,7 @@
     "abi-decoder": "^2.3.0",
     "axios": ">=0.21.1",
     "bootstrap": "^4.5.3",
+    "bree": "^7.1.0",
     "bufferutil": "^4.0.2",
     "commander": "^6.2.0",
     "config": "^3.3.3",

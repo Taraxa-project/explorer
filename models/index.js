@@ -1,3 +1,4 @@
+const Address = require('./address');
 const Block = require('./block');
 const DAGBlock = require('./dag_block');
 const Delegate = require('./delegate');
@@ -9,6 +10,7 @@ const Tx = require('./tx');
 const WorkQueue = require('./work_queue');
 
 module.exports = {
+  Address,
   Block,
   DAGBlock,
   Delegate,
