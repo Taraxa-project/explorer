@@ -10,6 +10,9 @@ COPY package* ./
 ENV NODE_ENV production
 ENV NEXT_TELEMETRY_DISABLED 1
 
+RUN mkdir /appsignal
+ENV APPSIGNAL_WORKING_DIRECTORY_PATH /appsignal
+
 # skip trying to install husky hooks
 RUN npm set-script postinstall ""
 RUN npm ci
