@@ -12,6 +12,7 @@ ENV NEXT_TELEMETRY_DISABLED 1
 
 RUN mkdir /appsignal
 ENV APPSIGNAL_WORKING_DIRECTORY_PATH /appsignal
+ENV APPSIGNAL_DEBUG true
 
 # skip trying to install husky hooks
 RUN npm set-script postinstall ""
