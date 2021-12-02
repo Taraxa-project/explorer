@@ -7,7 +7,7 @@ import * as dag_draw from './dag_draw';
 
 let levelNodesPosition = {};
 
-function DAG({ dagBlocks, pbftBlocks, reverse, history, highlight }) {
+function DAG({ dagBlocks, pbftBlocks, history, highlight }) {
   const [data] = useState(null); // Currently requested data
   const [prevData] = useState(null); //Last requested data
 
@@ -158,12 +158,9 @@ function DAG({ dagBlocks, pbftBlocks, reverse, history, highlight }) {
       cy.remove('node');
       levelNodesPosition = {};
       firstLevel.current = 0;
-      const dagBlockHistory = [].concat(dagBlocks);
-      const pbftBlockHistory = [].concat(pbftBlocks);
-      if (reverse) {
-        dagBlockHistory.reverse();
-        pbftBlockHistory.reverse();
-      }
+      const dagBlockHistory = [].concat(dagBlocks).reverse();
+      const pbftBlockHistory = [].concat(pbftBlocks).reverse();
+
       for (const block of dagBlockHistory) {
         block.hash = block._id;
         onBlock(block);
