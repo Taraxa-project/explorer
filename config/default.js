@@ -29,4 +29,10 @@ module.exports = {
       ws: process.env.RPC_WS_PROVIDER || 'ws://localhost:8777',
     },
   },
+  appsignal: {
+    name: process.env.APPSIGNAL_PROJECT_NAME,
+    pushApiKey: process.env.APPSIGNAL_PUSH_API_KEY,
+    active:
+      Boolean(process.env.APPSIGNAL_PROJECT_NAME) && Boolean(process.env.APPSIGNAL_PUSH_API_KEY),
+  },
 };
