@@ -1,4 +1,5 @@
 import withApiHandler from '../../../lib/api-handler';
+import { extractBoolean } from '../../../lib/query';
 
 async function handler(req, res) {
   const {
@@ -7,18 +8,17 @@ async function handler(req, res) {
     method,
   } = req;
 
-  let fullTransactions = Boolean(req.query.fullTransactions) || false;
+  const fullTransactions = extractBoolean(req.query.fullTransactions, false);
 
   switch (method) {
     case 'GET':
       try {
-        let block;
+        let blockQuery = Block.findOne({ _id: id });
         if (fullTransactions) {
-          block = await Block.findOne({ _id: id }).populate('transactions');
-        } else {
-          block = await Block.findOne({ _id: id });
+          blockQuery = blockQuery.populate('transactions');
         }
 
+        const block = await blockQuery;
         if (block) {
           return res.json(block);
         }
