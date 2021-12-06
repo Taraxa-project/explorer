@@ -1,12 +1,6 @@
 #!/usr/bin/env node
 
 const config = require('config');
-const { Appsignal } = require('@appsignal/nodejs');
-
-const appsignal = new Appsignal(config.appsignal);
-const tracer = appsignal.tracer();
-const rootSpan = tracer.createSpan({ namespace: 'background' }).setName('delegation-worker');
-
 const BN = require('bn.js');
 const Web3 = require('web3');
 const RLP = require('rlp');
@@ -34,68 +28,57 @@ async function worker() {
   for (let delegate of delegates) {
     console.log('Processing delegation', delegate);
 
-    tracer.withSpan(tracer.createSpan().setName('processDelegate'), async (span) => {
-      const valueToAdd = new BN(delegate.valueToAdd);
-      const valueToSubstract = new BN(delegate.valueToSubstract);
+    const valueToAdd = new BN(delegate.valueToAdd);
+    const valueToSubstract = new BN(delegate.valueToSubstract);
 
-      let status = 'FINISHED';
+    let status = 'FINISHED';
 
-      if (valueToAdd.gtn(0)) {
-        console.log('Delegating to', delegate.node, 'value', valueToAdd.toString());
+    if (valueToAdd.gtn(0)) {
+      console.log('Delegating to', delegate.node, 'value', valueToAdd.toString());
 
-        try {
-          console.log('- own node', delegate.counterpart);
-          await delegateTransaction(delegate.counterpart, valueToAdd.mul(new BN(2)));
-          console.log('- user node', delegate.node);
-          await delegateTransaction(delegate.node, valueToAdd);
-        } catch (e) {
-          tracer.setError(e);
-          console.error(e);
-          status = 'ERROR';
-        }
+      try {
+        console.log('- own node', delegate.counterpart);
+        await delegateTransaction(delegate.counterpart, valueToAdd.mul(new BN(2)));
+        console.log('- user node', delegate.node);
+        await delegateTransaction(delegate.node, valueToAdd);
+      } catch (e) {
+        console.error(e);
+        status = 'ERROR';
       }
+    }
 
-      if (valueToSubstract.gtn(0)) {
-        console.log('Undelegating from', delegate.node, 'value', valueToSubstract.toString());
+    if (valueToSubstract.gtn(0)) {
+      console.log('Undelegating from', delegate.node, 'value', valueToSubstract.toString());
 
-        try {
-          console.log('- own node', delegate.counterpart);
-          await undelegateTransaction(delegate.counterpart, valueToSubstract.mul(new BN(2)));
-          console.log('- user node', delegate.node);
-          await undelegateTransaction(delegate.node, valueToSubstract);
-        } catch (e) {
-          tracer.setError(e);
-          console.error(e);
-          status = 'ERROR';
-        }
+      try {
+        console.log('- own node', delegate.counterpart);
+        await undelegateTransaction(delegate.counterpart, valueToSubstract.mul(new BN(2)));
+        console.log('- user node', delegate.node);
+        await undelegateTransaction(delegate.node, valueToSubstract);
+      } catch (e) {
+        console.error(e);
+        status = 'ERROR';
       }
+    }
 
-      await Delegate.findOneAndUpdate(
-        { _id: delegate._id },
-        {
-          valueToAdd: '0',
-          valueToSubstract: '0',
-          status: status,
-        },
-      );
-      span.close();
-      await sleep();
-    });
+    await Delegate.findOneAndUpdate(
+      { _id: delegate._id },
+      {
+        valueToAdd: '0',
+        valueToSubstract: '0',
+        status: status,
+      },
+    );
+    await sleep();
   }
 }
 
 async function delegateTransaction(address, value) {
-  tracer.withSpan(tracer.createSpan().setName('delegateTransaction'), async (span) => {
-    await sendTransaction(`0x${bufferToHex(RLP.encode([[address, [value, 0]]]))}`);
-    span.close();
-  });
+  await sendTransaction(`0x${bufferToHex(RLP.encode([[address, [value, 0]]]))}`);
 }
 
 async function undelegateTransaction(address, value) {
-  tracer.withSpan(tracer.createSpan().setName('undelegateTransaction'), async (span) => {
-    await sendTransaction(`0x${bufferToHex(RLP.encode([[address, [value, 1]]]))}`);
-    span.close();
-  });
+  await sendTransaction(`0x${bufferToHex(RLP.encode([[address, [value, 1]]]))}`);
 }
 
 async function sendTransaction(input) {
@@ -171,7 +154,6 @@ function waitForTransaction(web3, txnHash, options = null) {
                 }, interval);
               }
             } catch (e) {
-              tracer.setError(e);
               setTimeout(function () {
                 transactionReceiptAsync(txnHash, resolve, reject);
               }, interval);
@@ -182,7 +164,6 @@ function waitForTransaction(web3, txnHash, options = null) {
         }
       }
     } catch (e) {
-      tracer.setError(e);
       reject(e);
     }
   };
@@ -199,14 +180,11 @@ const main = async () => {
   }
 };
 
-tracer.withSpan(rootSpan, async (span) => {
+(async () => {
   try {
     await main();
   } catch (e) {
     console.error(e);
-    tracer.setError(e);
-    span.close();
-    appsignal.stop();
     process.exit(1);
   }
-});
+})();
