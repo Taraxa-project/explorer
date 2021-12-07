@@ -3,31 +3,28 @@
 const config = require('config');
 const Web3 = require('web3-eth');
 const { useDb } = require('../lib/db');
+const { sleep } = require('../lib/timing');
 
 const taraxa = new Web3(new Web3.providers.HttpProvider(config.taraxa.node.http));
 const account = taraxa.accounts.privateKeyToAccount(config.faucet.privateKey);
 const dripInterval = config.faucet.dripInterval;
 
-let unconfirmed = 0;
+const SLEEP_SECONDS = 3;
 
-const sleep = async (delay = 3000) => {
-  return await new Promise((resolve) => {
-    setTimeout(resolve, delay);
-  });
-};
+let unconfirmed = 0;
 
 async function drip() {
   const { Faucet, FaucetNonce } = await useDb();
   const cups = await Faucet.find().sort({ created: -1 });
   if (cups.length === 0) {
     console.log('No addresses in the faucet');
-    return await sleep();
+    return await sleep(SLEEP_SECONDS);
   }
 
   for (let cup of cups) {
     if (unconfirmed >= config.faucet.maxUnconfirmed) {
       console.log('Skipping a round due to unconfirmed count', unconfirmed);
-      return await sleep();
+      return await sleep(SLEEP_SECONDS);
     }
 
     try {

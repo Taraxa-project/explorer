@@ -5,12 +5,9 @@ const BN = require('bn.js');
 const Web3 = require('web3');
 const RLP = require('rlp');
 const { useDb } = require('../lib/db');
+const { sleep } = require('../lib/timing');
 
-const sleep = async (delay = 10 * 1000) => {
-  return await new Promise((resolve) => {
-    setTimeout(resolve, delay);
-  });
-};
+const SLEEP_SECONDS = 10;
 
 async function worker() {
   const { Delegate } = await useDb();
@@ -22,7 +19,7 @@ async function worker() {
   });
   if (delegates.length === 0) {
     console.log('No delegation requests!');
-    return await sleep();
+    return await sleep(SLEEP_SECONDS);
   }
 
   for (let delegate of delegates) {
@@ -69,7 +66,7 @@ async function worker() {
         status: status,
       },
     );
-    await sleep();
+    await sleep(SLEEP_SECONDS);
   }
 }
 

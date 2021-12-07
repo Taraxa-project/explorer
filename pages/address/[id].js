@@ -1,39 +1,41 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { getAddress } from '../../lib/address';
+import { getOrCreateAddress, getTransactions } from '../../lib/address';
 import { Form, Row, Col, Pagination, Card, Table } from 'react-bootstrap';
 import { IoMdCheckmark, IoMdClose } from 'react-icons/io';
 import { useApiFromClient } from '../../lib/api-client';
 
 export async function getServerSideProps(context) {
-  const id = context.query.id;
-  let skip = Number(context.query.skip) || 0;
-  let limit = Number(context.query.limit) || 20;
-  let sortOrder = context.query.reverse ? 1 : -1;
+  const { id } = context.query;
+  const skip = Number(context.query.skip) || 0;
+  const limit = Number(context.query.limit) || 20;
+  const sortOrder = context.query.reverse ? 1 : -1;
 
-  let query = { id, skip, limit, sortOrder };
+  const query = { id, skip, limit, sortOrder };
 
-  let props = {
+  const props = {
     data: {
-      address: '',
-      sent: 0,
-      received: 0,
-      fees: 0,
-      balance: 0,
-      transactions: [],
-      count: 0,
+      address: {
+        _id: '',
+        sent: 0,
+        received: 0,
+        fees: 0,
+        balance: 0,
+      },
+      tx: {
+        transactions: [],
+        total: 0,
+      },
     },
   };
   try {
-    const address = await getAddress(query);
-    props.data = JSON.parse(JSON.stringify(address));
+    props.data.address = await getOrCreateAddress(id);
+    props.data.tx = await getTransactions(query);
   } catch (e) {
     console.error(`Error in Server Props: ${e.message}`);
   }
 
-  return {
-    props, // will be passed to the page component as props
-  };
+  return { props };
 }
 
 export default function AddressPage({ data }) {

@@ -1,5 +1,5 @@
 import withApiHandler from '../../../lib/api-handler';
-import { getAddress } from '../../../lib/address';
+import { getOrCreateAddress, getTransactions } from '../../../lib/address';
 import { extractBoolean } from '../../../lib/query';
 
 async function handler(req, res) {
@@ -16,8 +16,9 @@ async function handler(req, res) {
   switch (method) {
     case 'GET':
       try {
-        const address = await getAddress(query);
-        return res.json(address);
+        const address = await getOrCreateAddress(id);
+        const tx = await getTransactions(query);
+        return res.json({ address, tx });
       } catch (e) {
         res.status(e.status).json({ error: e.message });
       }
