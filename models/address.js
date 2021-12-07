@@ -11,35 +11,8 @@ const Address = new mongoose.Schema(
   },
   {
     versionKey: false,
-    toJSON: { virtuals: true },
-    toObject: { virtuals: true },
+    timestamps: true,
   },
 );
-
-Address.virtual('receivedTransactions', {
-  ref: 'Tx',
-  localField: '_id',
-  foreignField: 'to',
-});
-
-Address.virtual('receivedTransactionsCount', {
-  ref: 'Tx',
-  localField: '_id',
-  foreignField: 'to',
-  count: true,
-});
-
-Address.virtual('sentTransactions', {
-  ref: 'Tx',
-  localField: '_id',
-  foreignField: 'from',
-});
-
-Address.virtual('sentTransactionsCount', {
-  ref: 'Tx',
-  localField: '_id',
-  foreignField: 'from',
-  count: true,
-});
 
 module.exports = mongoose.models?.Address || mongoose.model('Address', Address);
