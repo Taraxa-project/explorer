@@ -42,14 +42,17 @@ export async function getServerSideProps(context) {
 
 export default function AddressPage({ data }) {
   const limit = 20;
+  const [address, setAddress] = useState(data.address);
+  const [transactions, setTransactions] = useState(data.tx?.transactions || []);
+  const [total, setTotal] = useState(data.tx?.total || 0);
   const [skip, setSkip] = useState(0);
   const [reverse, setReverse] = useState(false);
 
-  if (data.address === null) {
-    return <h1>Invalid or unknown address.</h1>;
+  if (address === null) {
+    return <h1>Invalid or unknown address. Please try again later.</h1>;
   }
 
-  let url = `/api/address/${data.address._id}?limit=${limit}`;
+  let url = `/api/address/${address._id}?limit=${limit}`;
   if (reverse) {
     url += '&reverse=true';
   }
@@ -64,19 +67,21 @@ export default function AddressPage({ data }) {
       return;
     }
 
-    const { data: newData, error } = await fetchApi(url);
-    if (newData) {
-      data = newData;
-    }
-
+    const {
+      data: { tx, address },
+      error,
+    } = await fetchApi(url);
     if (error) {
       console.error(error);
+    } else {
+      setAddress(address);
+      setTransactions(tx.transactions);
+      setTotal(tx.total);
     }
   }, [url]);
 
   useEffect(() => fetchAddress(), [fetchAddress]);
 
-  const total = data?.tx?.total || 0;
   const pages = Math.ceil(total / limit);
   const page = skip / limit + 1;
 
@@ -96,7 +101,7 @@ export default function AddressPage({ data }) {
     <>
       <Row>
         <Col sm="8" md="10">
-          <h1>Address {data.address._id}</h1>
+          <h1>Address {address._id}</h1>
         </Col>
         <Col>
           <Form>
@@ -112,15 +117,15 @@ export default function AddressPage({ data }) {
 
       <Card style={{ margin: 5, marginTop: 0, marginBottom: 10 }} bg="dark" text="white">
         <Card.Body>
-          <Card.Title>Balance: {(data.address.balance / 1e18).toFixed(6)} TARA</Card.Title>
+          <Card.Title>Balance: {(address.balance / 1e18).toFixed(6)} TARA</Card.Title>
           <ul>
-            <li>Received: {(data.address.received / 1e18).toFixed(6)} TARA</li>
-            <li>Sent: {(data.address.sent / 1e18).toFixed(6)} TARA</li>
-            <li>Fees: {(data.address.fees / 1e18).toFixed(6)} TARA</li>
+            <li>Received: {(address.received / 1e18).toFixed(6)} TARA</li>
+            <li>Sent: {(address.sent / 1e18).toFixed(6)} TARA</li>
+            <li>Fees: {(address.fees / 1e18).toFixed(6)} TARA</li>
           </ul>
         </Card.Body>
         <Card.Body>
-          <Card.Title># blocks produced: {data.address.blocksProduced}</Card.Title>
+          <Card.Title># blocks produced: {address.blocksProduced}</Card.Title>
         </Card.Body>
         <Card.Body>
           <Card.Title>Transactions:</Card.Title>
@@ -137,12 +142,12 @@ export default function AddressPage({ data }) {
               </tr>
             </thead>
             <tbody>
-              {data.tx?.transactions &&
-                data.tx.transactions.map((tx) => (
+              {transactions &&
+                transactions.map((tx) => (
                   <tr key={tx._id}>
                     <td>{new Date(tx.timestamp).toLocaleString()}</td>
                     <td>{`${tx.blockNumber} `}</td>
-                    <td>{data.address._id === tx.to ? 'Receive' : 'Send'}</td>
+                    <td>{address._id === tx.to ? 'Receive' : 'Send'}</td>
                     <td>
                       {tx.status ? (
                         <IoMdCheckmark size={20} />
