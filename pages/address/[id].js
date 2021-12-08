@@ -45,6 +45,10 @@ export default function AddressPage({ data }) {
   const [skip, setSkip] = useState(0);
   const [reverse, setReverse] = useState(false);
 
+  if (data.address === null) {
+    return <h1>Invalid or unknown address.</h1>;
+  }
+
   let url = `/api/address/${data.address._id}?limit=${limit}`;
   if (reverse) {
     url += '&reverse=true';
@@ -57,9 +61,7 @@ export default function AddressPage({ data }) {
   const fetchAddress = useCallback(async () => {
     if (!mounted.current) {
       mounted.current = true;
-      if (data) {
-        return;
-      }
+      return;
     }
 
     const { data: newData, error } = await fetchApi(url);
