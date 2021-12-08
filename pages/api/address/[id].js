@@ -10,7 +10,7 @@ async function handler(req, res) {
 
   const skip = Number(req.query.skip) || 0;
   const limit = Number(req.query.limit) || 20;
-  const sortOrder = extractBoolean(req.query.reverse, true) ? 1 : -1;
+  const sortOrder = extractBoolean(req.query.reverse, true) ? -1 : 1;
   const query = { id, skip, limit, sortOrder };
 
   switch (method) {

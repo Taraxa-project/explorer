@@ -4,12 +4,13 @@ import { getPopulatedAddress, getTransactions } from '../../lib/address';
 import { Form, Row, Col, Pagination, Card, Table } from 'react-bootstrap';
 import { IoMdCheckmark, IoMdClose } from 'react-icons/io';
 import { fetchApi } from '../../lib/api-client';
+import { extractBoolean } from '../../lib/query';
 
 export async function getServerSideProps(context) {
   const { id } = context.query;
   const skip = Number(context.query.skip) || 0;
   const limit = Number(context.query.limit) || 20;
-  const sortOrder = context.query.reverse ? 1 : -1;
+  const sortOrder = extractBoolean(context.query.reverse, true) ? -1 : 1;
 
   const query = { id, skip, limit, sortOrder };
 
