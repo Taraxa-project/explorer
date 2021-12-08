@@ -1,24 +1,29 @@
 const moment = require('moment');
+const utils = require('web3-utils');
+const { getAddress } = require('../lib/address');
 const { useAddressStatsWorker } = require('../lib/agenda');
 const { useDb } = require('../lib/db');
-
-const MAX_ADDRESS_STALE_SECONDS = 5;
 
 const agenda = useAddressStatsWorker();
 
 agenda.define('AddressStatsWorker', async (job) => {
   try {
-    const { Address, Block, Tx } = await useDb();
     const { id } = job.attrs.data;
+    if (!utils.isHexStrict(id)) {
+      console.log(`Skipping address stats for invalid ${id}`);
+    }
+
+    console.log(`Processing address stats for ${id}`);
+    const { Address, Block, Tx } = await useDb();
+
     const now = moment();
-    let address = await Address.findById(id);
+    let address = await getAddress(id);
     if (!address) {
+      console.log(`Creating new address stats for ${id}`);
       address = new Address({ _id: id, updatedAt: now.toDate(), createdAt: now.toDate() });
     }
 
-    if (address.isPopulated && now.diff(address.updatedAd, 'seconds') < MAX_ADDRESS_STALE_SECONDS) {
-      return;
-    }
+    console.log(`Running aggregations for address stats for ${id}`);
 
     const [receivedResult, sentResult, feesResult, blocksProducedResult, gasProducedResult] =
       await Promise.all([
@@ -51,7 +56,7 @@ agenda.define('AddressStatsWorker', async (job) => {
     address.gasProduced = gasProducedResult.length ? gasProducedResult[0].value : 0;
     address.balance = address.received + address.gasProduced - address.sent - address.fees;
     address.isPopulated = true;
-
+    console.log(`Saving fresh stats for ${id}`);
     await address.save();
   } catch (e) {
     console.error(e);
@@ -60,5 +65,6 @@ agenda.define('AddressStatsWorker', async (job) => {
 });
 
 (async function () {
+  await agenda._ready;
   await agenda.start();
 })();

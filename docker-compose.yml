@@ -26,6 +26,16 @@ services:
     ports:
       - '3000:3000'
     command: ['npm', 'start']
+  address-stats:
+    container_name: address-stats
+    build:
+      context: .
+    restart: always
+    env_file: .env
+    environment:
+      MONGO_URI: ${MONGO_URI}
+      NEXT_PUBLIC_EXPLORER_WS: ${NEXT_PUBLIC_EXPLORER_WS}
+    command: ['npm', 'run', 'address-stats']
   explorer-ws:
     container_name: explorer-ws
     build:
@@ -36,8 +46,6 @@ services:
       MONGO_URI: ${MONGO_URI}
     ports:
       - '3001:3001'
-    depends_on:
-      - mongodb
     command: ['node', './ws-server']
   faucet:
     container_name: faucet

@@ -4,7 +4,7 @@
   "description": "Taraxa Block Explorer",
   "scripts": {
     "dev": "NODE_ENV=development nodemon --watch server --inspect server.js",
-    "address-worker": "node ./agenda.js",
+    "address-stats": "node ./worker/address-stats.js",
     "build": "next build",
     "start": "NODE_ENV=production node server.js",
     "lint": "next lint",

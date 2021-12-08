@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { getOrCreateAddress, getTransactions } from '../../lib/address';
+import { getPopulatedAddress, getTransactions } from '../../lib/address';
 import { Form, Row, Col, Pagination, Card, Table } from 'react-bootstrap';
 import { IoMdCheckmark, IoMdClose } from 'react-icons/io';
-import { useApiFromClient } from '../../lib/api-client';
+import { fetchApi } from '../../lib/api-client';
 
 export async function getServerSideProps(context) {
   const { id } = context.query;
@@ -29,8 +29,10 @@ export async function getServerSideProps(context) {
     },
   };
   try {
-    props.data.address = await getOrCreateAddress(id);
-    props.data.tx = await getTransactions(query);
+    const address = await getPopulatedAddress(id);
+    props.data.address = JSON.parse(JSON.stringify(address));
+    const tx = await getTransactions(query);
+    props.data.tx = JSON.parse(JSON.stringify(tx));
   } catch (e) {
     console.error(`Error in Server Props: ${e.message}`);
   }
@@ -43,7 +45,7 @@ export default function AddressPage({ data }) {
   const [skip, setSkip] = useState(0);
   const [reverse, setReverse] = useState(false);
 
-  let url = `/api/address/${data.address}?limit=${limit}`;
+  let url = `/api/address/${data.address._id}?limit=${limit}`;
   if (reverse) {
     url += '&reverse=true';
   }
@@ -51,16 +53,28 @@ export default function AddressPage({ data }) {
     url += `&skip=${skip}`;
   }
 
-  const { data: newData, error } = useApiFromClient(url);
-  if (newData) {
-    data = newData;
-  }
+  const mounted = useRef();
+  const fetchAddress = useCallback(async () => {
+    if (!mounted.current) {
+      mounted.current = true;
+      if (data) {
+        return;
+      }
+    }
 
-  if (error) {
-    console.error(error);
-  }
+    const { data: newData, error } = await fetchApi(url);
+    if (newData) {
+      data = newData;
+    }
 
-  const total = data?.count || 0;
+    if (error) {
+      console.error(error);
+    }
+  }, [url]);
+
+  useEffect(() => fetchAddress(), [fetchAddress]);
+
+  const total = data?.tx?.total || 0;
   const pages = Math.ceil(total / limit);
   const page = skip / limit + 1;
 
@@ -80,7 +94,7 @@ export default function AddressPage({ data }) {
     <>
       <Row>
         <Col sm="8" md="10">
-          <h1>Address {data.address}</h1>
+          <h1>Address {data.address._id}</h1>
         </Col>
         <Col>
           <Form>
@@ -96,15 +110,15 @@ export default function AddressPage({ data }) {
 
       <Card style={{ margin: 5, marginTop: 0, marginBottom: 10 }} bg="dark" text="white">
         <Card.Body>
-          <Card.Title>Balance: {(data.balance / 1e18).toFixed(6)} TARA</Card.Title>
+          <Card.Title>Balance: {(data.address.balance / 1e18).toFixed(6)} TARA</Card.Title>
           <ul>
-            <li>Received: {(data.received / 1e18).toFixed(6)} TARA</li>
-            <li>Sent: {(data.sent / 1e18).toFixed(6)} TARA</li>
-            <li>Fees: {(data.fees / 1e18).toFixed(6)} TARA</li>
+            <li>Received: {(data.address.received / 1e18).toFixed(6)} TARA</li>
+            <li>Sent: {(data.address.sent / 1e18).toFixed(6)} TARA</li>
+            <li>Fees: {(data.address.fees / 1e18).toFixed(6)} TARA</li>
           </ul>
         </Card.Body>
         <Card.Body>
-          <Card.Title># blocks produced: {data.produced}</Card.Title>
+          <Card.Title># blocks produced: {data.address.blocksProduced}</Card.Title>
         </Card.Body>
         <Card.Body>
           <Card.Title>Transactions:</Card.Title>
@@ -121,12 +135,12 @@ export default function AddressPage({ data }) {
               </tr>
             </thead>
             <tbody>
-              {data.transactions &&
-                data.transactions.map((tx) => (
+              {data.tx?.transactions &&
+                data.tx.transactions.map((tx) => (
                   <tr key={tx._id}>
                     <td>{new Date(tx.timestamp).toLocaleString()}</td>
                     <td>{`${tx.blockNumber} `}</td>
-                    <td>{data.address === tx.to ? 'Receive' : 'Send'}</td>
+                    <td>{data.address._id === tx.to ? 'Receive' : 'Send'}</td>
                     <td>
                       {tx.status ? (
                         <IoMdCheckmark size={20} />

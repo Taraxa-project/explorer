@@ -9,6 +9,7 @@ const { mergeMap } = require('rxjs/operators');
 const WebSocket = require('ws');
 const rpc = require('../lib/rpc');
 const { useDb } = require('../lib/db');
+const { enqueuePopulateAddress } = require('../lib/agenda');
 
 let taraxaConfig;
 
@@ -428,11 +429,14 @@ async function historicalSync(subscribed = false) {
       },
     });
 
+    const txAuthors = [];
+
     block.transactions.forEach((tx, idx) => {
       const receipt = txReceipts[idx];
       tx.timestamp = block.timestamp;
 
       const t = Tx.fromRPC(tx).toJSON();
+      txAuthors.unshift(t.from, t.to);
       t.status = receipt.status === '0' ? false : true;
       t.gasUsed = parseInt(receipt.gasUsed, 16);
       t.cumulativeGasUsed = parseInt(receipt.cumulativeGasUsed, 16);
@@ -454,6 +458,11 @@ async function historicalSync(subscribed = false) {
     await Block.findOneAndUpdate({ _id: block.hash }, Block.fromRPC(minBlock).toJSON(), {
       upsert: true,
     });
+
+    const uniqueTxAuthors = new Set(txAuthors);
+    uniqueTxAuthors.forEach(async (txAuthor) => await enqueuePopulateAddress(txAuthor));
+
+    await enqueuePopulateAddress(block.author);
 
     await LogNetworkEvent.bulkWrite(notifications, { ordered: true });
 
