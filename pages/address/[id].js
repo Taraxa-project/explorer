@@ -10,14 +10,14 @@ export async function getServerSideProps(context) {
   const { id } = context.query;
   const skip = Number(context.query.skip) || 0;
   const limit = Number(context.query.limit) || 20;
-  const sortOrder = extractBoolean(context.query.reverse, true) ? -1 : 1;
+  const sortOrder = extractBoolean(context.query.reverse, false) ? 1 : -1;
 
   const query = { id, skip, limit, sortOrder };
 
   const props = {
     data: {
       address: {
-        _id: '',
+        _id: id,
         sent: 0,
         received: 0,
         fees: 0,
@@ -92,6 +92,7 @@ export default function AddressPage({ data }) {
       val = false;
     }
     setReverse(val);
+    setSkip(0);
   }
 
   function updateQuerySkip(e) {
