@@ -129,21 +129,21 @@ export default function AddressPage({ data }) {
         </Card.Body>
         <Card.Body>
           <Card.Title>Transactions:</Card.Title>
-          <Table responsive variant="dark">
-            <thead>
-              <tr>
-                <th>Timestamp</th>
-                <th>Block</th>
-                <th>Action</th>
-                <th>Status</th>
-                <th>Hash</th>
-                <th>Value</th>
-                <th>Fee</th>
-              </tr>
-            </thead>
-            <tbody>
-              {transactions &&
-                transactions.map((tx) => (
+          {transactions && transactions.length ? (
+            <Table responsive variant="dark">
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Block</th>
+                  <th>Action</th>
+                  <th>Status</th>
+                  <th>Hash</th>
+                  <th>Value</th>
+                  <th>Fee</th>
+                </tr>
+              </thead>
+              <tbody>
+                {transactions.map((tx) => (
                   <tr key={tx._id}>
                     <td>{new Date(tx.timestamp).toLocaleString()}</td>
                     <td>{`${tx.blockNumber} `}</td>
@@ -165,8 +165,11 @@ export default function AddressPage({ data }) {
                     <td>{((tx.gasUsed * tx.gasPrice) / 1e18).toFixed(6)} TARA</td>
                   </tr>
                 ))}
-            </tbody>
-          </Table>
+              </tbody>
+            </Table>
+          ) : (
+            <p>No transactions found for address.</p>
+          )}
         </Card.Body>
       </Card>
 
