@@ -11,6 +11,7 @@ agenda.define('AddressStatsWorker', async (job) => {
     const { id } = job.attrs.data;
     if (!utils.isHexStrict(id)) {
       console.log(`Skipping address stats for invalid ${id}`);
+      return;
     }
 
     console.log(`Processing address stats for ${id}`);
