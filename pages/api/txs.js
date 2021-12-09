@@ -2,28 +2,47 @@ import withApiHandler from '../../lib/api-handler';
 import { extractBoolean } from '../../lib/query';
 
 async function handler(req, res) {
-  const { Tx } = req.models;
+  const {
+    models: { Tx },
+    query: { blockHash, cursorId, cursorTimestamp, address },
+  } = req;
 
-  const skip = Number(req.query.skip) || 0;
   const limit = Number(req.query.limit) || 20;
   const reverse = extractBoolean(req.query.reverse, true);
-  const { blockHash } = req.query;
 
   try {
     let filter = {};
-    let total;
+    let cursorFilter = [];
+    let addressFilter = [];
     if (blockHash) {
-      filter = { blockHash };
-      total = await Tx.countDocuments(filter);
-    } else {
-      total = await Tx.estimatedDocumentCount();
+      filter['blockHash'] = blockHash;
     }
+    if (cursorId && cursorTimestamp) {
+      cursorFilter = [
+        { timestamp: { [reverse ? '$lt' : '$gt']: cursorTimestamp } },
+        {
+          timestamp: cursorTimestamp,
+          _id: { $gt: cursorId },
+        },
+      ];
+    }
+    if (address) {
+      addressFilter = [{ from: address.toLowerCase() }, { to: address.toLowerCase() }];
+    }
+
+    if (addressFilter.length > 0 && cursorFilter.length > 0) {
+      filter['$and'] = [{ $or: addressFilter }, { $or: cursorFilter }];
+    } else if (addressFilter.length > 0) {
+      filter['$or'] = addressFilter;
+    } else if (cursorFilter.length > 0) {
+      filter['$or'] = cursorFilter;
+    }
+
     const txs = await Tx.find(filter)
       .limit(limit)
-      .skip(skip)
-      .sort({ timestamp: reverse ? -1 : 1 });
+      .sort({ timestamp: reverse ? -1 : 1, _id: 1 });
 
-    res.json({ total, reverse, skip, limit, result: { txs } });
+    res.json({ reverse, limit, result: { txs } });
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: 'Internal error. Please try your request again.' });

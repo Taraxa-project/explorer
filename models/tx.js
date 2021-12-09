@@ -50,5 +50,7 @@ Tx.index({ from: 1, timestamp: -1 }, { background: true });
 Tx.index({ to: 1, timestamp: -1 }, { background: true });
 Tx.index({ from: 1, timestamp: 1 }, { background: true });
 Tx.index({ to: 1, timestamp: 1 }, { background: true });
+Tx.index({ timestamp: 1, _id: 1 }, { background: true });
+Tx.index({ timestamp: -1, _id: 1 }, { background: true });
 
 module.exports = mongoose.models?.Tx || mongoose.model('Tx', Tx);
