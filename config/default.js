@@ -35,7 +35,7 @@ module.exports = {
     active:
       Boolean(process.env.APPSIGNAL_PROJECT_NAME) && Boolean(process.env.APPSIGNAL_PUSH_API_KEY),
   },
-  agenda: {
+  jobQueue: {
     maxConcurrency: 20,
     defaultConcurrency: 5,
     db: { address: process.env.MONGO_URI || 'mongodb://localhost:27017/explorer' },

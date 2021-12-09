@@ -1,31 +1,23 @@
-const moment = require('moment');
 const utils = require('web3-utils');
 const { getAddress } = require('../lib/address');
-const { useAddressStatsWorker } = require('../lib/agenda');
+const { useAddressStatsQueue } = require('../lib/job-queue');
 const { useDb } = require('../lib/db');
 
-const agenda = useAddressStatsWorker();
+const jobQueue = useAddressStatsQueue();
 
-agenda.define('AddressStatsWorker', async (job) => {
+jobQueue.define('AddressStats', async (job) => {
   try {
     const { id } = job.attrs.data;
-    if (!utils.isHexStrict(id)) {
-      console.log(`Skipping address stats for invalid ${id}`);
+    if (!utils.isAddress(id)) {
+      console.warn(`Skipping address stats for invalid ${id}`);
       return;
     }
 
-    console.log(`Processing address stats for ${id}`);
     const { Address, Block, Tx } = await useDb();
-
-    const now = moment();
     let address = await getAddress(id);
     if (!address) {
-      console.log(`Creating new address stats for ${id}`);
-      address = new Address({ _id: id, updatedAt: now.toDate(), createdAt: now.toDate() });
+      address = new Address({ _id: id });
     }
-
-    console.log(`Running aggregations for address stats for ${id}`);
-
     const [receivedResult, sentResult, feesResult, blocksProducedResult, gasProducedResult] =
       await Promise.all([
         Tx.aggregate([
@@ -66,6 +58,6 @@ agenda.define('AddressStatsWorker', async (job) => {
 });
 
 (async function () {
-  await agenda._ready;
-  await agenda.start();
+  await jobQueue._ready;
+  await jobQueue.start();
 })();

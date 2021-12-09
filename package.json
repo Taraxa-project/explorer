@@ -6,6 +6,7 @@
     "dev": "NODE_ENV=development nodemon --watch server --inspect server.js",
     "address-stats": "node ./worker/address-stats.js",
     "build": "next build",
+    "start-docker-compose": "NODE_ENV=production npm run ensure-indexes && node server.js",
     "start": "NODE_ENV=production node server.js",
     "lint": "next lint",
     "test": "mocha",

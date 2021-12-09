@@ -7,7 +7,6 @@ const FaucetNonce = require('./faucet-nonce');
 const LogNetworkEvent = require('./log_network_event');
 const PBFTBlock = require('./pbft_block');
 const Tx = require('./tx');
-const WorkQueue = require('./work_queue');
 
 module.exports = {
   Address,
@@ -19,5 +18,4 @@ module.exports = {
   LogNetworkEvent,
   PBFTBlock,
   Tx,
-  WorkQueue,
 };
