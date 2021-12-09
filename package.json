@@ -4,7 +4,9 @@
   "description": "Taraxa Block Explorer",
   "scripts": {
     "dev": "NODE_ENV=development nodemon --watch server --inspect server.js",
+    "address-stats": "node ./worker/address-stats.js",
     "build": "next build",
+    "start-docker-compose": "NODE_ENV=production npm run ensure-indexes && node server.js",
     "start": "NODE_ENV=production node server.js",
     "lint": "next lint",
     "test": "mocha",
@@ -23,6 +25,7 @@
     "@appsignal/nextjs": "^2.0.6",
     "@appsignal/nodejs": "^2.2.5",
     "abi-decoder": "^2.3.0",
+    "agenda": "^4.2.1",
     "axios": ">=0.21.1",
     "bootstrap": "^4.5.3",
     "bufferutil": "^4.0.2",

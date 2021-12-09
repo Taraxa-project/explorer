@@ -1,47 +1,59 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { getAddress } from '../../lib/address';
+import { getPopulatedAddress, getTransactions } from '../../lib/address';
 import { Form, Row, Col, Pagination, Card, Table } from 'react-bootstrap';
 import { IoMdCheckmark, IoMdClose } from 'react-icons/io';
-import { useApiFromClient } from '../../lib/api-client';
+import { fetchApi } from '../../lib/api-client';
+import { extractBoolean } from '../../lib/query';
 
 export async function getServerSideProps(context) {
-  const id = context.query.id;
-  let skip = Number(context.query.skip) || 0;
-  let limit = Number(context.query.limit) || 20;
-  let sortOrder = context.query.reverse ? 1 : -1;
+  const { id } = context.query;
+  const skip = Number(context.query.skip) || 0;
+  const limit = Number(context.query.limit) || 20;
+  const sortOrder = extractBoolean(context.query.reverse, false) ? 1 : -1;
 
-  let query = { id, skip, limit, sortOrder };
+  const query = { id, skip, limit, sortOrder };
 
-  let props = {
+  const props = {
     data: {
-      address: '',
-      sent: 0,
-      received: 0,
-      fees: 0,
-      balance: 0,
-      transactions: [],
-      count: 0,
+      address: {
+        _id: id,
+        sent: 0,
+        received: 0,
+        fees: 0,
+        balance: 0,
+      },
+      tx: {
+        transactions: [],
+        total: 0,
+      },
     },
   };
   try {
-    const address = await getAddress(query);
-    props.data = JSON.parse(JSON.stringify(address));
+    const address = await getPopulatedAddress(id);
+    props.data.address = JSON.parse(JSON.stringify(address));
+    const tx = await getTransactions(query);
+    props.data.tx = JSON.parse(JSON.stringify(tx));
   } catch (e) {
     console.error(`Error in Server Props: ${e.message}`);
   }
 
-  return {
-    props, // will be passed to the page component as props
-  };
+  return { props };
 }
 
 export default function AddressPage({ data }) {
   const limit = 20;
+  const [address, setAddress] = useState(data.address);
+  const [transactions, setTransactions] = useState(data.tx?.transactions || []);
+  const [total, setTotal] = useState(data.tx?.total || 0);
   const [skip, setSkip] = useState(0);
   const [reverse, setReverse] = useState(false);
 
-  let url = `/api/address/${data.address}?limit=${limit}`;
+  if (address === null) {
+    return <h1>Invalid or unknown address. Please try again later.</h1>;
+  }
+
+  let url = `/api/address/${address._id}?limit=${limit}`;
   if (reverse) {
     url += '&reverse=true';
   }
@@ -49,16 +61,28 @@ export default function AddressPage({ data }) {
     url += `&skip=${skip}`;
   }
 
-  const { data: newData, error } = useApiFromClient(url);
-  if (newData) {
-    data = newData;
-  }
+  const mounted = useRef();
+  const fetchAddress = useCallback(async () => {
+    if (!mounted.current) {
+      mounted.current = true;
+      return;
+    }
 
-  if (error) {
-    console.error(error);
-  }
+    const {
+      data: { tx, address },
+      error,
+    } = await fetchApi(url);
+    if (error) {
+      console.error(error);
+    } else {
+      setAddress(address);
+      setTransactions(tx.transactions);
+      setTotal(tx.total);
+    }
+  }, [url]);
 
-  const total = data?.count || 0;
+  useEffect(() => fetchAddress(), [fetchAddress]);
+
   const pages = Math.ceil(total / limit);
   const page = skip / limit + 1;
 
@@ -68,6 +92,7 @@ export default function AddressPage({ data }) {
       val = false;
     }
     setReverse(val);
+    setSkip(0);
   }
 
   function updateQuerySkip(e) {
@@ -78,7 +103,7 @@ export default function AddressPage({ data }) {
     <>
       <Row>
         <Col sm="8" md="10">
-          <h1>Address {data.address}</h1>
+          <h1>Address {address._id}</h1>
         </Col>
         <Col>
           <Form>
@@ -94,37 +119,37 @@ export default function AddressPage({ data }) {
 
       <Card style={{ margin: 5, marginTop: 0, marginBottom: 10 }} bg="dark" text="white">
         <Card.Body>
-          <Card.Title>Balance: {(data.balance / 1e18).toFixed(6)} TARA</Card.Title>
+          <Card.Title>Balance: {(address.balance / 1e18).toFixed(6)} TARA</Card.Title>
           <ul>
-            <li>Received: {(data.received / 1e18).toFixed(6)} TARA</li>
-            <li>Sent: {(data.sent / 1e18).toFixed(6)} TARA</li>
-            <li>Fees: {(data.fees / 1e18).toFixed(6)} TARA</li>
+            <li>Received: {(address.received / 1e18).toFixed(6)} TARA</li>
+            <li>Sent: {(address.sent / 1e18).toFixed(6)} TARA</li>
+            <li>Fees: {(address.fees / 1e18).toFixed(6)} TARA</li>
           </ul>
         </Card.Body>
         <Card.Body>
-          <Card.Title># blocks produced: {data.produced}</Card.Title>
+          <Card.Title># blocks produced: {address.blocksProduced}</Card.Title>
         </Card.Body>
         <Card.Body>
           <Card.Title>Transactions:</Card.Title>
-          <Table responsive variant="dark">
-            <thead>
-              <tr>
-                <th>Timestamp</th>
-                <th>Block</th>
-                <th>Action</th>
-                <th>Status</th>
-                <th>Hash</th>
-                <th>Value</th>
-                <th>Fee</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.transactions &&
-                data.transactions.map((tx) => (
+          {transactions && transactions.length ? (
+            <Table responsive variant="dark">
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Block</th>
+                  <th>Action</th>
+                  <th>Status</th>
+                  <th>Hash</th>
+                  <th>Value</th>
+                  <th>Fee</th>
+                </tr>
+              </thead>
+              <tbody>
+                {transactions.map((tx) => (
                   <tr key={tx._id}>
                     <td>{new Date(tx.timestamp).toLocaleString()}</td>
                     <td>{`${tx.blockNumber} `}</td>
-                    <td>{data.address === tx.to ? 'Receive' : 'Send'}</td>
+                    <td>{address._id === tx.to ? 'Receive' : 'Send'}</td>
                     <td>
                       {tx.status ? (
                         <IoMdCheckmark size={20} />
@@ -142,8 +167,11 @@ export default function AddressPage({ data }) {
                     <td>{((tx.gasUsed * tx.gasPrice) / 1e18).toFixed(6)} TARA</td>
                   </tr>
                 ))}
-            </tbody>
-          </Table>
+              </tbody>
+            </Table>
+          ) : (
+            <p>No transactions found for address.</p>
+          )}
         </Card.Body>
       </Card>
 

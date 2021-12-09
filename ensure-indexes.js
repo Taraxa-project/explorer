@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 require('dotenv').config();
 const { useDb } = require('./lib/db');
+const { useReadyAddressStatsQueue } = require('./lib/job-queue');
 
 // 30m should be enough to create indices
 const socketTimeoutMS = 60000 * 30;
@@ -13,6 +14,11 @@ const heartbeatFrequencyMS = 1000;
   try {
     const start = new Date();
     console.log('Creating indexes...');
+    console.log('Ensuring indexes for job queues...');
+
+    const addressStatsQueue = await useReadyAddressStatsQueue();
+    await addressStatsQueue._collection.createIndex({ 'data.id': 1 }, { unique: true });
+
     const models = await useDb({
       keepAliveInitialDelay,
       socketTimeoutMS,
