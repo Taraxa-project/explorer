@@ -13,10 +13,8 @@ export default function Index() {
 
   const author = useClientQuery().get('author');
 
-  let url = `/api/blocks?limit=${limit}`;
-  if (reverse) {
-    url += '&reverse=true';
-  }
+  let url = `/api/blocks?limit=${limit}&reverse=${String(reverse)}`;
+
   if (cursor) {
     url += `&cursorId=${cursor.id}&cursorTimestamp=${cursor.timestamp}`;
   }
