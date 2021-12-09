@@ -14,10 +14,7 @@ export default function Index() {
 
   const address = useClientQuery().get('address');
 
-  let url = `/api/txs?limit=${limit}`;
-  if (reverse) {
-    url += '&reverse=true';
-  }
+  let url = `/api/txs?limit=${limit}&reverse=${String(reverse)}`;
   if (address) {
     url += `&address=${address.toLowerCase()}`;
   }

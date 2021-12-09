@@ -53,10 +53,7 @@ export default function AddressPage({ data }) {
     return <h1>Invalid or unknown address. Please try again later.</h1>;
   }
 
-  let url = `/api/address/${address._id}?limit=${limit}`;
-  if (reverse) {
-    url += '&reverse=true';
-  }
+  let url = `/api/address/${address._id}?limit=${limit}&reverse=${String(reverse)}`;
   if (skip) {
     url += `&skip=${skip}`;
   }
