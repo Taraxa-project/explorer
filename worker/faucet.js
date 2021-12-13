@@ -64,7 +64,7 @@ async function drip() {
       console.error(e);
     }
 
-    await sleep(dripInterval);
+    await sleep(dripInterval / 1000);
   }
 }
 
