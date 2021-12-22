@@ -260,9 +260,6 @@ async function historicalSync(subscribed = false) {
   let syncState = state[1];
   let verifiedTip = false;
 
-  // console.log('chainState', chainState);
-  // console.log('syncState', syncState);
-
   // if genesis block changes, resync
   if (!chainState.genesis || chainState.genesis !== syncState.genesis) {
     console.log('New genesis block hash. Restarting chain sync.');
@@ -300,7 +297,24 @@ async function historicalSync(subscribed = false) {
   while (syncState.number < chainState.number) {
     const notifications = [];
 
-    const block = await rpc.getBlockByNumber(syncState.number + 1, true);
+    console.log(`Getting block ${syncState.number + 1}...`);
+    const block = await rpc.getBlockByNumber(syncState.number + 1);
+
+    console.log(
+      `Getting ${block.transactions.length} transactions for block ${syncState.number + 1}...`,
+    );
+    let blockTxs = [];
+    for (let i = 0; i < block.transactions.length; i++) {
+      console.log(
+        `Getting transaction #${i + 1} out of #${block.transactions.length} - ${
+          block.transactions[i]
+        }...`,
+      );
+      const tx = await rpc.getTransactionByHash(block.transactions[i]);
+      blockTxs.push(tx);
+    }
+
+    block.transactions = blockTxs;
 
     if (!block.hash) {
       continue;
