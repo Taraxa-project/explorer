@@ -10,6 +10,7 @@ async function handler(req, res) {
 
   if (!config.faucet.enabled) {
     res.status(400).json({ error: 'Faucet is disabled for this network.' });
+    return;
   }
 
   let address = id;
@@ -20,6 +21,7 @@ async function handler(req, res) {
 
   if (!Web3Utils.isAddress(address)) {
     res.status(400).json({ error: 'Wallet Address is not valid' });
+    return;
   }
 
   try {
