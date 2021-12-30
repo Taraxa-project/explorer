@@ -1,3 +1,4 @@
+const config = require('config');
 import Web3Utils from 'web3-utils';
 import withApiHandler from '../../../lib/api-handler';
 
@@ -6,6 +7,10 @@ async function handler(req, res) {
     models: { Faucet },
     query: { id },
   } = req;
+
+  if (!config.faucet.enabled) {
+    res.status(400).json({ error: 'Faucet is disabled for this network.' });
+  }
 
   let address = id;
   if (typeof id !== 'string') {

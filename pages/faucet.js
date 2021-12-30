@@ -1,3 +1,4 @@
+const config = require('config');
 import React, { useState, useEffect } from 'react';
 import { Card, Button, Row, Col, Form } from 'react-bootstrap';
 import utils from 'web3-utils';
@@ -56,6 +57,7 @@ export default function Faucet() {
       >
         <Card.Body>
           <div style={{ maxWidth: 500, marginLeft: 'auto', marginRight: 'auto' }}>
+            {!config.faucet.enabled && <p>Faucet is disabled for this network.</p>}
             {!response ? (
               <Form>
                 <Form.Group>
@@ -67,7 +69,12 @@ export default function Faucet() {
                     onChange={validateAddress}
                   />
                 </Form.Group>
-                <Button variant="light" type="submit" disabled={!validAddress} onClick={submitForm}>
+                <Button
+                  variant="light"
+                  type="submit"
+                  disabled={!validAddress || !config.faucet.enabled}
+                  onClick={submitForm}
+                >
                   Submit
                 </Button>
               </Form>

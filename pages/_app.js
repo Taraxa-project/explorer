@@ -1,3 +1,4 @@
+const config = require('config');
 import React, { useState } from 'react';
 import { wrapper } from '../store/store';
 import { useRouter } from 'next/router';
@@ -98,9 +99,11 @@ function ReduxApp({ Component, pageProps }) {
               <Nav.Link href="/nodes">Nodes</Nav.Link>
             </Link>
 
-            <Link href="/faucet" as={'/faucet'}>
-              <Nav.Link href="/faucet">Faucet</Nav.Link>
-            </Link>
+            {config.faucet.enabled && (
+              <Link href="/faucet" as={'/faucet'}>
+                <Nav.Link href="/faucet">Faucet</Nav.Link>
+              </Link>
+            )}
           </Nav>
         </Navbar.Collapse>
       </Navbar>
@@ -122,10 +125,12 @@ function ReduxApp({ Component, pageProps }) {
           <Link href="/txs" as={'/txs'}>
             <a href="/txs">Transactions</a>
           </Link>
-          {' / '}
-          <Link href="/faucet" as={'/faucet'}>
-            <a href="/faucet">Faucet</a>
-          </Link>
+          {config.faucet.enabled && ' / '}
+          {config.faucet.enabled && (
+            <Link href="/faucet" as={'/faucet'}>
+              <a href="/faucet">Faucet</a>
+            </Link>
+          )}
         </p>
         <p>© 2020-2021 Taraxa.io</p>
       </div>
