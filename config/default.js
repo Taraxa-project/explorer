@@ -1,7 +1,7 @@
 module.exports = {
   nodeConfigPath: process.env.NODE_CONFIG_PATH || '/opt/taraxa/conf/taraxa.json',
   faucet: {
-    enabled: process.env.FAUCET_ENABLED === 'true',
+    enabled: process.env.NEXT_PUBLIC_FAUCET_ENABLED === 'true',
     maxUnconfirmed: Number(process.env.MAX_UNCONFIRMED) || 5000,
     //default address 0xde2b1203d72d3549EE2f733b00b2789414C7Cea5
     dripInterval: Number(process.env.DRIP_INTERVAL_MS) || 500,

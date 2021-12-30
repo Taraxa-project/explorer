@@ -1,7 +1,9 @@
-const config = require('config');
 import React, { useState, useEffect } from 'react';
 import { Card, Button, Row, Col, Form } from 'react-bootstrap';
 import utils from 'web3-utils';
+import getConfig from 'next/config';
+
+const { publicRuntimeConfig } = getConfig();
 
 export default function Faucet() {
   const [url, setUrl] = useState('http://localhost:3000');
@@ -57,7 +59,9 @@ export default function Faucet() {
       >
         <Card.Body>
           <div style={{ maxWidth: 500, marginLeft: 'auto', marginRight: 'auto' }}>
-            {!config.faucet.enabled && <p>Faucet is disabled for this network.</p>}
+            {publicRuntimeConfig.NEXT_PUBLIC_FAUCET_ENABLED !== 'true' && (
+              <p>Faucet is disabled for this network.</p>
+            )}
             {!response ? (
               <Form>
                 <Form.Group>
@@ -72,7 +76,9 @@ export default function Faucet() {
                 <Button
                   variant="light"
                   type="submit"
-                  disabled={!validAddress || !config.faucet.enabled}
+                  disabled={
+                    !validAddress || publicRuntimeConfig.NEXT_PUBLIC_FAUCET_ENABLED !== 'true'
+                  }
                   onClick={submitForm}
                 >
                   Submit

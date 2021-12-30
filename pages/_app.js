@@ -1,4 +1,3 @@
-const config = require('config');
 import React, { useState } from 'react';
 import { wrapper } from '../store/store';
 import { useRouter } from 'next/router';
@@ -8,6 +7,9 @@ import utils from 'web3-utils';
 import { IoIosSearch } from 'react-icons/io';
 import { Navbar, Nav, Button, InputGroup, FormControl } from 'react-bootstrap';
 import WebsocketContainer from '../containers/ws';
+import getConfig from 'next/config';
+
+const { publicRuntimeConfig } = getConfig();
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../styles/globals.css';
@@ -99,7 +101,7 @@ function ReduxApp({ Component, pageProps }) {
               <Nav.Link href="/nodes">Nodes</Nav.Link>
             </Link>
 
-            {config.faucet.enabled && (
+            {publicRuntimeConfig.NEXT_PUBLIC_FAUCET_ENABLED === 'true' && (
               <Link href="/faucet" as={'/faucet'}>
                 <Nav.Link href="/faucet">Faucet</Nav.Link>
               </Link>
@@ -125,8 +127,8 @@ function ReduxApp({ Component, pageProps }) {
           <Link href="/txs" as={'/txs'}>
             <a href="/txs">Transactions</a>
           </Link>
-          {config.faucet.enabled && ' / '}
-          {config.faucet.enabled && (
+          {publicRuntimeConfig.NEXT_PUBLIC_FAUCET_ENABLED === 'true' && ' / '}
+          {publicRuntimeConfig.NEXT_PUBLIC_FAUCET_ENABLED === 'true' && (
             <Link href="/faucet" as={'/faucet'}>
               <a href="/faucet">Faucet</a>
             </Link>
