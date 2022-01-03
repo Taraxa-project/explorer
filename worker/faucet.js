@@ -37,7 +37,7 @@ async function drip() {
       const tx = await account.signTransaction({
         from: account.address,
         to: cup.address,
-        value: 1 * 1e17,
+        value: 1,
         gas: 21000,
         gasPrice: 1 * 1e9,
         nonce: faucetNonce.nonce - 1,
