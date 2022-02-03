@@ -12,6 +12,7 @@ async function handler(req, res) {
     case 'GET':
       try {
         let totalProduced = 0;
+        let firstBlockTimestamp = null;
         let lastBlockTimestamp = null;
         let rank = null;
         let produced = 0;
@@ -28,6 +29,7 @@ async function handler(req, res) {
               _id: '$author',
               count: { $sum: 1 },
               lastBlockTimestamp: { $last: '$timestamp' },
+              firstBlockTimestamp: { $first: '$timestamp' },
             },
           },
         ]);
@@ -35,6 +37,7 @@ async function handler(req, res) {
         if (blocksProduced.length > 0) {
           totalProduced = blocksProduced[0].count;
           lastBlockTimestamp = blocksProduced[0].lastBlockTimestamp;
+          firstBlockTimestamp = blocksProduced[0].firstBlockTimestamp;
 
           const week = moment().isoWeek();
           const year = moment().isoWeekYear();
@@ -103,6 +106,7 @@ async function handler(req, res) {
         }
         return res.json({
           totalProduced,
+          firstBlockTimestamp,
           lastBlockTimestamp,
           rank,
           produced,
