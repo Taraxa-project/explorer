@@ -117,7 +117,6 @@ function bufferToHex(buffer) {
 
 function waitForTransaction(web3, txnHash, options = null) {
   const interval = options && options.interval ? options.interval : 500;
-  const blocksToWait = options && options.blocksToWait ? options.blocksToWait : 1;
   const transactionReceiptAsync = async function (txnHash, resolve, reject) {
     try {
       var receipt = web3.eth.getTransactionReceipt(txnHash);
@@ -126,39 +125,7 @@ function waitForTransaction(web3, txnHash, options = null) {
           transactionReceiptAsync(txnHash, resolve, reject);
         }, interval);
       } else {
-        if (blocksToWait > 0) {
-          var resolvedReceipt = await receipt;
-          if (!resolvedReceipt || !resolvedReceipt.blockNumber) {
-            setTimeout(function () {
-              transactionReceiptAsync(txnHash, resolve, reject);
-            }, interval);
-          } else {
-            try {
-              var block = await web3.eth.getBlock(resolvedReceipt.blockNumber);
-              var current = await web3.eth.getBlock('latest');
-              if (current.number - block.number >= blocksToWait) {
-                var txn = await web3.eth.getTransaction(txnHash);
-                if (txn.blockNumber != null) {
-                  resolve(resolvedReceipt);
-                } else {
-                  reject(
-                    new Error(`Transaction with hash: ${txnHash} ended up in an uncle block.`),
-                  );
-                }
-              } else {
-                setTimeout(function () {
-                  transactionReceiptAsync(txnHash, resolve, reject);
-                }, interval);
-              }
-            } catch (e) {
-              setTimeout(function () {
-                transactionReceiptAsync(txnHash, resolve, reject);
-              }, interval);
-            }
-          }
-        } else {
-          resolve(receipt);
-        }
+        resolve(receipt);
       }
     } catch (e) {
       reject(e);
