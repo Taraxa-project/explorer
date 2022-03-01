@@ -24,6 +24,7 @@ async function worker() {
 
   for (let delegate of delegates) {
     console.log('Processing delegation', delegate);
+    const hasCounterpart = delegate.counterpart !== '0x0000000000000000000000000000000000000000';
 
     const valueToAdd = new BN(delegate.valueToAdd);
     const valueToSubstract = new BN(delegate.valueToSubstract);
@@ -34,8 +35,10 @@ async function worker() {
       console.log('Delegating to', delegate.node, 'value', valueToAdd.toString());
 
       try {
-        console.log('- own node', delegate.counterpart);
-        await delegateTransaction(delegate.counterpart, valueToAdd.mul(new BN(2)));
+        if (hasCounterpart) {
+          console.log('- own node', delegate.counterpart);
+          await delegateTransaction(delegate.counterpart, valueToAdd.mul(new BN(2)));
+        }
         console.log('- user node', delegate.node);
         await delegateTransaction(delegate.node, valueToAdd);
       } catch (e) {
@@ -48,8 +51,10 @@ async function worker() {
       console.log('Undelegating from', delegate.node, 'value', valueToSubstract.toString());
 
       try {
-        console.log('- own node', delegate.counterpart);
-        await undelegateTransaction(delegate.counterpart, valueToSubstract.mul(new BN(2)));
+        if (hasCounterpart) {
+          console.log('- own node', delegate.counterpart);
+          await undelegateTransaction(delegate.counterpart, valueToSubstract.mul(new BN(2)));
+        }
         console.log('- user node', delegate.node);
         await undelegateTransaction(delegate.node, valueToSubstract);
       } catch (e) {
