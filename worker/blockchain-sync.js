@@ -93,7 +93,7 @@ async function getSyncState() {
 function formatPbftBlock(pbftBlock) {
   // todo: rpc currently incorrectly returns hex without the 0x prefix
   const dagPeriodBlocks = pbftBlock.schedule.dag_blocks_order;
-  if (!dagPeriodBlocks[0].startsWith('0x')) {
+  if (dagPeriodBlocks.length > 0 && !dagPeriodBlocks[0].startsWith('0x')) {
     dagPeriodBlocks.forEach((dagPeriodBlock, index) => {
       pbftBlock.schedule.dag_blocks_order[index] = `0x${dagPeriodBlock}`;
     });
@@ -306,8 +306,7 @@ async function historicalSync(subscribed = false) {
     let blockTxs = [];
     for (let i = 0; i < block.transactions.length; i++) {
       console.log(
-        `Getting transaction #${i + 1} out of #${block.transactions.length} - ${
-          block.transactions[i]
+        `Getting transaction #${i + 1} out of #${block.transactions.length} - ${block.transactions[i]
         }...`,
       );
       const tx = await rpc.getTransactionByHash(block.transactions[i]);
