@@ -1,0 +1,46 @@
+{{- $apiIsStable := eq (include "explorer.ingress.isStable" .) "true" -}}
+{{- $ingressSupportsPathType := eq (include "explorer.ingress.supportsPathType" .) "true" -}}
+{{- $serviceName := printf "%s-websocket" (include "explorer.fullname" .) -}}
+{{- $servicePort := .Values.webSocket.service.port -}}
+{{- $pathType := .Values.webSocket.ingress.pathType | default "ImplementationSpecific" -}}
+---
+apiVersion: {{ include "explorer.ingress.apiVersion" . }}
+kind: Ingress
+metadata:
+  name: {{ include "explorer.webSocket.fullname" . }}
+  labels:
+    {{- include "explorer.webSocket.labels" . | nindent 4 }}
+  {{- with .Values.webSocket.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+{{- if $apiIsStable }}
+{{- if .Values.webSocket.ingress.ingressClassName }}
+ingressClassName: {{ .Values.webSocket.ingress.ingressClassName }}
+{{- end }}
+{{- end }}
+  {{- if .Values.wildCertDomainSecret }}
+  tls:
+    - hosts:
+        - {{ include "explorer.websocket.hostname" . | quote }}
+      secretName: {{ .Values.wildCertDomainSecret }}
+{{- end }}
+  rules:
+    - host: {{ include "explorer.websocket.hostname" . | quote }}
+      http:
+        paths:
+          - path: /
+            {{- if and $pathType $ingressSupportsPathType }}
+            pathType: {{ $pathType }}
+            {{- end }}
+            backend:
+              {{- if $apiIsStable }}
+              service:
+                name: {{ $serviceName }}
+                port:
+                  number: {{ $servicePort }}
+              {{- else }}
+              serviceName: {{ $serviceName }}
+              servicePort: {{ $servicePort }}
+              {{- end }}

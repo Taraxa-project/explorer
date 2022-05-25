@@ -1,0 +1,126 @@
+name: "explorer"
+
+image:
+  repository: taraxa/explorer
+  tag: 1.3.2-43
+  pullPolicy: Always
+
+replicas: 1
+
+configEnvs:
+  rpcHttpProvider: ""
+  rpcWsProvider: ""
+  faucetEnabled: "true"
+
+serviceAccount:
+  create: true
+
+domain: "default.taraxa.io"
+
+service:
+  port: 80
+  targetPort: 3000
+  name: http
+  protocol: TCP
+  type: ClusterIP
+  annotations: {}
+
+# For Kubernetes >= 1.18 you should specify the ingress-controller via the field ingressClassName
+# See https://kubernetes.io/blog/2020/04/02/improvements-to-the-ingress-api-in-kubernetes-1.18/#specifying-the-class-of-an-ingress
+# ingress:
+#   ingressClassName: nginx
+ingress: {}
+
+resources: {}
+
+affinity: {}
+
+webSocket:
+  name: "websocket"
+  replicaCount: 3
+  serviceAccount:
+    create: true
+  service:
+    port: 80
+    targetPort: 3001
+    name: ws
+    protocol: TCP
+    type: ClusterIP
+    annotations: {}
+  # For Kubernetes >= 1.18 you should specify the ingress-controller via the field ingressClassName
+  # See https://kubernetes.io/blog/2020/04/02/improvements-to-the-ingress-api-in-kubernetes-1.18/#specifying-the-class-of-an-ingress
+  # ingress:
+  #   ingressClassName: nginx
+  ingress: {}
+  resources: {}
+  affinity: {}
+
+syncer:
+  cliVerion: "1.5.50"
+  name: "syncer"
+  serviceAccount:
+    create: true
+  replicaCount: 1
+  resources: {}
+  affinity: {}
+
+delegation:
+  name: "delegation"
+  serviceAccount:
+    create: true
+  replicaCount: 1
+  resources: {}
+  affinity: {}
+
+stats:
+  name: "stats"
+  serviceAccount:
+    create: true
+  replicaCount: 1
+  resources: {}
+  affinity: {}
+
+faucet:
+  enabled: true
+  name: "faucet"
+  serviceAccount:
+    create: true
+  privKey: ""
+  resources: {}
+  affinity: {}
+
+nodeSelector: {}
+
+
+sandbox:
+  enabled: true
+  name: "sandbox"
+  serviceAccount:
+    create: true
+  replicaCount: 1
+  service:
+    port: 80
+    targetPort: 4000
+    name: http
+    protocol: TCP
+    type: ClusterIP
+    annotations: {}
+  image:
+    repository: taraxa/sandbox
+    tag: latest
+    pullPolicy: Always
+  # For Kubernetes >= 1.18 you should specify the ingress-controller via the field ingressClassName
+  # See https://kubernetes.io/blog/2020/04/02/improvements-to-the-ingress-api-in-kubernetes-1.18/#specifying-the-class-of-an-ingress
+  # ingress:
+  #   ingressClassName: nginx
+  ingress: {}
+
+mongodb:
+  enabled: true
+  architecture: "standalone"
+  auth:
+    enabled: false
+  persistence: {}
+  arbiter:
+    enabled: false
+  nodeSelector: {}

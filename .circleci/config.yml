@@ -1,9 +1,12 @@
 version: 2.1
 
 jobs:
+
   build-and-push-docker-image:
     environment:
-      - IMAGE: taraxa/explorer
+      - IMAGE: explorer
+      - HELMCHART: explorer
+      - DOCKERHUB_IMAGE: taraxa/explorer
     machine:
       image: ubuntu-2004:202010-01
       docker_layer_caching: true
@@ -13,8 +16,26 @@ jobs:
       - run:
           name: Prepare Environment
           command: |
+            echo "export GCP_IMAGE=gcr.io/${GOOGLE_PROJECT_ID}/${IMAGE}" >> $BASH_ENV
             echo "export START_TIME=$(date +%Y%m%d-%Hh%Mm%Ss)" >> $BASH_ENV
+            echo "export TIMESTAMP=$(date +%s)" >>$BASH_ENV
             echo "export VERSION=$(grep -m1 version package.json | awk -F: '{ print $2 }' | sed 's/[", ]//g')" >> $BASH_ENV
+            curl https://baltocdn.com/helm/signing.asc | sudo apt-key add -
+            sudo apt-get install apt-transport-https --yes
+            echo "deb https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
+            sudo apt-get update
+            sudo apt-get install helm
+            helm plugin install https://github.com/chartmuseum/helm-push.git
+            helm repo add --username ${HELM_REPO_USERNAME} --password ${HELM_REPO_PASSWORD} taraxacharts https://charts.gcp.taraxa.io
+            helm repo add bitnami https://charts.bitnami.com/bitnami
+            helm repo update
+            sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+            sudo chmod a+x /usr/local/bin/yq
+
+      - run:
+          name: Login into gcr
+          command: |
+            echo ${GCLOUD_SERVICE_KEY} | docker login -u _json_key --password-stdin https://gcr.io
 
       - run:
           name: Login into docker hub
@@ -24,27 +45,63 @@ jobs:
       - run:
           name: Build Docker image
           command: |
-            docker build -t ${IMAGE} -f Dockerfile .
+            docker build -t ${IMAGE}:${CIRCLE_BUILD_NUM} -f Dockerfile .
 
       - run:
           name: Tag images and push images
           command: |
-            docker tag ${IMAGE}:latest ${IMAGE}:${VERSION}-${CIRCLE_BUILD_NUM}
-            docker push ${IMAGE}:${VERSION}-${CIRCLE_BUILD_NUM}
-            docker push ${IMAGE}:latest
+            docker tag ${IMAGE}:${CIRCLE_BUILD_NUM} ${GCP_IMAGE}:${CIRCLE_BRANCH}-${CIRCLE_SHA1:0:7}-${TIMESTAMP}
+            docker tag ${IMAGE}:${CIRCLE_BUILD_NUM} ${DOCKERHUB_IMAGE}:${VERSION}-${CIRCLE_BUILD_NUM}
+            docker tag ${IMAGE}:${CIRCLE_BUILD_NUM} ${DOCKERHUB_IMAGE}:latest
+            docker tag ${IMAGE}:${CIRCLE_BUILD_NUM} ${GCP_IMAGE}:latest
+
+            if [[ ${CIRCLE_BRANCH} == "develop"   ]]; then
+              docker push ${GCP_IMAGE}:${CIRCLE_BRANCH}-${CIRCLE_SHA1:0:7}-${TIMESTAMP}
+              docker push ${GCP_IMAGE}:latest
+            fi
+            if [[ ${CIRCLE_BRANCH} == "master" ]]; then
+              docker push ${DOCKERHUB_IMAGE}:${VERSION}-${CIRCLE_BUILD_NUM}
+              docker push ${DOCKERHUB_IMAGE}:latest
+              docker push ${GCP_IMAGE}:${CIRCLE_BRANCH}-${CIRCLE_SHA1:0:7}-${TIMESTAMP}
+              docker push ${GCP_IMAGE}:latest
+            fi
+
+      - run:
+          name: Verify Helm chart with linter
+          command: |
+            helm lint charts/${HELMCHART}/
+
+      - run:
+          name: Generate Helm chart and output yaml manifests
+          command: |
+            helm dependency build charts/${HELMCHART}/
+            helm template charts/${HELMCHART}/ --values charts/${HELMCHART}/values.yaml
+
+      - run:
+          name: Publish chart to Taraxa's repository
+          command: |
+            HELMCHART_VERSION=$(yq .version charts/${HELMCHART}/Chart.yaml | tr -d \")
+            if [[ ${CIRCLE_BRANCH} == "develop"   ]]; then
+              helm cm-push -f charts/${HELMCHART}/ --version="${HELMCHART_VERSION}-dev" taraxacharts
+            fi
+            if [[ ${CIRCLE_BRANCH} == "master" ]]; then
+              helm cm-push -f charts/${HELMCHART}/ taraxacharts
+            fi
 
 workflows:
   version: 2
 
-  build-and-deploy-image:
+  build-and-package:
     jobs:
       - build-and-push-docker-image:
           filters:
             branches:
               only:
                 - master
-
+                - develop
           context:
             - TARAXA
-            - DOCKERHUB
             - K8S
+            - GCR
+            - CHARTSREPO
+            - DOCKERHUB

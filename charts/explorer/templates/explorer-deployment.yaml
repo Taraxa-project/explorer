@@ -1,0 +1,168 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "explorer.fullname" . }}
+  labels:
+    {{- include "explorer.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicas }}
+  selector:
+    matchLabels:
+      {{- include "explorer.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+    {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      labels:
+        {{- include "explorer.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "explorer.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      initContainers:
+        - name: wait-for-rpc-node
+          image: dwdraju/alpine-curl-jq:latest
+          command: ["/bin/entrypoint.sh"]
+          args: ["{{ .Values.configEnvs.rpcHttpProvider }}"]
+          volumeMounts:
+            - name: rpc-node-check
+              mountPath: /bin/entrypoint.sh
+              readOnly: true
+              subPath: entrypoint.sh
+        - name: config-generator
+          image: dwdraju/alpine-curl-jq:latest
+          env:
+          - name: HOST
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
+          command: ["/bin/entrypoint.sh"]
+          volumeMounts:
+            - name: config
+              mountPath: /opt/taraxa
+            - name: initconfig
+              mountPath: /bin/entrypoint.sh
+              readOnly: true
+              subPath: entrypoint.sh
+        {{- if .Values.mongodb.enabled }}
+        - name: wait-for-mongo
+          image: subfuzion/netcat:latest
+          command: ["/bin/entrypoint.sh"]
+          args: ["{{ .Release.Name }}-mongodb","27017"]
+          volumeMounts:
+            - name: port-check
+              mountPath: /bin/entrypoint.sh
+              readOnly: true
+              subPath: entrypoint.sh
+        - name: ensure-mongo-indexes
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["node", "ensure-indexes.js"]
+          env:
+            - name: MONGO_URI
+              value: {{ template "mongodb.url" . }}
+        {{- end }}
+      containers:
+        - name: {{ include "explorer.fullname" . }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["npm", "start"]
+          env:
+            - name: FAUCET_PRIV_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "explorer.faucet.fullname" . }}
+                  key: faucetPrivkey
+            {{- if .Values.delegation.trustedAddress }}
+            - name: DELEGATE_TRUSTED_ADDRESS
+              value: {{ .Values.delegation.trustedAddress | quote }}
+            {{- end }}
+            - name: RPC_HTTP_PROVIDER
+              value: {{ .Values.configEnvs.rpcHttpProvider | quote }}
+            - name: NEXT_PUBLIC_EXPLORER_WS
+              value: {{ .Values.configEnvs.wsProvider | quote }}
+            - name: NEXT_PUBLIC_FAUCET_ENABLED
+              value: {{ .Values.configEnvs.faucetEnabled | quote }}
+            {{- if .Values.mongodb.enabled }}
+            - name: MONGO_URI
+              value: {{ template "mongodb.url" . }}
+            {{- else }}
+            - name: MONGO_URI
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "explorer.fullname" . }}
+                  key: mongoUri
+            {{- end }}
+            {{- if .Values.configEnvs.appsignalPushKey }}
+            - name: APPSIGNAL_PUSH_API_KEY
+              value: {{ .Values.configEnvs.appsignalPushKey | quote }}
+            {{- end }}
+            {{- if .Values.configEnvs.appsignalProjectName }}
+            - name: APPSIGNAL_PROJECT_NAME
+              value: {{ .Values.configEnvs.appsignalProjectName | quote }}
+            {{- end }}
+            {{- if .Values.configEnvs.delegationOwnNodes }}
+            - name: DELEGATION_OWN_NODES
+              value: {{ .Values.configEnvs.delegationOwnNodes | toJson | quote }}
+            {{- end }}
+          ports:
+            - name: http
+              containerPort: 3000
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            timeoutSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            timeoutSeconds: 30
+          resources:
+              {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: config
+              mountPath: /opt/taraxa
+      volumes:
+        - name: initconfig
+          configMap:
+            defaultMode: 0700
+            name: {{ include "explorer.fullname" . }}-initconfig
+        - name: rpc-node-check
+          configMap:
+            defaultMode: 0700
+            name: {{ include "explorer.fullname" . }}-rpc-node-check
+        {{- if .Values.mongodb.enabled }}
+        - name: port-check
+          configMap:
+            defaultMode: 0700
+            name: {{ include "explorer.fullname" . }}-port-check
+        {{- end }}
+        - name: config
+          emptyDir: {}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

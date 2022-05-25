@@ -1,0 +1,96 @@
+{{- if .Values.faucet.enabled -}}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "explorer.faucet.fullname" . }}
+  labels:
+    {{- include "explorer.faucet.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  serviceName: {{ include "explorer.faucet.fullname" . }}
+  selector:
+    matchLabels:
+      {{- include "explorer.faucet.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+    {{- with .Values.faucet.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      labels:
+        {{- include "explorer.faucet.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "explorer.faucet.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.faucet.podSecurityContext | nindent 8 }}
+      initContainers:
+        - name: wait-for-rpc-node
+          image: dwdraju/alpine-curl-jq:latest
+          command: ["/bin/entrypoint.sh"]
+          args: ["{{ .Values.configEnvs.rpcHttpProvider }}"]
+          volumeMounts:
+            - name: rpc-node-check
+              mountPath: /bin/entrypoint.sh
+              readOnly: true
+              subPath: entrypoint.sh
+      containers:
+        - name: {{ include "explorer.faucet.fullname" . }}
+          securityContext:
+            {{- toYaml .Values.faucet.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["node", "./worker/faucet"]
+          env:
+            - name: FAUCET_PRIV_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "explorer.faucet.fullname" . }}
+                  key: faucetPrivkey
+            - name: DRIP_INTERVAL_MS
+              value: {{ .Values.faucet.dripInterval | quote }}
+            - name: RPC_HTTP_PROVIDER
+              value: {{ .Values.configEnvs.rpcHttpProvider | quote }}
+            - name: RPC_WS_PROVIDER
+              value: {{ .Values.configEnvs.rpcWsProvider | quote }}
+            {{- if .Values.mongodb.enabled }}
+            - name: MONGO_URI
+              value: {{ template "mongodb.url" . }}
+            {{- else }}
+            - name: MONGO_URI
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "explorer.fullname" . }}
+                  key: mongoUri
+            {{- end }}
+            {{- if .Values.configEnvs.appsignalPushKey }}
+            - name: APPSIGNAL_PUSH_API_KEY
+              value: {{ .Values.configEnvs.appsignalPushKey | quote }}
+            {{- end }}
+            {{- if .Values.configEnvs.appsignalProjectName }}
+            - name: APPSIGNAL_PROJECT_NAME
+              value: {{ .Values.configEnvs.appsignalProjectName | quote }}
+            {{- end }}
+          resources:
+              {{- toYaml .Values.faucet.resources | nindent 12 }}
+      volumes:
+        - name: rpc-node-check
+          configMap:
+            defaultMode: 0700
+            name: {{ include "explorer.fullname" . }}-rpc-node-check
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.faucet.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.faucet.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

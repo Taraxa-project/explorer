@@ -1,0 +1,103 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "explorer.webSocket.fullname" . }}
+  labels:
+    {{- include "explorer.webSocket.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.webSocket.replicas }}
+  selector:
+    matchLabels:
+      {{- include "explorer.webSocket.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+    {{- with .Values.webSocket.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      labels:
+        {{- include "explorer.webSocket.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "explorer.webSocket.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.webSocket.podSecurityContext | nindent 8 }}
+      {{- if .Values.mongodb.enabled }}
+      initContainers:
+        - name: wait-for-mongo
+          image: subfuzion/netcat:latest
+          command: ["/bin/entrypoint.sh"]
+          args: ["{{ .Release.Name }}-mongodb","27017"]
+          volumeMounts:
+            - name: port-check
+              mountPath: /bin/entrypoint.sh
+              readOnly: true
+              subPath: entrypoint.sh
+      {{- end }}
+      containers:
+        - name: {{ include "explorer.webSocket.fullname" . }}
+          securityContext:
+            {{- toYaml .Values.webSocket.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["node", "./ws-server"]
+          env:
+            {{- if .Values.mongodb.enabled }}
+            - name: MONGO_URI
+              value: {{ template "mongodb.url" . }}
+            {{- else }}
+            - name: MONGO_URI
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "explorer.fullname" . }}
+                  key: mongoUri
+            {{- end }}
+            {{- if .Values.configEnvs.appsignalPushKey }}
+            - name: APPSIGNAL_PUSH_API_KEY
+              value: {{ .Values.configEnvs.appsignalPushKey | quote }}
+            {{- end }}
+            {{- if .Values.configEnvs.appsignalProjectName }}
+            - name: APPSIGNAL_PROJECT_NAME
+              value: {{ .Values.configEnvs.appsignalProjectName | quote }}
+            {{- end }}
+          ports:
+            - name: ws
+              containerPort: 3001
+              protocol: TCP
+          livenessProbe:
+            tcpSocket:
+              port: ws
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+          readinessProbe:
+            tcpSocket:
+              port: ws
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+          resources:
+              {{- toYaml .Values.webSocket.resources | nindent 12 }}
+      {{- if .Values.mongodb.enabled }}
+      volumes:
+        - name: port-check
+          configMap:
+            defaultMode: 0700
+            name: {{ include "explorer.fullname" . }}-port-check
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.webSocket.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.webSocket.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

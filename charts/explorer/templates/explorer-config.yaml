@@ -1,0 +1,22 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "explorer.fullname" . }}-initconfig
+  labels:
+    {{- include "explorer.labels" . | nindent 4 }}
+data:
+  entrypoint.sh: |-
+    #!/bin/bash
+    echo "Checking if config exists"
+    if [ -f /opt/taraxa/conf/taraxa.json ]; then
+        echo "Config exists, not generating new one"
+        exit 0
+    fi
+    echo "Generating config"
+    mkdir -p /opt/taraxa/conf
+
+    curl --silent -X POST \
+    -H 'Content-Type: application/json' \
+    -d '{"jsonrpc":"2.0","method":"taraxa_getConfig","params": [],"id":1}' {{ .Values.configEnvs.rpcHttpProvider }} | jq .result > /opt/taraxa/conf/taraxa.json
+    cat /opt/taraxa/conf/taraxa.json
