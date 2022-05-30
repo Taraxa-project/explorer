@@ -1,0 +1,80 @@
+{{- if .Values.sandbox.enabled -}}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "explorer.sandbox.fullname" . }}
+  labels:
+    {{- include "explorer.sandbox.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.sandbox.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "explorer.sandbox.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+    {{- with .Values.sandbox.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      labels:
+        {{- include "explorer.sandbox.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "explorer.sandbox.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.sandbox.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ include "explorer.sandbox.fullname" . }}
+          securityContext:
+            {{- toYaml .Values.sandbox.securityContext | nindent 12 }}
+          image: "{{ .Values.sandbox.image.repository }}:{{ .Values.sandbox.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.sandbox.image.pullPolicy }}
+          command: ["npm", "start"]
+          env:
+            - name: NEXT_PUBLIC_EXPLORER_URL
+            {{- if .Values.wildCertDomainSecret }}
+              value: "https://explorer.{{ .Values.domain }}"
+            {{ else }}
+              value: "http://explorer.{{ .Values.domain }}"
+            {{- end }}
+            - name: NEXT_PUBLIC_DEFAULT_RPC
+              value: {{ .Values.configEnvs.rpcHttpProvider }}
+          ports:
+            - name: http
+              containerPort: 4000
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 10
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 10
+          resources:
+              {{- toYaml .Values.sandbox.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.sandbox.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.sandbox.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

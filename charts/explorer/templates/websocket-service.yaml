@@ -1,0 +1,16 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "explorer.webSocket.fullname" . }}
+  labels:
+    {{- include "explorer.webSocket.labels" . | nindent 4 }}
+spec:
+  type: "{{ .Values.webSocket.service.type }}"
+  ports:
+    - port: {{ .Values.webSocket.service.port }}
+      targetPort: {{ .Values.webSocket.service.targetPort }}
+      protocol: {{ .Values.webSocket.service.protocol }}
+      name: {{ .Values.webSocket.service.name }}
+  selector:
+    {{- include "explorer.webSocket.selectorLabels" . | nindent 6 }}

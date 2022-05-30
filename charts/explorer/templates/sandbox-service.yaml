@@ -1,0 +1,18 @@
+{{- if .Values.sandbox.enabled -}}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "explorer.sandbox.fullname" . }}
+  labels:
+    {{- include "explorer.sandbox.labels" . | nindent 4 }}
+spec:
+  type: "{{ .Values.sandbox.service.type }}"
+  ports:
+    - port: {{ .Values.sandbox.service.port }}
+      targetPort: {{ .Values.sandbox.service.targetPort }}
+      protocol: {{ .Values.sandbox.service.protocol }}
+      name: {{ .Values.sandbox.service.name }}
+  selector:
+    {{- include "explorer.sandbox.selectorLabels" . | nindent 6 }}
+{{- end }}

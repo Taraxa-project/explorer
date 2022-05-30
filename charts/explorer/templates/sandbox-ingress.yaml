@@ -1,0 +1,48 @@
+{{- if .Values.sandbox.enabled -}}
+{{- $apiIsStable := eq (include "explorer.ingress.isStable" .) "true" -}}
+{{- $ingressSupportsPathType := eq (include "explorer.ingress.supportsPathType" .) "true" -}}
+{{- $serviceName := printf "%s-sandbox" (include "explorer.fullname" .) -}}
+{{- $servicePort := .Values.sandbox.service.port -}}
+{{- $pathType := .Values.sandbox.ingress.pathType | default "ImplementationSpecific" -}}
+---
+apiVersion: {{ include "explorer.ingress.apiVersion" . }}
+kind: Ingress
+metadata:
+  name: {{ include "explorer.sandbox.fullname" . }}
+  labels:
+    {{- include "explorer.sandbox.labels" . | nindent 4 }}
+  {{- with .Values.sandbox.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+{{- if $apiIsStable }}
+{{- if .Values.sandbox.ingress.ingressClassName }}
+ingressClassName: {{ .Values.sandbox.ingress.ingressClassName }}
+{{- end }}
+{{- end }}
+  {{- if .Values.wildCertDomainSecret }}
+  tls:
+    - hosts:
+        - {{ include "explorer.sandbox.hostname" . | quote }}
+      secretName: {{ .Values.wildCertDomainSecret }}
+{{- end }}
+  rules:
+    - host: {{ include "explorer.sandbox.hostname" . | quote }}
+      http:
+        paths:
+          - path: /
+            {{- if and $pathType $ingressSupportsPathType }}
+            pathType: {{ $pathType }}
+            {{- end }}
+            backend:
+              {{- if $apiIsStable }}
+              service:
+                name: {{ $serviceName }}
+                port:
+                  number: {{ $servicePort }}
+              {{- else }}
+              serviceName: {{ $serviceName }}
+              servicePort: {{ $servicePort }}
+              {{- end }}
+{{- end }}
