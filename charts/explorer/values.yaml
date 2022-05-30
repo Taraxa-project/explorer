@@ -15,6 +15,9 @@ configEnvs:
 serviceAccount:
   create: true
 
+secrets:
+  create: true
+
 domain: "default.taraxa.io"
 
 service:
