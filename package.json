@@ -1,6 +1,6 @@
 {
   "name": "taraxa-explorer",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "description": "Taraxa Block Explorer",
   "scripts": {
     "dev": "NODE_ENV=development nodemon --watch server --inspect server.js",

@@ -1,5 +1,6 @@
 import moment from 'moment';
 import withApiHandler from '../../../../lib/api-handler';
+import { toChecksumAddress } from '../../../../lib/utils';
 
 async function handler(req, res) {
   const {
@@ -11,6 +12,9 @@ async function handler(req, res) {
   switch (method) {
     case 'GET':
       try {
+        const address = toChecksumAddress(id);
+        const rAddress = new RegExp(`^${address}`, 'i');
+
         let totalProduced = 0;
         let firstBlockTimestamp = null;
         let lastBlockTimestamp = null;
@@ -18,7 +22,13 @@ async function handler(req, res) {
         let produced = 0;
 
         const blocksProduced = await Block.aggregate([
-          { $match: { author: id } },
+          {
+            $match: {
+              author: {
+                $regex: rAddress,
+              },
+            },
+          },
           {
             $sort: {
               timestamp: 1,
