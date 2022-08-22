@@ -1,0 +1,24 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: {{ template "explorer.syncer.fullname" . }}-restarter
+  labels: {{ include "explorer.syncer.labels" . | nindent 4 }}
+spec:
+  concurrencyPolicy: Forbid
+  schedule: "0 8 * * *"
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      activeDeadlineSeconds: 600
+      template:
+        spec:
+          serviceAccountName: {{ template "explorer.syncer.fullname" . }}-restarter
+          restartPolicy: Never
+          containers:
+            - name: kubectl
+              image: bitnami/kubectl
+              command:
+                - "kubectl"
+                - "rollout"
+                - "restart"
+                - "statefulset/{{ include "explorer.syncer.fullname" . }}"
