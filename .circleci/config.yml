@@ -64,28 +64,6 @@ jobs:
               docker push ${DOCKERHUB_IMAGE}:latest
             fi
 
-      - run:
-          name: Verify Helm chart with linter
-          command: |
-            helm lint charts/${HELMCHART}/
-
-      - run:
-          name: Generate Helm chart and output yaml manifests
-          command: |
-            helm dependency build charts/${HELMCHART}/
-            helm template charts/${HELMCHART}/ --values charts/${HELMCHART}/values.yaml
-
-      - run:
-          name: Publish chart to Taraxa's repository
-          command: |
-            HELMCHART_VERSION=$(yq .version charts/${HELMCHART}/Chart.yaml | tr -d \")
-            if [[ ${CIRCLE_BRANCH} == "develop"   ]]; then
-              helm cm-push charts/${HELMCHART}/ --version="${HELMCHART_VERSION}-dev" taraxacharts || true
-            fi
-            if [[ ${CIRCLE_BRANCH} == "master" ]]; then
-              helm cm-push charts/${HELMCHART}/ taraxacharts || true
-            fi
-
 workflows:
   version: 2
 
@@ -101,5 +79,42 @@ workflows:
             - TARAXA
             - K8S
             - GCR
-            - CHARTSREPO
             - DOCKERHUB
+
+  # run this workflow for branches specified below
+  build-helm-chart:
+    jobs:
+      - helm-release/chart-publish:
+          develop: true # means, that this is development release, no-verify and artifact -> ${HELMCHART_VERSION}-sha.${SHORT_GIT_HASH}
+          charts-dir: charts
+          chart-name: explorer
+          chartmuseum-url: https://charts.gcp.taraxa.io
+          chartmuseum-username: HELM_REPO_USERNAME
+          chartmuseum-password: HELM_REPO_PASSWORD
+          context:
+            - CHARTSREPO
+          filters:
+            branches:
+              only: 
+              - /^chart\/.*/
+              - /^chore\/chart-.*/
+              - /^fix\/chart-.*/
+              - /^feature\/chart-.*/
+
+
+  # run this workflow for tags, like chart-vX.Y.Z
+  release-helm-chart:
+    jobs:
+      - helm-release/chart-publish:
+          charts-dir: charts
+          chart-name: explorer
+          chartmuseum-url: https://charts.gcp.taraxa.io
+          chartmuseum-username: HELM_REPO_USERNAME
+          chartmuseum-password: HELM_REPO_PASSWORD
+          context:
+            - CHARTSREPO
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^chart-v\d+.\d+.\d+/
