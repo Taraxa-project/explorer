@@ -1,5 +1,8 @@
 version: 2.1
 
+orbs:
+  helm-release: taraxa/helm-release@0.1.0
+
 jobs:
 
   build-and-push-docker-image:
