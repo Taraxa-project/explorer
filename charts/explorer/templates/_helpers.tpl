@@ -91,9 +91,8 @@ heritage: {{ .Release.Service }}
 {{- end -}}
 
 {{- define "explorer.faucet.selectorLabels" -}}
-component: {{ .Values.faucet.name | quote }}
-{{ include "explorer.common.selectorLabels" . }}
-{{ include "explorer.common.metaLabels" . }}
+app.kubernetes.io/name: {{ .Values.faucet.name | quote }}
+app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end -}}
 
 {{- define "explorer.syncer.labels" -}}
@@ -101,9 +100,8 @@ component: {{ .Values.faucet.name | quote }}
 {{- end -}}
 
 {{- define "explorer.syncer.selectorLabels" -}}
-component: {{ .Values.syncer.name | quote }}
-{{ include "explorer.common.selectorLabels" . }}
-{{ include "explorer.common.metaLabels" . }}
+app.kubernetes.io/name: {{ .Values.syncer.name | quote }}
+app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end -}}
 
 {{- define "explorer.delegation.labels" -}}
@@ -111,9 +109,8 @@ component: {{ .Values.syncer.name | quote }}
 {{- end -}}
 
 {{- define "explorer.delegation.selectorLabels" -}}
-component: {{ .Values.delegation.name | quote }}
-{{ include "explorer.common.selectorLabels" . }}
-{{ include "explorer.common.metaLabels" . }}
+app.kubernetes.io/name: {{ .Values.delegation.name | quote }}
+app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end -}}
 
 {{- define "explorer.stats.labels" -}}
@@ -121,9 +118,8 @@ component: {{ .Values.delegation.name | quote }}
 {{- end -}}
 
 {{- define "explorer.stats.selectorLabels" -}}
-component: {{ .Values.stats.name | quote }}
-{{ include "explorer.common.selectorLabels" . }}
-{{ include "explorer.common.metaLabels" . }}
+app.kubernetes.io/name: {{ .Values.stats.name | quote }}
+app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end -}}
 
 {{- define "explorer.webSocket.labels" -}}
@@ -131,9 +127,8 @@ component: {{ .Values.stats.name | quote }}
 {{- end -}}
 
 {{- define "explorer.webSocket.selectorLabels" -}}
-component: {{ .Values.webSocket.name | quote }}
-{{ include "explorer.common.selectorLabels" . }}
-{{ include "explorer.common.metaLabels" . }}
+app.kubernetes.io/name: {{ .Values.webSocket.name | quote }}
+app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end -}}
 
 {{- define "explorer.sandbox.labels" -}}
@@ -141,9 +136,8 @@ component: {{ .Values.webSocket.name | quote }}
 {{- end -}}
 
 {{- define "explorer.sandbox.selectorLabels" -}}
-component: {{ .Values.sandbox.name | quote }}
-{{ include "explorer.common.selectorLabels" . }}
-{{ include "explorer.common.metaLabels" . }}
+app.kubernetes.io/name: {{ .Values.sandbox.name | quote }}
+app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end -}}
 
 
