@@ -22,17 +22,6 @@ jobs:
             echo "export START_TIME=$(date +%Y%m%d-%Hh%Mm%Ss)" >> $BASH_ENV
             echo "export TIMESTAMP=$(date +%s)" >>$BASH_ENV
             echo "export VERSION=$(grep -m1 version package.json | awk -F: '{ print $2 }' | sed 's/[", ]//g')" >> $BASH_ENV
-            curl https://baltocdn.com/helm/signing.asc | sudo apt-key add -
-            sudo apt-get install apt-transport-https --yes
-            echo "deb https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
-            sudo apt-get update
-            sudo apt-get install helm
-            helm plugin install https://github.com/chartmuseum/helm-push.git
-            helm repo add --username ${HELM_REPO_USERNAME} --password ${HELM_REPO_PASSWORD} taraxacharts https://charts.gcp.taraxa.io
-            helm repo add bitnami https://charts.bitnami.com/bitnami
-            helm repo update
-            sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
-            sudo chmod a+x /usr/local/bin/yq
 
       - run:
           name: Login into gcr
