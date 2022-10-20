@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  helm-release: taraxa/helm-release@0.1.0
+  helm-release: taraxa/helm-release@dev:f948a787c7fda6a3bd4e77dd86951abe1eba318a
 
 jobs:
 
@@ -108,7 +108,6 @@ workflows:
   release-helm-chart:
     jobs:
       - helm-release/chart-publish:
-          develop: false
           charts-dir: charts
           chart-name: explorer
           chartmuseum-url: https://charts.gcp.taraxa.io
