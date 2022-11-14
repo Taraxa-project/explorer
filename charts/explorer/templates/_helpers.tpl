@@ -131,15 +131,6 @@ app.kubernetes.io/name: {{ .Values.webSocket.name | quote }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end -}}
 
-{{- define "explorer.sandbox.labels" -}}
-{{ include "explorer.sandbox.selectorLabels" . }}
-{{- end -}}
-
-{{- define "explorer.sandbox.selectorLabels" -}}
-app.kubernetes.io/name: {{ .Values.sandbox.name | quote }}
-app.kubernetes.io/instance: {{ .Release.Name }}
-{{- end -}}
-
 
 {{/*
 Selector labels
@@ -216,17 +207,6 @@ Create the name of the service account to use
 {{- end }}
 {{- end }}
 
-{{/*
-Create the name of the service account to use
-*/}}
-{{- define "explorer.sandbox.serviceAccountName" -}}
-{{- if .Values.sandbox.serviceAccount.create }}
-{{- default (include "explorer.sandbox.fullname" .) .Values.sandbox.serviceAccount.name }}
-{{- else }}
-{{- default "default" .Values.sandbox.serviceAccount.name }}
-{{- end }}
-{{- end }}
-
 
 {{/*
 faucet helpers
@@ -274,32 +254,6 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{- printf "%s-%s" .Release.Name .Values.webSocket.name | trunc 63 | trimSuffix "-" -}}
 {{- else }}
 {{- printf "%s-%s-%s" .Release.Name $name .Values.webSocket.name | trunc 63 | trimSuffix "-" -}}
-{{- end }}
-{{- end }}
-{{- end }}
-
-
-{{/*
-sandbox helpers
-*/}}
-
-{{- define "explorer.sandbox.name" -}}
-{{- default .Chart.Name .Values.sandbox.nameOverride | trunc 63 | trimSuffix "-" }}
-{{- end }}
-
-{{/*
-Create a default fully qualified app name.
-We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
-*/}}
-{{- define "explorer.sandbox.fullname" -}}
-{{- if .Values.sandbox.fullnameOverride }}
-{{- .Values.sandbox.fullnameOverride | trunc 63 | trimSuffix "-" }}
-{{- else }}
-{{- $name := default .Chart.Name .Values.nameOverride }}
-{{- if contains $name .Release.Name }}
-{{- printf "%s-%s" .Release.Name .Values.sandbox.name | trunc 63 | trimSuffix "-" -}}
-{{- else }}
-{{- printf "%s-%s-%s" .Release.Name $name .Values.sandbox.name | trunc 63 | trimSuffix "-" -}}
 {{- end }}
 {{- end }}
 {{- end }}
@@ -411,14 +365,6 @@ Call nested helpers
 {{- .Values.webSocket.hostnameOverride | trunc 63 | trimSuffix "-" -}}
 {{- else -}}
 {{- printf "%s-%s.%s" "explorer-ws" .Release.Name .Values.domain | trunc 63 | trimSuffix "-" -}}
-{{- end -}}
-{{- end -}}
-
-{{- define "explorer.sandbox.hostname" -}}
-{{- if .Values.sandbox.hostnameOverride -}}
-{{- .Values.sandbox.hostnameOverride | trunc 63 | trimSuffix "-" -}}
-{{- else -}}
-{{- printf "%s-%s.%s" "sandbox" .Release.Name .Values.domain | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 {{- end -}}
 
