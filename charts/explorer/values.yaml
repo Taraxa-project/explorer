@@ -94,30 +94,6 @@ faucet:
 
 nodeSelector: {}
 
-
-sandbox:
-  enabled: true
-  name: "sandbox"
-  serviceAccount:
-    create: true
-  replicaCount: 1
-  service:
-    port: 80
-    targetPort: 4000
-    name: http
-    protocol: TCP
-    type: ClusterIP
-    annotations: {}
-  image:
-    repository: taraxa/sandbox
-    tag: latest
-    pullPolicy: Always
-  # For Kubernetes >= 1.18 you should specify the ingress-controller via the field ingressClassName
-  # See https://kubernetes.io/blog/2020/04/02/improvements-to-the-ingress-api-in-kubernetes-1.18/#specifying-the-class-of-an-ingress
-  # ingress:
-  #   ingressClassName: nginx
-  ingress: {}
-
 mongodb:
   enabled: true
   architecture: "standalone"
