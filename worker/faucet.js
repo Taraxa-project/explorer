@@ -39,7 +39,7 @@ async function drip() {
         to: cup.address,
         value: 1,
         gas: 21000,
-        gasPrice: 1 * 1e9,
+        gasPrice: 1,
         nonce: faucetNonce.nonce - 1,
       });
 
