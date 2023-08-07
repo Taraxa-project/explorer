@@ -5,10 +5,14 @@ import { Card, Table, Container, Row, Col, Pagination } from 'react-bootstrap';
 import { useApiFromClient } from '../lib/api-client';
 
 export default function Nodes() {
+  const nowUTC = moment().utc();
   const limit = 20;
   const [skip, setSkip] = useState(0);
-  const [week, setWeek] = useState(moment().isoWeek());
-  const [year, setYear] = useState(moment().isoWeekYear());
+  const [[week, year], setWeekYear] = useState(() => [
+    moment(nowUTC).utc().isoWeek(),
+    moment(nowUTC).utc().isoWeekYear(),
+  ]);
+  const [displayLocal, setDisplayLocal] = useState(true);
 
   let url = `/api/nodes?limit=${limit}`;
   if (skip) {
@@ -29,10 +33,30 @@ export default function Nodes() {
   const pages = Math.ceil(total / limit);
   const page = skip / limit + 1;
 
-  const isThisWeek = moment().isoWeek() === week;
-  const now = moment().isoWeekYear(year).isoWeek(week);
-  const startOfWeek = now.startOf('week').format('MMMM Do');
-  const endOfWeek = now.endOf('week').format('MMMM Do');
+  const isThisWeek = moment(nowUTC).utc().isoWeek() === week;
+  const currentWeekYear = moment(nowUTC).utc().isoWeekYear(year).isoWeek(week);
+  const startOfWeek = moment(currentWeekYear).utc().startOf('week');
+  const endOfWeek = moment(currentWeekYear).utc().endOf('week');
+
+  let startOfWeekDisplay;
+  let endOfWeekDisplay;
+  let weekDisplay;
+  let yearDisplay;
+  const tzOffset = moment(endOfWeek).local().utcOffset();
+  const tzHours = String(Math.abs(Math.floor(tzOffset / 60))).padStart(2, '0');
+  const tzMinutes = String(Math.abs(tzOffset % 60)).padStart(2, '0');
+  const tzString = `local time (UTC ${tzOffset >= 0 ? '+' : '-'}${tzHours}:${tzMinutes})`;
+  if (displayLocal) {
+    startOfWeekDisplay = moment(startOfWeek).local().format('MMMM Do YYYY, h:mm:ss');
+    endOfWeekDisplay = moment(endOfWeek).local().format('MMMM Do YYYY, h:mm:ss');
+    weekDisplay = moment(endOfWeek).local().week();
+    yearDisplay = moment(endOfWeek).local().weekYear();
+  } else {
+    startOfWeekDisplay = moment(startOfWeek).utc().format('MMMM Do');
+    endOfWeekDisplay = moment(endOfWeek).utc().format('MMMM Do');
+    weekDisplay = moment(endOfWeek).utc().isoWeek();
+    yearDisplay = moment(endOfWeek).utc().isoWeekYear();
+  }
 
   return (
     <>
@@ -40,34 +64,44 @@ export default function Nodes() {
         <Row>
           <Col sm="8" md="10">
             <h1>
-              Top nodes for Week {week} {year} ({startOfWeek} - {endOfWeek})
+              Top nodes for Week {weekDisplay} {yearDisplay} ({startOfWeekDisplay} -{' '}
+              {endOfWeekDisplay})
             </h1>
+            <p>
+              All times in {displayLocal ? tzString : 'UTC'}.{' '}
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setDisplayLocal((prev) => !prev);
+                }}
+              >
+                Switch to {displayLocal ? 'UTC' : tzString}
+              </a>
+            </p>
           </Col>
           <Col>
             <Pagination className="justify-content-end">
               <Pagination.Prev
                 onClick={() => {
-                  if (week === 1) {
-                    setWeek(moment().isoWeeksInYear(year - 1));
-                    setYear((year) => year - 1);
-                    return;
-                  }
-
-                  setWeek((week) => week - 1);
+                  setWeekYear(([currWeek, currYear]) =>
+                    currWeek === 1
+                      ? [moment().isoWeeksInYear(currYear - 1), currYear - 1]
+                      : [currWeek - 1, currYear],
+                  );
                 }}
               />
               <Pagination.Item disabled={true}>
-                W{week} {year}
+                W{weekDisplay} {yearDisplay}
               </Pagination.Item>
               {!isThisWeek && (
                 <Pagination.Next
                   onClick={() => {
-                    if (week === moment().isoWeeksInYear(year)) {
-                      setWeek(1);
-                      setYear((year) => year + 1);
-                      return;
-                    }
-                    setWeek((week) => week + 1);
+                    setWeekYear(([currWeek, currYear]) =>
+                      currWeek === moment().isoWeeksInYear(currYear)
+                        ? [1, currYear + 1]
+                        : [currWeek + 1, currYear],
+                    );
                   }}
                 />
               )}
